@@ -11,9 +11,9 @@ class TRPO(object):
 
 
 
-    def sample_sp(self, policy, s0, T):
+    def sample_sp(self, policy, s0, T): # sp = single path
         s = s0
-        states = [s0]
+        states = [s0] # leere Liste mit Actions
         actions = []
         rewards = []
         for i in range(T):
@@ -26,7 +26,7 @@ class TRPO(object):
                 T = i+1
                 break
 
-        states = np.array(states)
+        states = np.array(states) # Aus Liste Array machen
         actions = np.array(actions)
         Q = np.zeros(T+1)
         for i in range(T-1, -1, -1):
