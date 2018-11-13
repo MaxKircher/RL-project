@@ -2,12 +2,14 @@ import numpy as np
 import gym
 import quanser_robots
 from policy import *
+import torch
 
 class TRPO(object):
 
-    def __init__(self, env, gamma):
+    def __init__(self, env, gamma, policy):
         self.env = env
         self.gamma = gamma
+        self.policy = policy
 
 
 
@@ -33,3 +35,17 @@ class TRPO(object):
             Q[i] = self.gamma*Q[i+1] + rewards[i]
 
         return states, actions, Q
+
+
+    def arbitrary(self, pi, states, actions, Q):
+        sum = torch.zeros(1).double()
+        for i in range(states.shape[0]):
+            s = states[i]
+            a = actions[i]
+            sum += pi(s, a)*Q[i]/torch.tensor(self.policy.q(s, a)).double()
+            return -sum/states.shape[0] # - damit in optimize maximiert wird (ackward minimirt nämlich)
+
+
+    def optimize(self, states, actions, Q):
+        to_opt = self.arbitrary(self.policy.ableitbar_q, states, actions, Q)
+        to_opt.backward()
