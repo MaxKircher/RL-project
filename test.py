@@ -15,9 +15,14 @@ policy = NN(s_dim, a_dim)
 trpo = TRPO(env, gamma, policy)
 
 
-states, actions, Q = trpo.sample_sp(policy, s0, 100)
+states, actions, Q = trpo.sample_sp(policy, s0, 10000)
 trpo.optimize(states, actions, Q)
 
+states, actions, Q = trpo.sample_sp(policy, s0, 10000)
+trpo.optimize(states, actions, Q)
+
+states, actions, Q = trpo.sample_sp(policy, s0, 10000)
+trpo.optimize(states, actions, Q)
 
 
 

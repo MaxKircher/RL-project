@@ -21,12 +21,15 @@ class TRPO(object):
         for i in range(T):
             a = policy.choose_a(s)
             s, r, done, info = self.env.step(a)
+            # self.env.render()
             states  += [s]
             actions += [a]
             rewards += [r]
-            if done:
-                T = i+1
-                break
+            # if done:
+            #     T = i+1
+            #     break
+
+        print("Rewards: ", np.array(rewards).sum())
 
         states = np.array(states) # Aus Liste Array machen
         actions = np.array(actions)
@@ -39,6 +42,7 @@ class TRPO(object):
 
     def arbitrary(self, pi, states, actions, Q):
         sum = torch.zeros(1).double()
+        print("trpo.py/arbitrary states.shape[0] = ", states.shape[0])
         for i in range(states.shape[0]):
             s = states[i]
             a = actions[i]
