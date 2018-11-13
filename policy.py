@@ -22,4 +22,4 @@ class NN(object):
     def choose_a(self, s):
         mu = self.model(torch.tensor(s)).detach().numpy() # Vektor für den action space
         dev = np.exp(self.log_dev.detach().numpy()) # deviation
-        return np.random.normal(mu, dev, self.a_dim)
+        return np.random.normal(mu, dev, 1)
