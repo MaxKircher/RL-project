@@ -4,7 +4,7 @@ import quanser_robots
 from trpo import *
 from policy import *
 
-env = gym.make('Qube-v0')
+env = gym.make('CartpoleStabShort-v0')
 s0 = env.reset()
 gamma = 0.99
 
@@ -15,13 +15,13 @@ policy = NN(s_dim, a_dim)
 trpo = TRPO(env, gamma, policy)
 
 
-states, actions, Q = trpo.sample_sp(policy, s0, 10000)
+states, actions, Q = trpo.sample_sp(policy, s0, 1000)
 trpo.optimize(states, actions, Q)
 
-states, actions, Q = trpo.sample_sp(policy, s0, 10000)
+states, actions, Q = trpo.sample_sp(policy, s0, 1000)
 trpo.optimize(states, actions, Q)
 
-states, actions, Q = trpo.sample_sp(policy, s0, 10000)
+states, actions, Q = trpo.sample_sp(policy, s0, 1000)
 trpo.optimize(states, actions, Q)
 
 

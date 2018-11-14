@@ -21,7 +21,7 @@ class TRPO(object):
         for i in range(T):
             a = policy.choose_a(s)
             s, r, done, info = self.env.step(a)
-            # self.env.render()
+            self.env.render()
             states  += [s]
             actions += [a]
             rewards += [r]
