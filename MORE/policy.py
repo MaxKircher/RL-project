@@ -9,15 +9,17 @@ class POLICY(object):
         self.action_dim = action_dim
         self.degree = degree
 
-    def set_theta(theta):
+    def set_theta(self, theta):
         # shape of theta is list of matrices [[theta_0],[theta_1], ..., [theata_n]] corresponding
         # to coefficients of polynomial
         self.theta = theta
 
-    def polynomial_policy(states): #polynomial policy with polynomial of degree 7
+    def polynomial_policy(self, states): #polynomial policy with polynomial of degree 7
         #init polyonomial
-        polynomial = self.theata[0]
-        for i in range(1,degree + 1):
-            polynomial += self.theta[i]*np.power(states, i)
+        polynomial = self.theta[0]
+        # print("policy.py polynomial_policy(...): polynomial = " , polynomial)
+        for i in range(1, self.degree + 1):
+            polynomial += np.dot(self.theta[i],np.power(states, i))
+            # print("policy.py polynomial_policy(...): (for loop) polynomial = " , polynomial)
 
         return polynomial # is indeed our action

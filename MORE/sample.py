@@ -10,19 +10,35 @@ class SAMPLE(object):
         self.policy = policy
         self.mu = mu
         self.dev = dev
+        self.state_dim = env.observation_space.shape[0]
+        self.action_dim = env.action_space.shape[0]
 
 
-    def sample(N_per_theta, number_of_thetas): # this is our function pi
+    def sample(self, N_per_theta, number_of_thetas): # this is our function pi
         rewards = []
         for j in range(number_of_thetas):
-            theta =  np.random.normal(self.mu, self.dev, 1)
-            policy.set_theta(theta)
+            theta =  np.random.multivariate_normal(self.mu, self.dev)  # theta is matrix and needs to be transformed in desired list format
+            # transform theta to list
+            theta_transformed = self.theta_as_list(theta)
+            self.policy.set_theta(theta_transformed)
             reward = 0
-            s = env.reset()
+            s = self.env.reset()
             for i in range(N_per_theta):
-                a = policy(s)
-                s, r, d, i = env.step(a)
+                a = self.policy.polynomial_policy(s)
+                print("sample.py semple(...): a: ", a)
+                s, r, d, i = self.env.step(a)
                 reward += r
             avg_reward = reward / N_per_theta
-            rewards += [theta, avg_reward]
+            rewards += [theta_transformed, avg_reward]
         return rewards
+
+
+    def theta_as_list(self, theta): # TODO state dimensions
+        list = [theta[0]]
+        T = (theta.shape[0] - 1) / 5
+        print("range ", T)
+        # TODO generalisieren
+        for i in range(int(T)):
+            list += [np.array(theta[self.state_dim * i + 1 : self.state_dim * (i + 1) + 1])]
+
+        return list
