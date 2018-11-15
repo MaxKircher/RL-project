@@ -16,6 +16,7 @@ class SAMPLE(object):
 
     def sample(self, N_per_theta, number_of_thetas): # this is our function pi
         rewards = []
+        thetas = []
         for j in range(number_of_thetas):
             theta =  np.random.multivariate_normal(self.mu, self.dev)  # theta is matrix and needs to be transformed in desired list format
             # HARDCODE
@@ -29,12 +30,13 @@ class SAMPLE(object):
             s = self.env.reset()
             for i in range(N_per_theta):
                 a = self.policy.polynomial_policy(s)
-                print("sample.py semple(...): a: ", a)
+                print("sample.py sample(...): a: ", a)
                 s, r, d, i = self.env.step(a)
                 reward += r
             avg_reward = reward / N_per_theta
-            rewards += [theta_transformed, avg_reward]
-        return rewards
+            rewards += [avg_reward]
+            thetas += [theta]
+        return rewards, thetas
 
 
     def theta_as_list(self, theta): # TODO state dimensions
