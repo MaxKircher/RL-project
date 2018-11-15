@@ -19,6 +19,8 @@ class POLICY(object):
         polynomial = self.theta[0]
         # print("policy.py polynomial_policy(...): polynomial = " , polynomial)
         for i in range(1, self.degree + 1):
+            # print("np.power() ", np.power(states, i))
+            # print("dot product: ", np.dot(self.theta[i],np.power(states, i)))
             polynomial += np.dot(self.theta[i],np.power(states, i))
             # print("policy.py polynomial_policy(...): (for loop) polynomial = " , polynomial)
 

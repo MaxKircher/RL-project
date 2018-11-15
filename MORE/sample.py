@@ -18,6 +18,10 @@ class SAMPLE(object):
         rewards = []
         for j in range(number_of_thetas):
             theta =  np.random.multivariate_normal(self.mu, self.dev)  # theta is matrix and needs to be transformed in desired list format
+            # HARDCODE
+            # theta[4:6] = 0
+            # theta[9:11] = 0
+
             # transform theta to list
             theta_transformed = self.theta_as_list(theta)
             self.policy.set_theta(theta_transformed)
