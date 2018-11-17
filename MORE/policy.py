@@ -8,25 +8,45 @@ import numpy as np
 '''
 class POLICY(object):
 
-    def __init__(self, state_dim, action_dim, degree, theta=None): #theta sind unsere Parameter
-        self.theta = theta
+    '''
+        polynomial_degree=None:     Only mandatory if we have an polynomial policy
+        thetas=None:                Our parameter. Not mandatory.
+    '''
+    def __init__(self, state_dim, action_dim, polynomial_degree=None, thetas=None): #theta sind unsere Parameter
+        self.thetas = thetas
         self.state_dim = state_dim
         self.action_dim = action_dim
-        self.degree = degree
+        self.polynomial_degree = polynomial_degree
 
-    def set_theta(self, theta):
-        # shape of theta is list of matrices [[theta_0],[theta_1], ..., [theata_n]] corresponding
-        # to coefficients of polynomial
-        self.theta = theta
+    '''
+        thetas:
+         - List of matrices
+         - theta[i] corresponds to the i-th coefficient of the polynomial, i.e. x^i
+         - dim(theta[i]) = array([a_1i, a_2i, ..., a_mi]), where m = state_dim
+    '''
+    def set_theta(self, thetas):
+        self.thetas = thetas
 
-    def polynomial_policy(self, states): #polynomial policy with polynomial of degree 7
-        #init polyonomial
-        polynomial = self.theta[0]
-        # print("policy.py polynomial_policy(...): polynomial = " , polynomial)
-        for i in range(1, self.degree + 1):
-            # print("np.power() ", np.power(states, i))
-            # print("dot product: ", np.dot(self.theta[i],np.power(states, i)))
-            polynomial += np.dot(self.theta[i],np.power(states, i))
-            # print("policy.py polynomial_policy(...): (for loop) polynomial = " , polynomial)
+    '''
+    Computes an action w.r.t. the polynomial policy of a degree N
 
-        return polynomial # is indeed our action
+    States:
+     - Current state the system has
+     - States are the concrete parametrization of our X values in the polynomial
+
+    P(x) = sum_{i=0}^n a_ix^i, where x in R^{state_dim}
+     - Power is element wise
+     - a_i * x_i is the dot product because of one dimensional action
+
+    Return:
+     - action: The concrete computed action when evaluation polynomial(states)
+    '''
+    def polynomial_policy(self, states):
+
+        # Bias term of the polynomial is the default action
+        action = self.thetas[0]
+
+        for i in range(1, self.polynomial_degree + 1):
+            action += np.dot(self.thetas[i],np.power(states, i))
+
+        return action
