@@ -1,6 +1,11 @@
 import numpy as np
 
-# contains diffrent policies
+'''
+    Class that should contains diffrent policies
+    Currently:
+     - Polynomial policy of degree N
+     - TODO: Neuronal Network
+'''
 class POLICY(object):
 
     def __init__(self, state_dim, action_dim, degree, theta=None): #theta sind unsere Parameter
