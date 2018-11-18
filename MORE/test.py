@@ -34,10 +34,13 @@ dev[5,5] = 1E-15
 dev[9,9] = 1E-15
 dev[10,10] = 1E-15
 
-
+# Set quadratic policy
 policy = POLICY(state_dim, action_dim, degree)
+
+# Initalize sample generator
 sample_generator = SAMPLE(env, policy, mu, dev)
 
+# Generate samles for our policy
 rewards, thetas = sample_generator.sample(10, 3)
 
 '''
