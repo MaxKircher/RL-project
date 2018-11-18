@@ -3,7 +3,7 @@ import gym
 import quanser_robots
 from policy import *
 from sample import *
-from regression import X, linear_regression
+from regression import linear_regression # , X
 
 env = gym.make('CartpoleStabShort-v0')
 state_dim = env.observation_space.shape[0]
@@ -47,6 +47,6 @@ rewards, thetas = sample_generator.sample(10, 3)
     Returns: beta
     # TODO: return R² (Maß für die Anpassungsgüte) -> see regression
 '''
-X = X(thetas)
-beta = linear_regression(X, rewards)
+#X = X(thetas)
+beta = linear_regression(thetas, rewards)
 print("beta: ", beta.shape)
