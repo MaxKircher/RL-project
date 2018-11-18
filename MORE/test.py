@@ -45,7 +45,7 @@ rewards, thetas = sample_generator.sample(10, 3)
     rewards = X*beta
 
     Returns: beta
-    # TODO: return R² (Maß für die Anpassungsgüte)
+    # TODO: return R² (Maß für die Anpassungsgüte) -> see regression
 '''
 X = X(thetas)
 beta = linear_regression(X, rewards)
