@@ -107,16 +107,34 @@ class TRPO(object):
         return fim
 ###########
 
+    # Formel (14)
     def arbitrary(self, pi, states, actions, Q):
         sum = torch.zeros(1).double()
         #print("trpo.py/arbitrary states.shape[0] = ", states.shape[0])
-        for i in range(states.shape[0]):
+        print("index range = ", states.shape[0])
+        for i in range(actions.shape[0]):
             s = states[i]
             a = actions[i]
             sum += pi(s, a)*Q[i]/torch.tensor(self.policy.q(s, a)).double()
-            return -sum/states.shape[0] # - damit in optimize maximiert wird (ackward minimirt nämlich)
+        return sum/states.shape[0] # - damit in optimize maximiert wird (ackward minimirt nämlich)
 
-
+    # Formel (14) (evtl.)
     def optimize(self, states, actions, Q):
+        self.policy.model.zero_grad()
         to_opt = self.arbitrary(self.policy.ableitbar_q, states, actions, Q)
         to_opt.backward()
+        parameters = list(self.policy.model.parameters())
+
+        anzahl_spalten = sum(p.numel() for p in self.policy.model.parameters())
+        # print("anzahl_spalten" , anzahl_spalten)
+        g = np.zeros(anzahl_spalten)
+        j = 0
+        for param in parameters:
+            grad_param = param.grad.view(-1)
+            g[j: j + grad_param.size(0)] = grad_param
+            j += grad_param.size(0)
+        print("g = ", g.shape)
+        return g
+########
+    def beta(self, delta, s, A):
+        return np.power((2*delta)/(s.T*A*s), 0.5)

@@ -25,12 +25,13 @@ class NN(object):
         dev = np.exp(self.log_dev.detach().numpy()) # deviation
         return np.random.normal(mu, dev, 1)
 
-
+    # pi_theta old
     def q(self, s, a):
         mu = self.model(torch.tensor(s, dtype = torch.float)).detach().numpy() # Vektor für den action space
         dev = np.exp(self.log_dev.detach().numpy()) # deviation
         return norm.pdf(a, mu, dev)
 
+    # quasi pi_theta neu
     def ableitbar_q(self, s, a): #liefert das gleiche zurück wie q nur für torch interpretierbar, sodass diese Funktion optmiert werden kann
         mu = self.model(torch.tensor(s, dtype = torch.float)).double()
         dev = torch.exp(self.log_dev).double()

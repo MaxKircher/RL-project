@@ -17,9 +17,22 @@ trpo = TRPO(env, gamma, policy)
 
 
 states, actions, Q = trpo.sample_sp(policy, s0, 1000)
-trpo.optimize(states, actions, Q)
+g = trpo.optimize(states, actions, Q)
 
 JM = trpo.compute_Jacobian(states)
 FIM = trpo.compute_FIM()
-print("Jacobi = ", JM)
-print("FIM = ", FIM)
+
+A = JM.T * FIM * JM
+s = np.linalg.lstsq(A, g)[0]
+beta = trpo.beta(0.01, np.matrix(s).T, A)
+# print("Jacobi = ", JM)
+# print("FIM = ", FIM)
+print("A = ", A)
+print("s = ", s)
+print("beta = ", beta)
+
+'''
+    Line Search
+    Parameterupdate unter Formel (17)
+    Mehrdimensionale Action Spaces
+'''
