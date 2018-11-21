@@ -72,7 +72,7 @@ class TRPO(object):
             policy_net.zero_grad()
 
             # mehr dim action zweiter Eintrag 0 muss geändert werden
-            mu_states[i,0].backward()
+            mu_states[i,0].backward(retain_graph=True)
             # Abspeichern der thetas = weights
             thetas = list(policy_net.parameters())
             # print("policy_net.parameters() = ", policy_net.parameters())
@@ -83,11 +83,11 @@ class TRPO(object):
 
             j = 0
             for theta in thetas:
-                print("grad.size = " , theta.grad.size())
+                #print("grad.size = " , theta.grad.size())
                 grad = theta.grad.view(-1)
-                print("grad.size.view(-1) = ", grad.size(0))
-                print("grad = ", grad)
-                Jacobi_matrix[0,j: + grad.size(0)] += grad
+                #print("grad.size.view(-1) = ", grad.size(0))
+                #print("grad = ", grad)
+                Jacobi_matrix[0,j:j + grad.size(0)] += grad
                 j += grad.size(0)
 
 
@@ -102,5 +102,21 @@ class TRPO(object):
     def compute_FIM(self):
         # Nach Wiki und Screenshot, siehe drive erhalten wir die Fisher-Information Matrix als
         # log-dev brauchen wir anch D
-        fim = np.eye(self.policy.log_dev.size())*self.policy.log_dev.exp().pow(-2)
+        inverse_vars = self.policy.log_dev.exp().pow(-2).detach().numpy()
+        fim = np.eye(self.policy.log_dev.size(0))
         return fim
+###########
+
+    def arbitrary(self, pi, states, actions, Q):
+        sum = torch.zeros(1).double()
+        #print("trpo.py/arbitrary states.shape[0] = ", states.shape[0])
+        for i in range(states.shape[0]):
+            s = states[i]
+            a = actions[i]
+            sum += pi(s, a)*Q[i]/torch.tensor(self.policy.q(s, a)).double()
+            return -sum/states.shape[0] # - damit in optimize maximiert wird (ackward minimirt nämlich)
+
+
+    def optimize(self, states, actions, Q):
+        to_opt = self.arbitrary(self.policy.ableitbar_q, states, actions, Q)
+        to_opt.backward()
