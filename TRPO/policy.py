@@ -29,15 +29,46 @@ class NN(object):
     def q(self, s, a):
         mu = self.model(torch.tensor(s, dtype = torch.float)).detach().numpy() # Vektor für den action space
         dev = np.exp(self.log_dev.detach().numpy()) # deviation
-        return norm.pdf(a, mu, dev)
+        return norm.pdf(a, mu, dev) # ist auch multivariat
 
     # quasi pi_theta neu
-    def ableitbar_q(self, s, a): #liefert das gleiche zurück wie q nur für torch interpretierbar, sodass diese Funktion optmiert werden kann
+    # von pytorch ausgerechnetete Wahrscheinlichkeit die man ableiten kann
+    def pi_theta(self, s, a): #liefert das gleiche zurück wie q nur für torch interpretierbar, sodass diese Funktion optmiert werden kann
         mu = self.model(torch.tensor(s, dtype = torch.float)).double()
         dev = torch.exp(self.log_dev).double()
-        covariance_matrix = torch.eye(dev.shape[0]).double()*dev
+        covariance_matrix = dev * torch.eye(dev.shape[0]).double()
         # factor = 1/(torch.tensor(np.sqrt(2*np.pi))*dev)
         # exponent = -(torch.tensor(a).double()-mu.double()).pow(2)/(2*(dev.double().pow(2)))
         # return  factor*torch.exp(exponent)
+
+        # aufstellen normal_distribution
         normal_distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covariance_matrix)
         return torch.exp(normal_distribution.log_prob(torch.tensor(a).double()))
+
+    '''
+        Updates the parameter of the policy improve our policy
+        Parameter:
+         - theta_new: is ideally of the form nn.Parameters otherwise if it's a tensor
+                      do nn.Parameters(theta_new)
+    '''
+    def update_policy_parameter(self, theta_new):
+
+        # split parameter for the desired model
+        number_of_layers = len(self.model)
+        j = 0 # get right position where we get the params from theta_new
+        for i in range(number_of_layers):
+            size_weight = model[i].weight.size()
+            size_bias = model[i].bias.size()
+
+            no_weights = model[i].weight.nelement()
+            no_bias = model[i].bias.nelement()
+            # get the new weights
+            theta_new_weights = theta_new[j: j + no_weights]
+            j += no_weights
+            theta_new_bias = theta_new[j: j + no_bias]
+            j += no_bias
+
+            model[i].weight = theta_new_weights.view(size_weight)
+            model[i].bias = theta_new_bias.view(size_bias)
+
+        # new_nn_params = torch.nn.Parameters(theta_new)

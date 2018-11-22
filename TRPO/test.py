@@ -17,7 +17,7 @@ trpo = TRPO(env, gamma, policy)
 
 
 states, actions, Q = trpo.sample_sp(policy, s0, 1000)
-g = trpo.optimize(states, actions, Q)
+g = trpo.compute_loss_gradients(states, actions, Q)
 
 JM = trpo.compute_Jacobian(states)
 FIM = trpo.compute_FIM()
