@@ -31,6 +31,8 @@ print("A = ", A)
 print("s = ", s)
 print("beta = ", beta)
 
+
+
 '''
     Line Search
     Parameterupdate unter Formel (17)

@@ -166,51 +166,66 @@ class TRPO(object):
      - thet_old
     '''
     def line_search(self, beta, delta, s, theta_old, states, actions, Q):
-        theta_new = theta_old + beta * s
+        old_loss = loss_theta(self.policy, states, actions, Q)
+        dim_cov_matrix = theta_old.size(1)/2
+        covariance_matrix_old = torch.eye(sim_cov_matrix) *
+                theta_old[-dim_cov_matrix:, -dim_cov_matrix:]
+        for i in range(1, 10):
+            theta_new = theta_old + beta * s
 
-        # Get the policy model (currently an one layer linear NN)
-        policy_net = self.policy.model
+            # Get the policy model (currently an one layer linear NN)
+            policy_net = self.policy.model
 
-        # Update the parameters of the model
-        policy_theta_new = copy.deepcopy(self.policy)
-        policy_theta_new.update_policy_parameter(theta_new)
+            # Update the parameters of the model
+            policy_theta_new = copy.deepcopy(self.policy)
+            policy_theta_new.update_policy_parameter(theta_new)
 
-        loss = loss_theta(policy_theta_new, states, actions, Q)
+            '''
+                DONE UPDATE MU with stdev
+            '''
+            mean_new = torch.zeros(actions.shape[0], 2 * actions.shape[1]) # ist actions.shape[1] definiert?
+            mean_old = torch.zeros(actions.shape[0], 2 * actions.shape[1]) # ist actions.shape[1] definiert?
 
-        '''
-            DONE UPDATE MU with stdev
-        '''
-        # Check if KL-Divergenz is <= delta
-        mu_new = torch.zeros(actions.shape[0], 2 * actions.shape[1]) # ist actions.shape[1] definiert?
-        mu_old = torch.zeros(actions.shape[0], 2 * actions.shape[1]) # ist actions.shape[1] definiert?
+            for i in range(actions.shape[0]):
+                s = states[i]
+                a = actions[i]
+                mean_new[i,:] = policy_theta_new(s, a) # passt das von den Dimensionen?
+                mean_old[i,:] = self.policy.q(s, a) # passt das von den Dimensionen?
 
-        for i in range(actions.shape[0]):
-            s = states[i]
-            a = actions[i]
-            mu_new[i,:] = policy_theta_new(s, a) # passt das von den Dimensionen?
-            mu_old[i,:] = self.policy.q(s, a) # passt das von den Dimensionen?
+            # hole covariance_matrix_new/old aus den korrigierten theta_old raus
+            covariance_matrix_new = torch.eye(dim_cov_matrix) *
+                            theta_new[-dim_cov_matrix:, -dim_cov_matrix:]
+            delta_threshold = kl_normal_distribution(mean_new, mean_old, covariance_matrix_old, covariance_matrix_new)
 
-        # hole covariance_matrix_new/old aus den korrigierten theta_old raus
-        delta_threshold = kl_normal_distribution(mu_new, mu_old, covariance_matrix_old, covariance_matrix_new)
+            # Check if KL-Divergenz is <= delta
+            if delta_threshold <= delta:
+                loss = loss_theta(policy_theta_new, states, actions, Q)
+                if loss < old_loss:
+                    return policy_theta_new
+            beta = pow(beta, -i)
 
-        '''
-            Computes the KL w.r.t. to a multivariat Gaussian for given normal distri-
-            butions mu_old, mu_new and the respective covariance matrices (which are params of the model)
+        print("Something went wrong!")
+        return Null
 
-            We compute each summand individually and then add them up to make things easier to debug
 
-            Forumla: https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence#Multivariate_normal_distributions
-        '''
-        def kl_normal_distribution(mu_new, mu_old, covariance_matrix_old, covariance_matrix_new):
+    '''
+        Computes the KL w.r.t. to a multivariat Gaussian for given normal distri-
+        butions mu_old, mu_new and the respective covariance matrices (which are params of the model)
 
-            trace = torch.inverse(covariance_matrix_new) * covariance_matrix_old
-            scalar_product = (mu_new - mu_old).transpose * torch.inverse(covariance_matrix_new) * (mu_new - mu_old)
-            k = mu_new.size(1) # richtiger Eintrag?
-            ln = torch.log(torch.det(covariance_matrix_new) / torch.det(covariance_matrix_old))
+        We compute each summand individually and then add them up to make things easier to debug
 
-            delta_threshold = 0.5 * (trace + scalar_product - k + ln)
-            print("delta threshold = ", delta_threshold)
-            return delta_threshold
+        Forumla: https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence#Multivariate_normal_distributions
+    '''
+    def kl_normal_distribution(mu_new, mu_old, covariance_matrix_old, covariance_matrix_new):
+
+        trace = torch.inverse(covariance_matrix_new) * covariance_matrix_old
+        scalar_product = (mu_new - mu_old).transpose * torch.inverse(covariance_matrix_new) * (mu_new - mu_old)
+        k = mu_new.size(1) # richtiger Eintrag?
+        ln = torch.log(torch.det(covariance_matrix_new) / torch.det(covariance_matrix_old))
+
+        delta_threshold = 0.5 * (trace + scalar_product - k + ln)
+        print("delta threshold = ", delta_threshold)
+        return delta_threshold
 ###### END: Appendix C
 
     # Das Innere von Formel (14) (hier machen wir empirischen Eerwartungswert)
