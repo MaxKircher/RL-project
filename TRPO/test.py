@@ -20,9 +20,9 @@ states, actions, Q = trpo.sample_sp(policy, s0, 1000)
 g = trpo.compute_loss_gradients(states, actions, Q)
 
 JM = trpo.compute_Jacobian(states)
-FIM = trpo.compute_FIM()
+FIM = trpo.compute_FIM_mean()
 
-A = JM.T * FIM * JM
+A = JM.T * FIM * JM # where A is the FIM w.r.t. to the Parameters theta see C
 s = np.linalg.lstsq(A, g)[0]
 beta = trpo.beta(0.01, np.matrix(s).T, A)
 # print("Jacobi = ", JM)

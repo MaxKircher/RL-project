@@ -59,6 +59,8 @@ class TRPO(object):
 
 ###### BEGIN: Appendix C
     '''
+        DONE UPDATE MU with stdev
+
         Computes the Jacobi-Matrix by doing the following steps
             1. Get the corrent policy model (currently one-layer linear NN - should be stochastic?!)
             2. Transform states into tensor for the model
@@ -94,11 +96,12 @@ class TRPO(object):
         # For given state expected action w.r.t. the underlying model
         mu_actions = policy_net(states)
 
-        # Compute the coloumns of the Jacobi-Matrix
-        number_cols = sum(p.numel() for p in policy_net.parameters())
+        # Compute the coloumns of the Jacobi-Matrix + pad with size of STDEV
+        number_cols = sum(p.numel() for p in policy_net.parameters() + self.policy.stdev.size(0))
 
         # # TODO: Generalise for multi dimensional actions
-        Jacobi_matrix = np.zeros((mu_actions.size(1), number_cols))
+        # Anpassen mit stdev
+        Jacobi_matrix = np.zeros((mu_actions.size(1) * 2, number_cols))
 
 
         # .backward um die Gradienten zu bestimmen (2.)
@@ -127,6 +130,12 @@ class TRPO(object):
                 Jacobi_matrix[0,j:j + grad.size(0)] += grad
                 j += grad.size(0)
 
+            # Add the derivatives for the stdev which are ones because std is a theta-param
+            print("ASSERT: mu_actions.size(1) = self.policy.stdev.size(0) :: " mu_actions.size(1) == self.policy.stdev.size(0))
+            eye_matrix = np.eye(self.policy.stdev.size(0))
+
+            # Füge die eye Matrix an die richtige Stelle (ganz unten rechts)
+            Jacobi_matrix[self.policy.stdev.size(0):,j:] = eye_matrix
 
             # for j in range(len(thetas)):
             #     grad = thetas[j].grad
@@ -142,9 +151,9 @@ class TRPO(object):
         by Wiki https://de.wikipedia.org/wiki/Fisher-Information?oldformat=true we obtain
         a simple computable FIM
         Returns:
-         - FIM: Fisher Information Matrix
+         - FIM: Fisher Information Matrix w.r.t. mean, i.e. the Matrix M in C.1
     '''
-    def compute_FIM(self):
+    def compute_FIM_mean(self):
         inverse_vars = self.policy.log_dev.exp().pow(-2).detach().numpy()
         fim = np.eye(self.policy.log_dev.size(0))
         return fim
@@ -168,9 +177,12 @@ class TRPO(object):
 
         loss = loss_theta(policy_theta_new, states, actions, Q)
 
+        '''
+            DONE UPDATE MU with stdev
+        '''
         # Check if KL-Divergenz is <= delta
-        mu_new = torch.zeros(actions.shape[0], actions.shape[1]) # ist actions.shape[1] definiert?
-        mu_old = torch.zeros(actions.shape[0], actions.shape[1]) # ist actions.shape[1] definiert?
+        mu_new = torch.zeros(actions.shape[0], 2 * actions.shape[1]) # ist actions.shape[1] definiert?
+        mu_old = torch.zeros(actions.shape[0], 2 * actions.shape[1]) # ist actions.shape[1] definiert?
 
         for i in range(actions.shape[0]):
             s = states[i]
@@ -178,6 +190,7 @@ class TRPO(object):
             mu_new[i,:] = policy_theta_new(s, a) # passt das von den Dimensionen?
             mu_old[i,:] = self.policy.q(s, a) # passt das von den Dimensionen?
 
+        # hole covariance_matrix_new/old aus den korrigierten theta_old raus
         delta_threshold = kl_normal_distribution(mu_new, mu_old, covariance_matrix_old, covariance_matrix_new)
 
         '''

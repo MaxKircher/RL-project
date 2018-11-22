@@ -4,6 +4,9 @@ from scipy.stats import norm
 
 class NN(object):
 
+    '''
+        The last theta parameters (exactly the last action_space.dim) are for standard deviation
+    '''
     def __init__(self, s_dim, a_dim):
         self.s_dim = s_dim
         self.a_dim = a_dim
@@ -46,6 +49,8 @@ class NN(object):
         return torch.exp(normal_distribution.log_prob(torch.tensor(a).double()))
 
     '''
+        DONE UPDATE MU with stdev
+
         Updates the parameter of the policy improve our policy
         Parameter:
          - theta_new: is ideally of the form nn.Parameters otherwise if it's a tensor
@@ -70,5 +75,7 @@ class NN(object):
 
             model[i].weight = theta_new_weights.view(size_weight)
             model[i].bias = theta_new_bias.view(size_bias)
+
+        self.log_dev = theta_new[j:] # update policy parameter
 
         # new_nn_params = torch.nn.Parameters(theta_new)
