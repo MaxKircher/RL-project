@@ -83,6 +83,8 @@ class NN(object):
                 self.model[i].weight.data = theta_new_weights.view(size_weight)
                 self.model[i].bias.data = theta_new_bias.view(size_bias)
 
+        # keine negativen Varianzen
+        # print(torch.max(torch.zeros(self.model.log_dev.size()),theta_new[j:]))
         self.model.log_dev.data = theta_new[j:] # update policy parameter
 
         # new_nn_params = torch.nn.Parameters(theta_new)

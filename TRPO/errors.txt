@@ -1,0 +1,3 @@
+- det Kovarianzmatrix ist negativ das darf nicht sein, da wir eine Diagonalmatrix haben
+ und Varianzen positiv sind
+- Wir müssen auch die alte Kovarianzmatrix updaten und nicht lassen wie sie war

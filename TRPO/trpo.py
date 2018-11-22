@@ -207,7 +207,7 @@ class TRPO(object):
 
             # Check if KL-Divergenz is <= delta
             if delta_threshold <= delta:
-                loss = self.loss_theta(policy_theta_new, states, actions, Q)
+                loss = self.loss_theta(policy_theta_new.pi_theta, states, actions, Q)
                 if loss < old_loss:
                     return policy_theta_new
             beta = pow(beta, -i)
@@ -231,7 +231,13 @@ class TRPO(object):
         # print((mu_new - mu_old).size(), " ", torch.inverse(covariance_matrix_new).size(), " ", (mu_new - mu_old).transpose(1,0).size())
         scalar_product = (mu_new - mu_old) * torch.inverse(covariance_matrix_new) * (mu_new - mu_old).transpose(1,0)
         k = mu_new.size(1) # richtiger Eintrag?
-        ln = torch.log(torch.det(covariance_matrix_new) / torch.det(covariance_matrix_old))
+        ln_correct = torch.log(torch.det(covariance_matrix_new) / torch.det(covariance_matrix_old))
+        print("det(cov_new) = ", torch.det(covariance_matrix_new))
+        print("det(cov_old) = ",torch.det(covariance_matrix_old))
+        print("ln_correct = ", ln_correct)
+        print("k = mu_new.size(1) = ", k)
+
+        ln = 0 # ln_correct
 
         delta_threshold = 0.5 * (trace + torch.trace(scalar_product) / mu_new.size(0) - k + ln)
         print("delta threshold = ", delta_threshold)
