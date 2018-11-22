@@ -158,7 +158,7 @@ class TRPO(object):
     def compute_FIM_mean(self):
         inverse_vars = self.policy.model.log_dev.exp().pow(-2).detach().numpy()
         fim = np.eye(2 * self.policy.model.log_dev.size(0)) * np.append(inverse_vars, 0.5 * np.power(inverse_vars, 2))
-        print("FIM_mean = " , fim)
+        # print("FIM_mean = " , fim)
         return np.matrix(fim)
 
     '''
@@ -170,11 +170,13 @@ class TRPO(object):
     '''
     def line_search(self, beta, delta, s, theta_old, states, actions, Q):
         old_loss = self.loss_theta(self.policy.pi_theta, states, actions, Q)
-        dim_cov_matrix = int(theta_old.size(1)/2)
+
+        dim_cov_matrix = int(theta_old.size(0))
         covariance_matrix_old = torch.eye(dim_cov_matrix) * \
                         theta_old[-dim_cov_matrix:, -dim_cov_matrix:]
         for i in range(1, 10):
-            theta_new = theta_old + torch.tensor(beta, dtype = torch.float) * torch.tensor(s, dtype = torch.float)
+            theta_new = theta_old + torch.tensor(beta, dtype = torch.float) * \
+                            torch.tensor(s, dtype = torch.float)
 
             # Get the policy model (currently an one layer linear NN)
             policy_net = self.policy.model
@@ -186,19 +188,19 @@ class TRPO(object):
             '''
                 DONE UPDATE MU with log_dev
             '''
-            mean_new = torch.zeros(actions.shape[0], 2 * actions.shape[1]) # ist actions.shape[1] definiert?
-            mean_old = torch.zeros(actions.shape[0], 2 * actions.shape[1]) # ist actions.shape[1] definiert?
+            mean_new = torch.zeros(actions.shape[0], actions.shape[1]) # ist actions.shape[1] definiert?
+            mean_old = torch.zeros(actions.shape[0], actions.shape[1]) # ist actions.shape[1] definiert?
 
             for i in range(actions.shape[0]):
-                s = states[i]
-                a = actions[i]
-                mean_new[i,:] = policy_theta_new(s, a) # passt das von den Dimensionen?
-                mean_old[i,:] = self.policy.q(s, a) # passt das von den Dimensionen?
+                s = torch.tensor(states[i], dtype = torch.float)
+                # a = actions[i]
+                mean_new[i,:] = torch.tensor(policy_theta_new.model(s)) # passt das von den Dimensionen?
+                mean_old[i,:] = torch.tensor(self.policy.model(s)) # passt das von den Dimensionen?
 
             # hole covariance_matrix_new/old aus den korrigierten theta_old raus
             covariance_matrix_new = torch.eye(dim_cov_matrix) * \
                             theta_new[-dim_cov_matrix:, -dim_cov_matrix:]
-            delta_threshold = kl_normal_distribution(mean_new, mean_old, covariance_matrix_old, covariance_matrix_new)
+            delta_threshold = self.kl_normal_distribution(mean_new, mean_old, covariance_matrix_old, covariance_matrix_new)
 
             # Check if KL-Divergenz is <= delta
             if delta_threshold <= delta:
@@ -219,14 +221,16 @@ class TRPO(object):
 
         Forumla: https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence#Multivariate_normal_distributions
     '''
-    def kl_normal_distribution(mu_new, mu_old, covariance_matrix_old, covariance_matrix_new):
+    def kl_normal_distribution(self, mu_new, mu_old, covariance_matrix_old, covariance_matrix_new):
 
-        trace = torch.inverse(covariance_matrix_new) * covariance_matrix_old
-        scalar_product = (mu_new - mu_old).transpose * torch.inverse(covariance_matrix_new) * (mu_new - mu_old)
+        trace = torch.trace(torch.inverse(covariance_matrix_new) * covariance_matrix_old)
+
+        print((mu_new - mu_old).size(), " ", torch.inverse(covariance_matrix_new).size(), " ", (mu_new - mu_old).transpose(1,0).size())
+        scalar_product = (mu_new - mu_old) * torch.inverse(covariance_matrix_new) * (mu_new - mu_old).transpose(1,0)
         k = mu_new.size(1) # richtiger Eintrag?
         ln = torch.log(torch.det(covariance_matrix_new) / torch.det(covariance_matrix_old))
 
-        delta_threshold = 0.5 * (trace + scalar_product - k + ln)
+        delta_threshold = 0.5 * (trace + torch.trace(scalar_product) / mu_new.size(0) - k + ln)
         print("delta threshold = ", delta_threshold)
         return delta_threshold
 ###### END: Appendix C
@@ -235,7 +239,7 @@ class TRPO(object):
     def loss_theta(self, pi_theta, states, actions, Q):
         sum = torch.zeros(1).double()
         #print("trpo.py/loss_theta states.shape[0] = ", states.shape[0])
-        print("index range = ", states.shape[0])
+        # print("index range = ", states.shape[0])
         for i in range(actions.shape[0]):
             s = states[i]
             a = actions[i]
@@ -261,8 +265,8 @@ class TRPO(object):
             g[j: j + grad_param.size(0)] = grad_param
             j += grad_param.size(0)
         g[j:] = self.policy.model.log_dev.grad # evtl. log_dev zum NN-Parameter machen
-        print("g = ", g.shape)
-        print("g[71] = ", g[71])
+        # print("g = ", g.shape)
+        # print("g[71] = ", g[71])
         return g
 ########
     def beta(self, delta, s, A):

@@ -23,7 +23,7 @@ JM = trpo.compute_Jacobian(states)
 FIM = trpo.compute_FIM_mean()
 
 A = JM.T * FIM * JM # where A is the FIM w.r.t. to the Parameters theta see C
-print("dim(A) = ", A.shape)
+# print("dim(A) = ", A.shape)
 s = np.linalg.lstsq(A, g)[0]
 beta = trpo.beta(0.01, np.matrix(s).T, A)
 

@@ -33,6 +33,7 @@ class NN(object):
     def q(self, s, a):
         mu = self.model(torch.tensor(s, dtype = torch.float)).detach().numpy() # Vektor für den action space
         dev = np.exp(self.model.log_dev.detach().numpy()) # deviation
+
         return norm.pdf(a, mu, dev) # ist auch multivariat
 
     # quasi pi_theta neu
@@ -60,26 +61,28 @@ class NN(object):
     def update_policy_parameter(self, theta_new):
 
         theta_new = theta_new.view(-1) # we had [1, 73] but 1 was nonsense
-        print(theta_new.size())
+        # print(theta_new.size())
 
         # split parameter for the desired model
         number_of_layers = len(self.model)
         j = 0 # get right position where we get the params from theta_new
         for i in range(number_of_layers):
-            size_weight = self.model[i].weight.size()
-            size_bias = self.model[i].bias.size()
 
-            no_weights = self.model[i].weight.nelement()
-            no_bias = self.model[i].bias.nelement()
-            # get the new weights
-            theta_new_weights = theta_new[j: j + no_weights]
-            j += no_weights
-            theta_new_bias = theta_new[j: j + no_bias]
-            j += no_bias
+            if type(self.model[i]) == torch.nn.modules.linear.Linear:
+                size_weight = self.model[i].weight.size()
+                size_bias = self.model[i].bias.size()
 
-            self.model[i].weight.data = theta_new_weights.view(size_weight)
-            self.model[i].bias.data = theta_new_bias.view(size_bias)
+                no_weights = self.model[i].weight.nelement()
+                no_bias = self.model[i].bias.nelement()
+                # get the new weights
+                theta_new_weights = theta_new[j: j + no_weights]
+                j += no_weights
+                theta_new_bias = theta_new[j: j + no_bias]
+                j += no_bias
 
-        self.model.log_dev = theta_new[j:] # update policy parameter
+                self.model[i].weight.data = theta_new_weights.view(size_weight)
+                self.model[i].bias.data = theta_new_bias.view(size_bias)
+
+        self.model.log_dev.data = theta_new[j:] # update policy parameter
 
         # new_nn_params = torch.nn.Parameters(theta_new)
