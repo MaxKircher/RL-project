@@ -9,6 +9,7 @@ class TRPO(object):
 
     '''
         NOTE in den Kommentaren heißt log_dev = stdev = Standard Deviation!!!
+        .shape in numpy und size() in torch
 
         Parameter:
          - env:     the current environment
@@ -174,9 +175,11 @@ class TRPO(object):
         dim_cov_matrix = int(theta_old.size(0))
         covariance_matrix_old = torch.eye(dim_cov_matrix) * \
                         theta_old[-dim_cov_matrix:, -dim_cov_matrix:]
+
+
         for i in range(1, 10):
-            theta_new = theta_old + torch.tensor(beta, dtype = torch.float) * \
-                            torch.tensor(s, dtype = torch.float)
+            # print(beta.shape , " ", theta_old.view(-1).size(), " ", torch.tensor(s, dtype = torch.float).size())
+            theta_new = theta_old.view(-1) + beta[0,0] * torch.tensor(s, dtype = torch.float)
 
             # Get the policy model (currently an one layer linear NN)
             policy_net = self.policy.model
@@ -191,15 +194,15 @@ class TRPO(object):
             mean_new = torch.zeros(actions.shape[0], actions.shape[1]) # ist actions.shape[1] definiert?
             mean_old = torch.zeros(actions.shape[0], actions.shape[1]) # ist actions.shape[1] definiert?
 
-            for i in range(actions.shape[0]):
-                s = torch.tensor(states[i], dtype = torch.float)
+            for k in range(actions.shape[0]):
+                state = torch.tensor(states[k], dtype = torch.float)
                 # a = actions[i]
-                mean_new[i,:] = torch.tensor(policy_theta_new.model(s)) # passt das von den Dimensionen?
-                mean_old[i,:] = torch.tensor(self.policy.model(s)) # passt das von den Dimensionen?
+                mean_new[k,:] = torch.tensor(policy_theta_new.model(state)) # passt das von den Dimensionen?
+                mean_old[k,:] = torch.tensor(self.policy.model(state)) # passt das von den Dimensionen?
 
             # hole covariance_matrix_new/old aus den korrigierten theta_old raus
             covariance_matrix_new = torch.eye(dim_cov_matrix) * \
-                            theta_new[-dim_cov_matrix:, -dim_cov_matrix:]
+                            theta_new[-dim_cov_matrix:]
             delta_threshold = self.kl_normal_distribution(mean_new, mean_old, covariance_matrix_old, covariance_matrix_new)
 
             # Check if KL-Divergenz is <= delta
@@ -225,7 +228,7 @@ class TRPO(object):
 
         trace = torch.trace(torch.inverse(covariance_matrix_new) * covariance_matrix_old)
 
-        print((mu_new - mu_old).size(), " ", torch.inverse(covariance_matrix_new).size(), " ", (mu_new - mu_old).transpose(1,0).size())
+        # print((mu_new - mu_old).size(), " ", torch.inverse(covariance_matrix_new).size(), " ", (mu_new - mu_old).transpose(1,0).size())
         scalar_product = (mu_new - mu_old) * torch.inverse(covariance_matrix_new) * (mu_new - mu_old).transpose(1,0)
         k = mu_new.size(1) # richtiger Eintrag?
         ln = torch.log(torch.det(covariance_matrix_new) / torch.det(covariance_matrix_old))
