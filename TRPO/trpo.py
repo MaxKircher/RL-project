@@ -8,6 +8,8 @@ import copy
 class TRPO(object):
 
     '''
+        NOTE in den Kommentaren heißt log_dev = stdev = Standard Deviation!!!
+
         Parameter:
          - env:     the current environment
          - gamma:   discount factor in (0,1)
@@ -59,7 +61,7 @@ class TRPO(object):
 
 ###### BEGIN: Appendix C
     '''
-        DONE UPDATE MU with stdev
+        DONE UPDATE MU with log_dev
 
         Computes the Jacobi-Matrix by doing the following steps
             1. Get the corrent policy model (currently one-layer linear NN - should be stochastic?!)
@@ -96,11 +98,11 @@ class TRPO(object):
         # For given state expected action w.r.t. the underlying model
         mu_actions = policy_net(states)
 
-        # Compute the coloumns of the Jacobi-Matrix + pad with size of STDEV
-        number_cols = sum(p.numel() for p in policy_net.parameters() + self.policy.stdev.size(0))
+        # Compute the coloumns of the Jacobi-Matrix + pad with size of log_dev
+        number_cols = sum(p.numel() for p in policy_net.parameters()) + self.policy.model.log_dev.size(0)
 
         # # TODO: Generalise for multi dimensional actions
-        # Anpassen mit stdev
+        # Anpassen mit log_dev
         Jacobi_matrix = np.zeros((mu_actions.size(1) * 2, number_cols))
 
 
@@ -130,12 +132,12 @@ class TRPO(object):
                 Jacobi_matrix[0,j:j + grad.size(0)] += grad
                 j += grad.size(0)
 
-            # Add the derivatives for the stdev which are ones because std is a theta-param
-            print("ASSERT: mu_actions.size(1) = self.policy.stdev.size(0) :: " mu_actions.size(1) == self.policy.stdev.size(0))
-            eye_matrix = np.eye(self.policy.stdev.size(0))
+            # Add the derivatives for the log_dev which are ones because std is a theta-param
+            assert (mu_actions.size(1) == self.policy.model.log_dev.size(0)) , "dimensions have to match"
+            eye_matrix = np.eye(self.policy.model.log_dev.size(0))
 
             # Füge die eye Matrix an die richtige Stelle (ganz unten rechts)
-            Jacobi_matrix[self.policy.stdev.size(0):,j:] = eye_matrix
+            Jacobi_matrix[self.policy.model.log_dev.size(0):,j:] = eye_matrix
 
             # for j in range(len(thetas)):
             #     grad = thetas[j].grad
@@ -154,9 +156,10 @@ class TRPO(object):
          - FIM: Fisher Information Matrix w.r.t. mean, i.e. the Matrix M in C.1
     '''
     def compute_FIM_mean(self):
-        inverse_vars = self.policy.log_dev.exp().pow(-2).detach().numpy()
-        fim = np.eye(self.policy.log_dev.size(0))
-        return fim
+        inverse_vars = self.policy.model.log_dev.exp().pow(-2).detach().numpy()
+        fim = np.eye(2 * self.policy.model.log_dev.size(0)) * np.append(inverse_vars, 0.5 * np.power(inverse_vars, 2))
+        print("FIM_mean = " , fim)
+        return np.matrix(fim)
 
     '''
     Parameter:
@@ -166,12 +169,12 @@ class TRPO(object):
      - thet_old
     '''
     def line_search(self, beta, delta, s, theta_old, states, actions, Q):
-        old_loss = loss_theta(self.policy, states, actions, Q)
-        dim_cov_matrix = theta_old.size(1)/2
-        covariance_matrix_old = torch.eye(sim_cov_matrix) *
-                theta_old[-dim_cov_matrix:, -dim_cov_matrix:]
+        old_loss = self.loss_theta(self.policy.pi_theta, states, actions, Q)
+        dim_cov_matrix = int(theta_old.size(1)/2)
+        covariance_matrix_old = torch.eye(dim_cov_matrix) * \
+                        theta_old[-dim_cov_matrix:, -dim_cov_matrix:]
         for i in range(1, 10):
-            theta_new = theta_old + beta * s
+            theta_new = theta_old + torch.tensor(beta, dtype = torch.float) * torch.tensor(s, dtype = torch.float)
 
             # Get the policy model (currently an one layer linear NN)
             policy_net = self.policy.model
@@ -181,7 +184,7 @@ class TRPO(object):
             policy_theta_new.update_policy_parameter(theta_new)
 
             '''
-                DONE UPDATE MU with stdev
+                DONE UPDATE MU with log_dev
             '''
             mean_new = torch.zeros(actions.shape[0], 2 * actions.shape[1]) # ist actions.shape[1] definiert?
             mean_old = torch.zeros(actions.shape[0], 2 * actions.shape[1]) # ist actions.shape[1] definiert?
@@ -193,13 +196,13 @@ class TRPO(object):
                 mean_old[i,:] = self.policy.q(s, a) # passt das von den Dimensionen?
 
             # hole covariance_matrix_new/old aus den korrigierten theta_old raus
-            covariance_matrix_new = torch.eye(dim_cov_matrix) *
+            covariance_matrix_new = torch.eye(dim_cov_matrix) * \
                             theta_new[-dim_cov_matrix:, -dim_cov_matrix:]
             delta_threshold = kl_normal_distribution(mean_new, mean_old, covariance_matrix_old, covariance_matrix_new)
 
             # Check if KL-Divergenz is <= delta
             if delta_threshold <= delta:
-                loss = loss_theta(policy_theta_new, states, actions, Q)
+                loss = self.loss_theta(policy_theta_new, states, actions, Q)
                 if loss < old_loss:
                     return policy_theta_new
             beta = pow(beta, -i)
@@ -249,7 +252,7 @@ class TRPO(object):
         to_opt.backward()
         parameters = list(self.policy.model.parameters())
 
-        number_cols = sum(p.numel() for p in self.policy.model.parameters())
+        number_cols = sum(p.numel() for p in self.policy.model.parameters()) + self.policy.model.log_dev.size(0) # size -> 0 oder 1
         # print("number_cols" , number_cols)
         g = np.zeros(number_cols)
         j = 0
@@ -257,7 +260,9 @@ class TRPO(object):
             grad_param = param.grad.view(-1)
             g[j: j + grad_param.size(0)] = grad_param
             j += grad_param.size(0)
+        g[j:] = self.policy.model.log_dev.grad # evtl. log_dev zum NN-Parameter machen
         print("g = ", g.shape)
+        print("g[71] = ", g[71])
         return g
 ########
     def beta(self, delta, s, A):

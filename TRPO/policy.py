@@ -19,26 +19,27 @@ class NN(object):
             torch.nn.Linear(inter_dim, self.a_dim),
         )
 
-        self.log_dev = torch.ones(self.a_dim, requires_grad=True) #see https://pytorch.org/docs/stable/notes/autograd.html
+        # Is a parameter and not a tensor ?! maybe update the following line!
+        self.model.log_dev = torch.nn.Parameter(torch.ones(self.a_dim, requires_grad=True)) #see https://pytorch.org/docs/stable/notes/autograd.html
 
 
         # choose action
     def choose_a(self, s):
         mu = self.model(torch.tensor(s)).detach().numpy() # Vektor für den action space
-        dev = np.exp(self.log_dev.detach().numpy()) # deviation
+        dev = np.exp(self.model.log_dev.detach().numpy()) # deviation
         return np.random.normal(mu, dev, 1)
 
     # pi_theta old
     def q(self, s, a):
         mu = self.model(torch.tensor(s, dtype = torch.float)).detach().numpy() # Vektor für den action space
-        dev = np.exp(self.log_dev.detach().numpy()) # deviation
+        dev = np.exp(self.model.log_dev.detach().numpy()) # deviation
         return norm.pdf(a, mu, dev) # ist auch multivariat
 
     # quasi pi_theta neu
     # von pytorch ausgerechnetete Wahrscheinlichkeit die man ableiten kann
     def pi_theta(self, s, a): #liefert das gleiche zurück wie q nur für torch interpretierbar, sodass diese Funktion optmiert werden kann
         mu = self.model(torch.tensor(s, dtype = torch.float)).double()
-        dev = torch.exp(self.log_dev).double()
+        dev = torch.exp(self.model.log_dev).double()
         covariance_matrix = dev * torch.eye(dev.shape[0]).double()
         # factor = 1/(torch.tensor(np.sqrt(2*np.pi))*dev)
         # exponent = -(torch.tensor(a).double()-mu.double()).pow(2)/(2*(dev.double().pow(2)))
@@ -58,24 +59,27 @@ class NN(object):
     '''
     def update_policy_parameter(self, theta_new):
 
+        theta_new = theta_new.view(-1) # we had [1, 73] but 1 was nonsense
+        print(theta_new.size())
+
         # split parameter for the desired model
         number_of_layers = len(self.model)
         j = 0 # get right position where we get the params from theta_new
         for i in range(number_of_layers):
-            size_weight = model[i].weight.size()
-            size_bias = model[i].bias.size()
+            size_weight = self.model[i].weight.size()
+            size_bias = self.model[i].bias.size()
 
-            no_weights = model[i].weight.nelement()
-            no_bias = model[i].bias.nelement()
+            no_weights = self.model[i].weight.nelement()
+            no_bias = self.model[i].bias.nelement()
             # get the new weights
             theta_new_weights = theta_new[j: j + no_weights]
             j += no_weights
             theta_new_bias = theta_new[j: j + no_bias]
             j += no_bias
 
-            model[i].weight = theta_new_weights.view(size_weight)
-            model[i].bias = theta_new_bias.view(size_bias)
+            self.model[i].weight.data = theta_new_weights.view(size_weight)
+            self.model[i].bias.data = theta_new_bias.view(size_bias)
 
-        self.log_dev = theta_new[j:] # update policy parameter
+        self.model.log_dev = theta_new[j:] # update policy parameter
 
         # new_nn_params = torch.nn.Parameters(theta_new)
