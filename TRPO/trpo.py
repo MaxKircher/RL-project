@@ -152,7 +152,11 @@ class TRPO(object):
         Computes the Fisher-Information Matrix (FIM)
         We choose the Gaussian-Distribution as our distribution of intrest. Therfore
         by Wiki https://de.wikipedia.org/wiki/Fisher-Information?oldformat=true we obtain
-        a simple computable FIM
+        a simple computable FIM - Macht keinen Sinn, da wir Multivariat sind!
+
+        https://en.wikipedia.org/wiki/Fisher_information#Multivariate_normal_distribution
+            MACHEN DAS SO, Wobei alle nichtdiagonalelemente per Default 0 sind
+
         Returns:
          - FIM: Fisher Information Matrix w.r.t. mean, i.e. the Matrix M in C.1
     '''

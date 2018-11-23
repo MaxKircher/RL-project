@@ -1,3 +1,51 @@
 - det Kovarianzmatrix ist negativ das darf nicht sein, da wir eine Diagonalmatrix haben
  und Varianzen positiv sind
 - Wir müssen auch die alte Kovarianzmatrix updaten und nicht lassen wie sie war
+- Sollten wir bei Single Path eine Tabelle anlegen mit gespeicherten Werten für rewards, actions,
+  states und probabilities?
+- Wir schätzen nur Eerwartungswert und Varianz. Den EW über das NN und die Varianz würde
+  ich seperat betrachten und über ML schätzen also mit siehe https://de.wikipedia.org/wiki/Maximum-Likelihood-Methode#Stetige_Verteilung,_kontinuierlicher_Parameterraum
+  bzw. für multivaraite Verteilung: https://www.cs.cmu.edu/~epxing/Class/10701-08s/recitation/gaussian.pdf
+- Wir müssen aufpassen das wir die normalverteilung mit exp(log_dev) aufrufen!
+- Wenn die s schreiben dann meinen die die Menge von states
+- Wir müssen noch Q richtig implementieren (siehe Kommentar policy (d->))
+- Wir sollten bei 14 so vorgehen
+  - backpropagation für Erwaruntswert
+  - ML Schätzer für Varianz und dafür Teilen wir die beiden Normalverteilung und bneutzen dann di
+    Formel für den ML Schätzer
+- Vorschlag für 14:
+  1. Erst ML-Var bestimmen
+  2. dann mit pi_theta wo die ML-Var drin ist unser ML-Sampling machen
+      Subject to mit der Wikipedia Formel erstmal ignorieren
+  3. Dann Backprop. für die Erwartungswerte
+      Subject to mit der Wikipedia Formel, wobei hier dann sigma_1 = sigma_2
+      erstmal ignorieren
+  4. Unser g = tensor(backprob , varianz)
+  5. Appendix C und C.1 Berechnungen
+      ABER M = https://en.wikipedia.org/wiki/Fisher_information#Multivariate_normal_distribution
+              MACHEN DAS SO, Wobei alle nichtdiagonalelemente per Default 0 sind
+
+              Mit a meinen die Mean
+              Mit b meinen die Varianz
+
+              
+  6. Die Line-Search würde ich dann so machen
+      a. Berechne beta
+      b. Prüfe ob die "wahre" KL mit dem wert theta + beta_s bezgl. unserer Verteilungen kleiner Delta ist
+      c. Ja, dann mache den Update unter Formel (17) - fertig
+      d. Nein - verkleiner beta exponentiell und beginne bei b.
+
+  7. Wenn wir das alles richtig gemacht haben sollten wir unsere Policy verbessert haben BASTA.
+    Dann starten wir einfach wieder von vorne usw.
+
+WIR HABEN IMMER MULTIVARIATE NORMAL! Weil mu multivariat ist, fals a_dim = 1 dann ist Sigma 1x1-Matrix!
+
+
+
+Erklärungen zu FIM
+- https://wiseodd.github.io/techblog/2018/03/11/fisher-information/
+- https://arxiv.org/pdf/1705.01064.pdf
+
+Das Aus Appendix C würde ich dann machen, nachdem wir g mit den beiden obigen GETRENNTEN
+Schritten bestimmt haben. Und für die obigen schritte würde ich wie vorgeschlagen jeweils
+separat prüfen ob wir die Subj. einhalten.

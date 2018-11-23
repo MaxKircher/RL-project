@@ -5,7 +5,38 @@ from scipy.stats import norm
 class NN(object):
 
     '''
-        The last theta parameters (exactly the last action_space.dim) are for standard deviation
+        Parameter:
+            - model:    Linear neural network:
+                         - 4 Layers with 1 hidden layer:
+                            1. Input-Layer of dimension s_dim
+                            2. Intermediate-Layer of dimension inter_dim - (Hidden layer)
+                            3. Activation function (counts to layer)
+                            4. Outpout-Layer of dimension a_dim
+
+                - We specify the logarithmic standard deviation log_dev as Parameter of the
+                  model. With requires_grad=True we ensure that gradients are computed
+                - Init log_dev with unitary matrix E_n, where n = a_dim, because we have a
+                  stochastic policy, hence:
+                    a-> Querying our linear NN with a state x, it returns an expectation value for an action
+                    b-> This value is used in our stochastic policy pi_theta(-) to determine the probability
+                       given state x and the expectation value for the action a; how probable (wie wahrscheinlich)
+                       is it that we would choose state a, i.e. pi_theta(a|x)
+                        |-> Where the theta in our stochastic policy contains:
+                            a. the weights of our linear NN
+                            b. the bias of our linear NN
+                            c. the variable std_dev, which is by DEFAULT the last elements in the
+                               tensor of the variables theta
+                            NB: a + b = MEAN and c = log(VAR)
+                    c-> We then pass the expected action x computed in (a->) to the environment, i.e. env.step(a)
+                        and get an reward r
+                    d-> We use the information of (c->) and (b->) to compute the values for Q_pi as stated
+                        in 5.1 and above formula 1 in the paper, where
+                            Q_pi(s_t,a_t) = sum{pi_theta(a_t|s_t)*gamma*r(s_t)} (+ see 5.1. Single Path)
+                            Die Summe sum beginnt bei t und endet bei N die Anzahl unserer Sample
+                        to determine our objective L := L_{pi_theta_old}(pi_theta_new) (wich is specified in formula 14)
+                    e-> Finally we maximize L w.r.t. theta to get our updated parameter
+                    f-> Start at (a->) with the updated parameter and continue until convergence
+                            NB: The updated variance defines our certainty
     '''
     def __init__(self, s_dim, a_dim):
         self.s_dim = s_dim
