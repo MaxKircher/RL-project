@@ -22,3 +22,6 @@ WIR HABEN IMMER MULTIVARIATE NORMAL! Weil mu multivariat ist
 Erklärungen zu FIM
 - https://wiseodd.github.io/techblog/2018/03/11/fisher-information/
 - https://arxiv.org/pdf/1705.01064.pdf
+
+https://github.com/HIPS/autograd/blob/master/examples/gmm.py für TRPO
+http://www.jmlr.org/papers/volume15/wierstra14a/wierstra14a.pdf 3.3 Rotationally Symmetric Distributions
