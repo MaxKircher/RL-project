@@ -57,6 +57,8 @@ class TRPO(object):
 
         ''' TODO: list(Params) ist die Varianz der erste oder letzte Eintrag? '''
         ''' TODO: Ist der entsprechende Gradient auch Null??? '''
+        ''' TODO: Wenns korrekt läuft in Policy auslagern '''
+
 
         # TODO: Generalise for multi dimensional actions, because of unclearness w.r.t. to M Matrix (the FIM for mu)
         # Two rows for expectation and stdev
@@ -194,16 +196,8 @@ class TRPO(object):
         self.policy.model.zero_grad()
         to_opt = self.loss_theta(self.policy.pi_theta, states, actions, Q)
         to_opt.backward()
-        parameters = list(self.policy.model.parameters())
-
-        number_cols = sum(p.numel() for p in self.policy.model.parameters())
-        # print("number_cols" , number_cols)
-        g = np.zeros(number_cols)
-        j = 0
-        for param in parameters:
-            grad_param = param.grad.view(-1)
-            g[j: j + grad_param.size(0)] = grad_param
-            j += grad_param.size(0)
+        
+        g = self.policy.get_gradients_as_tensor()
         print("g.shape = ", g.shape)
         return g
 

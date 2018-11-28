@@ -90,3 +90,27 @@ class NN(object):
         # keine negativen Varianzen, da wir den logarithmus speichern
         # print(torch.max(torch.zeros(self.model.log_std.size()),theta_new[j:]))
         self.model.log_std.data = theta_new[j:]
+
+    def get_parameter_as_tensor(self):
+        parameters = list(self.model.parameters())
+        number_cols = sum(p.numel() for p in self.model.parameters())
+        theta = torch.zeros(self.a_dim, number_cols)
+
+        j = 0
+        for param in parameters:
+            theta[:,j: j + param.nelement()] = param.view(self.a_dim, -1)
+            j += param.nelement()
+
+        return theta
+
+    def get_gradients_as_tensor(self):
+        parameters = list(self.model.parameters())
+        number_cols = sum(p.numel() for p in self.model.parameters())
+        gradient = torch.zeros(self.a_dim, number_cols)
+
+        j = 0
+        for param in parameters:
+            gradient[:,j: j + param.nelement()] = param.grad.view(self.a_dim, -1)
+            j += param.nelement()
+
+        return gradient

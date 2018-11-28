@@ -29,22 +29,13 @@ print("dim(A): 2x2 < ", A.shape)
 s = np.linalg.lstsq(A, g)[0]
 beta = trpo.beta(0.01, np.matrix(s).T, A)
 
-parameters = list(policy.model.parameters())
-number_cols = sum(p.numel() for p in policy.model.parameters())
-theta_old = torch.zeros(a_dim, number_cols)
-
-j = 0
-for param in parameters:
-    theta_old[:,j: j + param.nelement()] = param.view(a_dim, -1)
-    j += param.nelement()
+theta_old = policy.get_parameter_as_tensor()
 
 policy_theta_new = trpo.line_search(beta, 0.1, s, theta_old, states, actions, Q)
 
-# theta_new_parameter = policy_theta_new.parameters()
-# param_delta = ()
+theta_new = policy_theta_new.get_parameter_as_tensor()
+
+# Correct forumla and does it work?
+delta = (theta_new - theta_old) / theta_old
 
 print("Relative change of parameter = ", delta)
-
-'''
-    Mehrdimensionale Action Spaces
-'''
