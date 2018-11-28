@@ -19,15 +19,15 @@ trpo = TRPO(env, gamma, policy)
 states, actions, Q = sample_sp(policy, s0, 1000, env, gamma)
 g = trpo.compute_loss_gradients(states, actions, Q)
 
-JM = trpo.compute_Jacobian(states)
-FIM = trpo.compute_FIM_mean()
+JM = np.matrix(trpo.compute_Jacobian(states))
+FIM = np.matrix(trpo.compute_FIM_mean())
 
 A = JM.T * FIM * JM # where A is the FIM w.r.t. to the Parameters theta see C
 print("dim(A): 2x2 < ", A.shape)
 
 # TODO: Als conjugate gradient schreiben
-s = np.linalg.lstsq(A, g)[0]
-beta = trpo.beta(0.01, np.matrix(s).T, A)
+s = np.linalg.lstsq(A, g.transpose(0,1))[0]
+beta = trpo.beta(0.01, np.matrix(s), A)
 
 theta_old = policy.get_parameter_as_tensor()
 

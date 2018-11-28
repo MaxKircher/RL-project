@@ -7,3 +7,5 @@
 - Überall hinzufügen in welchem Format eine Variable ist Numpy vs. Torch
 - Kontakt mit Boris aufnehmen falls dim(action_space) > 1, damit wir eine Para-
   metrisierung für die FIM bekommen.
+
+- line_search: Wie reduzieren wir beta?

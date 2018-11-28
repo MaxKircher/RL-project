@@ -1,9 +1,7 @@
 import torch
 import numpy as np
 from scipy.stats import multivariate_normal
-
 class NN(object):
-
     '''
         Parameter:
             - model:    Linear neural network:
@@ -16,7 +14,6 @@ class NN(object):
     def __init__(self, s_dim, a_dim):
         self.s_dim = s_dim
         self.a_dim = a_dim
-
         inter_dim = 10
         self.model = torch.nn.Sequential( # neuronale Netzwerk
             torch.nn.Linear(self.s_dim, inter_dim), #Applies a linear transformation to the incoming data
@@ -24,8 +21,8 @@ class NN(object):
             torch.nn.ReLU(), # Activation functeion, see rectified linear unit
             torch.nn.Linear(inter_dim, self.a_dim),
         )
-
         # std = pow(e, lambda) -> lambda = log(std)
+        ''''IS BY DEFAULT FIRST PARAMETER'''
         self.model.log_std = torch.nn.Parameter(torch.ones(self.a_dim, requires_grad=True))
 
     def get_covariance_matrix_numpy(self):
@@ -70,7 +67,7 @@ class NN(object):
         # split parameter for the desired model
         number_of_layers = len(self.model)
         j = 0 # get right position where we get the params from theta_new
-        for i in range(number_of_layers):
+        for i in range(self.a_dim, number_of_layers):
 
             if type(self.model[i]) == torch.nn.modules.linear.Linear:
                 size_weight = self.model[i].weight.size()
@@ -89,7 +86,7 @@ class NN(object):
 
         # keine negativen Varianzen, da wir den logarithmus speichern
         # print(torch.max(torch.zeros(self.model.log_std.size()),theta_new[j:]))
-        self.model.log_std.data = theta_new[j:]
+        self.model.log_std.data = theta_new[:self.a_dim]
 
     def get_parameter_as_tensor(self):
         parameters = list(self.model.parameters())

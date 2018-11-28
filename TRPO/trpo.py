@@ -52,11 +52,10 @@ class TRPO(object):
         # For given state expected action w.r.t. the underlying model
         mu_actions = policy_net(states)
 
-        # Compute the coloumns of the Jacobi-Matrix + pad with size of log_dev
+        # Compute the coloumns of the Jacobi-Matrix + pad with size of log_std
         number_cols = sum(p.numel() for p in policy_net.parameters())
 
-        ''' TODO: list(Params) ist die Varianz der erste oder letzte Eintrag? '''
-        ''' TODO: Ist der entsprechende Gradient auch Null??? '''
+        ''' TODO: Ist Jacobi_matrix[0,0] = 0 ??? '''
         ''' TODO: Wenns korrekt läuft in Policy auslagern '''
 
 
@@ -83,9 +82,9 @@ class TRPO(object):
                 Jacobi_matrix[0,j:j + grad.size(0)] += grad
                 j += grad.size(0) # see TODO: Hopefully the last entry of the first row is 0
 
-            # Add the derivatives for the log_dev which are ones because std is a theta-param
-            assert (mu_actions.size(1) == self.policy.model.log_dev.size(0)) , "dimensions have to match"
-            Jacobi_matrix[1, number_cols] = 1 # vs number_cols - 1
+            # Add the derivatives for the log_std which are ones because std is a theta-param
+            assert (mu_actions.size(1) == self.policy.model.log_std.size(0)) , "dimensions have to match"
+            Jacobi_matrix[1, 0] = 1
 
         return Jacobi_matrix
 
@@ -101,7 +100,7 @@ class TRPO(object):
          - FIM: Fisher Information Matrix w.r.t. mean, i.e. the Matrix M in C.1
     '''
     def compute_FIM_mean(self):
-        inverse_vars = self.policy.model.log_dev.exp().pow(-2).detach().numpy()
+        inverse_vars = self.policy.model.log_std.exp().pow(-2).detach().numpy()
         fim = np.diag(np.append(inverse_vars, 0.5 * np.power(inverse_vars, 2)))
         return fim
 
@@ -131,6 +130,8 @@ class TRPO(object):
             policy_theta_new = copy.deepcopy(self.policy)
             policy_theta_new.update_policy_parameter(theta_new)
 
+            print("log_std of new policy", policy_theta_new.model.log_std)
+
             '''
                 Preprocessing to compute the KL-Divergence
             '''
@@ -145,6 +146,14 @@ class TRPO(object):
 
             # hole covariance_matrix_new/old aus den korrigierten theta_old raus
             covariance_matrix_new = policy_theta_new.get_covariance_matrix_numpy()
+            if np.isinf(covariance_matrix_new[0,0]):
+                covariance_matrix_new[0,0] = 20
+            elif covariance_matrix_new[0,0] == 0:
+                covariance_matrix_new[0,0] = 1
+
+            print("cov old = ", covariance_matrix_old)
+            print("cov new = ", covariance_matrix_new)
+
             delta_threshold = self.kl_normal_distribution(mean_new, mean_old, covariance_matrix_old, covariance_matrix_new)
 
             # Check if KL-Divergenz is <= delta
@@ -152,7 +161,8 @@ class TRPO(object):
                 loss = self.loss_theta(policy_theta_new.pi_theta, states, actions, Q)
                 if loss < old_loss:
                     return policy_theta_new
-            beta = pow(beta, -i)
+            beta = beta / 2 # How to reduce beta?
+            print("beta = ", beta)
 
         print("Something went wrong!")
         return Null
@@ -166,19 +176,20 @@ class TRPO(object):
         Forumla: https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence#Multivariate_normal_distributions
     '''
     def kl_normal_distribution(self, mu_new, mu_old, covariance_matrix_old, covariance_matrix_new):
+        mu_new = mu_new.detach().numpy()
+        mu_old = mu_old.detach().numpy()
+        trace = np.trace(np.linalg.inv(covariance_matrix_new) * covariance_matrix_old)
 
-        trace = torch.trace(torch.inverse(covariance_matrix_new) * covariance_matrix_old)
-
-        # print((mu_new - mu_old).size(), " ", torch.inverse(covariance_matrix_new).size(), " ", (mu_new - mu_old).transpose(1,0).size())
-        scalar_product = (mu_new - mu_old) * torch.inverse(covariance_matrix_new) * (mu_new - mu_old).transpose(1,0)
-        k = mu_new.size(1) # richtiger Eintrag?
-        ln = torch.log(torch.det(covariance_matrix_new) / torch.det(covariance_matrix_old))
+        print("scalar_product dimensions: ", (mu_new - mu_old).shape, " ", np.linalg.inv(covariance_matrix_new).shape, " ", (mu_new - mu_old).T.shape)
+        scalar_product = (mu_new - mu_old) * np.linalg.inv(covariance_matrix_new) * (mu_new - mu_old).T
+        k = mu_new.shape[1] # richtiger Eintrag?
+        ln = np.log(np.linalg.det(covariance_matrix_new) / np.linalg.det(covariance_matrix_old))
         # print("det(cov_new) = ", torch.det(covariance_matrix_new))
         # print("det(cov_old) = ",torch.det(covariance_matrix_old))
         print("ln part of KL (to see if covariance matrix are valid) = ", ln) # to determine if covariance matrix entries are valid
         # print("k = mu_new.size(1) = ", k)
 
-        delta_threshold = 0.5 * (trace + torch.trace(scalar_product) / mu_new.size(0) - k + ln)
+        delta_threshold = 0.5 * (trace + np.trace(scalar_product) / mu_new.shape[0] - k + ln)
         print("delta threshold = ", delta_threshold)
         return delta_threshold
 
@@ -196,7 +207,7 @@ class TRPO(object):
         self.policy.model.zero_grad()
         to_opt = self.loss_theta(self.policy.pi_theta, states, actions, Q)
         to_opt.backward()
-        
+
         g = self.policy.get_gradients_as_tensor()
         print("g.shape = ", g.shape)
         return g
