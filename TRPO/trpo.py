@@ -120,7 +120,7 @@ class TRPO(object):
         old_loss = self.loss_theta(self.policy.pi_theta, states, actions, Q)
         covariance_matrix_old = self.policy.get_covariance_matrix_numpy() # TODO: Make sure that we still have the old Params in the model!!!
 
-        for i in range(1, 10):
+        for i in range(1, 100):
             # print(beta.shape , " ", theta_old.view(-1).size(), " ", torch.tensor(s, dtype = torch.float).size())
 
             # Save updated for policy parameter in variable theta_new
@@ -130,7 +130,7 @@ class TRPO(object):
             policy_theta_new = copy.deepcopy(self.policy)
             policy_theta_new.update_policy_parameter(theta_new)
 
-            print("log_std of new policy", policy_theta_new.model.log_std)
+            # print("log_std of new policy", policy_theta_new.model.log_std)
 
             '''
                 Preprocessing to compute the KL-Divergence
@@ -151,8 +151,8 @@ class TRPO(object):
             elif covariance_matrix_new[0,0] == 0:
                 covariance_matrix_new[0,0] = 1
 
-            print("cov old = ", covariance_matrix_old)
-            print("cov new = ", covariance_matrix_new)
+            # print("cov old = ", covariance_matrix_old)
+            # print("cov new = ", covariance_matrix_new)
 
             delta_threshold = self.kl_normal_distribution(mean_new, mean_old, covariance_matrix_old, covariance_matrix_new)
 
@@ -161,11 +161,11 @@ class TRPO(object):
                 loss = self.loss_theta(policy_theta_new.pi_theta, states, actions, Q)
                 if loss < old_loss:
                     return policy_theta_new
-            beta = beta / 2 # How to reduce beta?
-            print("beta = ", beta)
+            beta = beta * np.exp(-0.5 * i) # beta / 2 # How to reduce beta?
+            print("beta = ", beta, "iteration = ", i)
 
         print("Something went wrong!")
-        return Null
+        return None
 
     '''
         Computes the KL w.r.t. to a multivariat Gaussian for given normal distri-
