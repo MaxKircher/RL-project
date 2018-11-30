@@ -35,7 +35,7 @@ class OPTIMIZATION(object):
         f = etha *  np.linalg.inv(self.Q) * self.b + self.r
 
         # Our objective Function g, see Chapter 2.2
-        g = etha * self.epsilon - self.beta * self.omega + .5 * (f.T * F * f \
+        g = etha * self.epsilon - self.beta * omega + .5 * (f.T * F * f \
                 - etha * self.b.T *  np.linalg.inv(self.Q) * self.b \
                 - etha * np.log(2 * np.pi *  np.linalg.det(self.Q)) \
                 + (etha + omega) * np.log(np.linalg.det(2 * np.pi * (etha + omega) * F)))

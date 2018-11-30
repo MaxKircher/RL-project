@@ -102,11 +102,24 @@ def compute_quadratic_surrogate(beta_hat, d):
     R_param = beta_hat[:int(d*(d+1)/2) ]
     r = beta_hat[int(d*(d+1)/2) : int(d*(d+1)/2 + d)]
     r0 = beta_hat[int(d * (d+1)/2 + d) - 1]
-
     # Construct R matrix
-    x = int(d*(d+1)/2)
     R_param = np.asarray(R_param)
-    R = R_param.reshape(x,1) @ R_param.reshape(1,x)
-    print(R_param.shape)
+    R = np.eye(11)
+
+    j = 0
+    k = 0
+    for i in range(R_param.shape[0]):
+        if k < d:
+            R[j,k] = R_param[i]
+            R[k,j] = R[j,k]
+            k += 1
+        else:
+            j += 1
+            k = j
+            R[j,k] = R_param[i]
+            R[k,j] = R[j,k]
+            k += 1
+
+    # print(R - R.T) # if it's not a Null-Matrix, something went wrong
 
     return R, r, r0
