@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.optimize import minimize
-import torch
+
 
 '''
     Use: https://en.wikipedia.org/wiki/Sequential_quadratic_programming
@@ -31,21 +31,29 @@ class OPTIMIZATION(object):
         self.b = self.b.reshape(self.b.size, 1)
         self.r = self.r.reshape(self.r.size, 1)
 
-        F = (etha * np.linalg.inv(self.Q) - 2 *  np.linalg.inv(self.R))
-        f = etha *  np.linalg.inv(self.Q) * self.b + self.r
+        F = etha * np.linalg.inv(self.Q) - 2 * np.linalg.inv(self.R)
+        f = etha *  np.linalg.inv(self.Q) @ self.b + self.r
 
         # Our objective Function g, see Chapter 2.2
-        g = etha * self.epsilon - self.beta * omega + .5 * (f.T * F * f \
-                - etha * self.b.T *  np.linalg.inv(self.Q) * self.b \
+        g = etha * self.epsilon - self.beta * omega + .5 * (f.T @ F @ f \
+                - etha * self.b.T @  np.linalg.inv(self.Q) @ self.b \
                 - etha * np.log(2 * np.pi *  np.linalg.det(self.Q)) \
                 + (etha + omega) * np.log(np.linalg.det(2 * np.pi * (etha + omega) * F)))
 
-        return g
+        return g[0,0]
 
     '''
         F needs to be positive definite (det(F) > 0)
     '''
     def constraint(self, x):
         etha = x[0]
-        F = (etha * np.linalg.inv(self.Q) - 2 *  np.linalg.inv(self.R)) - 1e-10
+        F = np.linalg.det(etha * np.linalg.inv(self.Q) - 2 *  np.linalg.inv(self.R)) - 1e-10
         return F
+
+    '''
+        Constraint übergeben?
+    '''
+    def SLSQP(self, x0):
+        cons = {'type': 'ineq', 'fun': self.constraint}
+        soloution = minimize(self.objective, x0, method = 'SLSQP',constraints = cons)
+        return soloution

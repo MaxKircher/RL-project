@@ -59,5 +59,7 @@ R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
 
 opti = OPTIMIZATION(dev, mu, R, r, 1, 1)
 x0 = np.ones(2) # starting point for etha and omega
-g = opti.objective(x0)
+g = opti.objective(x0) # Entweder ca. 560 oder nan
 print("g = ", g)
+sol = opti.SLSQP(x0)
+print(sol) # print(sol.fun) print(sol.x) for specific information
