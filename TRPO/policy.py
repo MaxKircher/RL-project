@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 from scipy.stats import multivariate_normal
+
 class NN(object):
     '''
         Parameter:

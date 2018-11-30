@@ -1,10 +1,11 @@
 import numpy as np
+import torch
 
 '''
     Class that should contains diffrent policies
     Currently:
      - Polynomial policy of degree N
-     - TODO: Neuronal Network
+     - Neuronal Network
 '''
 class POLICY(object):
 
@@ -17,6 +18,18 @@ class POLICY(object):
         self.state_dim = state_dim
         self.action_dim = action_dim
         self.polynomial_degree = polynomial_degree
+
+        # init NN
+        inter_dim_1 = 10
+        # inter_dim_2 = 10
+        self.nn_model = torch.nn.Sequential(
+            torch.nn.Linear(self.state_dim, inter_dim_1),
+            torch.nn.Sigmoid(),
+            # torch.nn.Linear(inter_dim_1, inter_dim_2),
+            # torch.nn.Sigmoid(),
+            torch.nn.Linear(inter_dim_1, self.action_dim),
+        )
+
 
     '''
         thetas:
@@ -50,3 +63,7 @@ class POLICY(object):
             action += np.dot(self.thetas[i],np.power(states, i))
 
         return action
+
+##### For the NN
+    def set_theta_NN(self, thetas):
+        return None

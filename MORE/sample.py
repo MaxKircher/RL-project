@@ -27,9 +27,8 @@ class SAMPLE(object):
         sample corresponds to the function pi in the paper. It samples values for theta
         that should optimize our objective function R_theta
 
-        N_per_theta:        sample N values for theta_i
-        number_of_thetas:   number of unknown parameter theta_i for i = 1, 2, ... number_of_thetas
-                            where dim(theta_i) = state_dim
+        N_per_theta:        Query the env N times with this set of Thetas
+        number_of_thetas:   number of theta-sample sets
 
         Returns:
          - rewards: Is a list where the i-th entry corresponds to the average reward of the i-th theta_i
@@ -39,13 +38,6 @@ class SAMPLE(object):
         rewards = []
         thetas = []
 
-        '''
-            First loop:
-             - For theta_j sample N values for theta (this is done in the second loop)
-             - Compute the average reward
-             - Store average reward of theta_j in rewards[j]
-             - Correspondingly store theta_j in thetas[j]
-        '''
         for j in range(number_of_thetas):
             # theta is a numpy matrix and needs to be transformed in desired list format
             theta =  np.random.multivariate_normal(self.mu, self.dev)
@@ -58,17 +50,12 @@ class SAMPLE(object):
             reward = 0
             s = self.env.reset()
 
-            '''
-                Second loop:
-                 - Sample N values for theta
-                 - Compute action a with policy
-                 - Update parameter
-            '''
             for i in range(N_per_theta):
                 a = self.policy.polynomial_policy(s)
-                s, r, d, i = self.env.step(a)
+                s, r, d, i = self.env.step(np.asarray(a))
                 reward += r
-
+                if d:
+                    s = self.env.reset()
 
             avg_reward = reward / N_per_theta
             rewards += [avg_reward]

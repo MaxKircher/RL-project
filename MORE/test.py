@@ -3,11 +3,12 @@ import gym
 import quanser_robots
 from policy import *
 from sample import *
-from regression import linear_regression # , X
+from regression import * # , X
+from optimization import *
 
 env = gym.make('CartpoleStabShort-v0')
-state_dim = env.observation_space.shape[0]
-action_dim = env.action_space.shape[0]
+state_dim = env.observation_space.shape[0] # = 5
+action_dim = env.action_space.shape[0] # = 1
 
 '''
     Policy is a polynomial p of degree 2, i.e.: a_2*x² + a_1*x + a_0
@@ -51,5 +52,12 @@ rewards, thetas = sample_generator.sample(10, 3)
     # TODO: return R² (Maß für die Anpassungsgüte) -> see regression
 '''
 #X = X(thetas)
-beta = linear_regression(thetas, rewards)
-print("beta: ", beta.shape)
+beta_hat = linear_regression(thetas, rewards)
+print("beta: ", beta_hat.shape)
+print("d = ", np.asarray(thetas).shape[1])
+R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
+
+opti = OPTIMIZATION(dev, mu, R, r, 1, 1)
+x0 = np.ones(2) # starting point for etha and omega
+g = opti.objective(x0)
+print("g = ", g)
