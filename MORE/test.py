@@ -2,9 +2,10 @@ import numpy as np
 import gym
 import quanser_robots
 from policy import *
-from sample import *
-from regression import * # , X
-from optimization import *
+# from sample import *
+# from regression import * # , X
+# from optimization import *
+from MORE_iteration import *
 
 env = gym.make('CartpoleStabShort-v0')
 state_dim = env.observation_space.shape[0] # = 5
@@ -38,39 +39,38 @@ dev[10,10] = 1E-15
 # Set quadratic policy
 policy = POLICY(state_dim, action_dim, degree)
 
-# Initalize sample generator
-sample_generator = SAMPLE(env, policy)
+iterator = MORE(0.1, policy, env)
 
-# Generate samles for our policy
-rewards, thetas = sample_generator.sample(10, 3,  np.random.multivariate_normal, mu, dev)
+# setting reward 0 is always a bad idea..
+thetas = iterator.iterate(0, dev, mu)
+print("worked so far.")
 
-'''
-    Do linear regression
-    rewards = X*beta
-
-    Returns: beta
-    # TODO: return R² (Maß für die Anpassungsgüte) -> see regression
-'''
-#X = X(thetas)
-beta_hat = linear_regression(thetas, rewards)
-print("beta: ", beta_hat.shape)
-print("d = ", np.asarray(thetas).shape[1])
-R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
-
-opti = OPTIMIZATION(dev, mu, R, r, 1, 1)
-x0 = np.ones(2) # starting point for etha and omega
-g = opti.objective(x0) # Entweder ca. 560 oder nan
-print("g = ", g)
-sol = opti.SLSQP(x0)
-print(sol) # print(sol.fun) print(sol.x) for specific information
-
-# Update pi
-etha = 1 # sol.x[0]
-omega = 0 # sol.x[1]
-F = np.linalg.inv(etha * np.linalg.inv(dev) - 2*R)
-f = etha * np.linalg.inv(dev) @ mu + r
-
-mu_new, dev_new = opti.update_pi(F, f, etha, omega)
-
-rewards, thetas = sample_generator.sample(10, 3, np.random.multivariate_normal, mu_new, dev_new)
-print("update worked")
+# # Initalize sample generator
+# sample_generator = SAMPLE(env, policy)
+#
+# # Generate samles for our policy
+# rewards, thetas = sample_generator.sample(10, 3,  np.random.multivariate_normal, mu, dev)
+#
+# #X = X(thetas)
+# beta_hat = linear_regression(thetas, rewards)
+# print("beta: ", beta_hat.shape)
+# print("d = ", np.asarray(thetas).shape[1])
+# R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
+#
+# opti = OPTIMIZATION(dev, mu, R, r, 1, 1)
+# x0 = np.ones(2) # starting point for etha and omega
+# g = opti.objective(x0) # Entweder ca. 560 oder nan
+# print("g = ", g)
+# sol = opti.SLSQP(x0)
+# print(sol) # print(sol.fun) print(sol.x) for specific information
+#
+# # Update pi
+# etha = 1 # sol.x[0]
+# omega = 0 # sol.x[1]
+# F = np.linalg.inv(etha * np.linalg.inv(dev) - 2*R)
+# f = etha * np.linalg.inv(dev) @ mu + r
+#
+# mu_new, dev_new = opti.update_pi(F, f, etha, omega)
+#
+# rewards, thetas = sample_generator.sample(10, 3, np.random.multivariate_normal, mu_new, dev_new)
+# print("update worked")
