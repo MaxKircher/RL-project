@@ -1,1 +1,0 @@
-#Einfaches Optimierungsproblem lösen
