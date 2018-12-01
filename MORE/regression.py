@@ -68,7 +68,7 @@ def __X__(thetas):
         phi_theta_i = __phi__(thetas[i])
         phi_theta_i_m = np.array([phi_theta_i])
         X = np.append(X, phi_theta_i_m, 0)
-        # print("X: " ,X.shape)
+    print("X: " ,X.shape)
     return X
 
 '''
@@ -96,6 +96,7 @@ def R_squared():
 
 '''
     Reconstruct R Matrix from beta_hat
+    NB: for polynomial_policy 11
 '''
 def compute_quadratic_surrogate(beta_hat, d):
 
@@ -104,7 +105,7 @@ def compute_quadratic_surrogate(beta_hat, d):
     r0 = beta_hat[int(d * (d+1)/2 + d) - 1]
     # Construct R matrix
     R_param = np.asarray(R_param)
-    R = np.eye(11)
+    R = np.eye(d)
 
     j = 0
     k = 0

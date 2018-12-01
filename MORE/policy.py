@@ -21,13 +21,13 @@ class POLICY(object):
 
         # init NN
         inter_dim_1 = 10
-        # inter_dim_2 = 10
+        inter_dim_2 = 10
         self.nn_model = torch.nn.Sequential(
             torch.nn.Linear(self.state_dim, inter_dim_1),
             torch.nn.Sigmoid(),
-            # torch.nn.Linear(inter_dim_1, inter_dim_2),
-            # torch.nn.Sigmoid(),
-            torch.nn.Linear(inter_dim_1, self.action_dim),
+            torch.nn.Linear(inter_dim_1, inter_dim_2),
+            torch.nn.Sigmoid(),
+            torch.nn.Linear(inter_dim_2, self.action_dim),
         )
 
 
@@ -65,5 +65,30 @@ class POLICY(object):
         return action
 
 ##### For the NN
-    def set_theta_NN(self, thetas):
-        return None
+    def nn_policy(self, states):
+        action = self.nn_model(torch.tensor(states)).detach().numpy()
+        return action
+
+    def set_theta_NN(self, theta_new):
+        theta_new = theta_new.view(-1)
+        # print(theta_new.size())
+
+        # split parameter for the desired model
+        number_of_layers = len(self.nn_model)
+        j = 0 # get right position where we get the params from theta_new
+        for i in range(self.action_dim, number_of_layers):
+
+            if type(self.nn_model[i]) == torch.nn.modules.linear.Linear:
+                size_weight = self.nn_model[i].weight.size()
+                size_bias = self.nn_model[i].bias.size()
+
+                no_weights = self.nn_model[i].weight.nelement()
+                no_bias = self.nn_model[i].bias.nelement()
+                # get the new weights
+                theta_new_weights = theta_new[j: j + no_weights]
+                j += no_weights
+                theta_new_bias = theta_new[j: j + no_bias]
+                j += no_bias
+
+                self.nn_model[i].weight.data = theta_new_weights.view(size_weight)
+                self.nn_model[i].bias.data = theta_new_bias.view(size_bias)

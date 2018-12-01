@@ -32,37 +32,45 @@ class SAMPLE(object):
         N_per_theta:        Query the env N times with this set of Thetas
         number_of_thetas:   number of theta-sample sets
         pi:                 The probability distribution to be sampled from
+        policy_id:          String to handle diffrent policies
 
         Returns:
          - rewards: Is a list where the i-th entry corresponds to the average reward of the i-th theta_i
          - thetas:  Is a list where the i-th entry is a random value returned from the multivariate Gaussian
     '''
-    def sample(self, N_per_theta, number_of_thetas, pi, mu, dev):
+    def sample(self, N_per_theta, number_of_thetas, pi, mu, dev, policy_id):
         rewards = []
         thetas = []
 
         for j in range(number_of_thetas):
             # theta is a numpy matrix and needs to be transformed in desired list format
             theta = pi(mu, dev)
-
-            # transforms theta into the desired list format
-            theta_transformed = self.theta_as_list(theta, self.state_dim)
-
-            # Preprocessing for the second loop
-            self.policy.set_theta(theta_transformed)
             reward = 0
             s = self.env.reset()
 
             for i in range(N_per_theta):
-                a = self.policy.polynomial_policy(s)
-                s, r, d, i = self.env.step(np.asarray(a))
-                reward += r
-                if d:
-                    s = self.env.reset()
+                if policy_id == "polynomial_policy":
+                    # transforms theta into the desired list format
+                    theta_transformed = self.theta_as_list(theta, self.state_dim)
+
+                    # Preprocessing for the second loop
+                    self.policy.set_theta(theta_transformed)
+                    a = self.policy.polynomial_policy(s)
+                elif policy_id == "nn_policy":
+                    a = self.policy.nn_model(torch.tensor(s)).detach().numpy()
+                else:
+                    print("invalid policy_id")
+                    return None
+
+            s, r, d, i = self.env.step(np.asarray(a))
+            reward += r
+            if d:
+                s = self.env.reset()
 
             avg_reward = reward / N_per_theta
             rewards += [avg_reward]
             thetas += [theta]
+        print("Sampling successfull")
         return rewards, thetas
 
     '''

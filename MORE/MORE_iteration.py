@@ -22,13 +22,14 @@ class MORE(object):
 
         reward_old: integer
     '''
-    def iterate(self, reward_old, Q, b):
+    def iterate(self, reward_old, Q, b, policy_id):
         # Initalize sample generator
         sample_generator = SAMPLE(self.env, self.policy)
 
         # Generate samles for our policy
-        rewards, thetas = sample_generator.sample(10, 3,  np.random.multivariate_normal, b, Q)
+        rewards, thetas = sample_generator.sample(10, 3,  np.random.multivariate_normal, b, Q, policy_id)
 
+        print("Number of model parameters: ",len(thetas[1]))
         # actually wo don't use a variable beta_hat_new, deswegen kann man die auch nur beta_hat bezeichnen(?)
         beta_hat_old = linear_regression(thetas, rewards)
         R, r, r0 = compute_quadratic_surrogate(beta_hat_old, np.asarray(thetas).shape[1])
@@ -46,7 +47,7 @@ class MORE(object):
 
         b_new, Q_new = opti.update_pi(F, f, etha, omega)
 
-        rewards_new, thetas_new = sample_generator.sample(10, 3, np.random.multivariate_normal, b_new, Q_new)
+        rewards_new, thetas_new = sample_generator.sample(10, 3, np.random.multivariate_normal, b_new, Q_new, policy_id)
         print("update worked")
 
         # compute average reward over thetas
@@ -63,4 +64,4 @@ class MORE(object):
             return thetas_new[0] # maybe the one yielding the highest avg reward?
         else:
             print("Still improving...")
-            return self.iterate(reward_new, Q_new, b_new)
+            return self.iterate(reward_new, Q_new, b_new, policy_id)

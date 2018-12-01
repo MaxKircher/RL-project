@@ -29,48 +29,25 @@ degree = 2
      - variance for states with state_dim.low/high in (-inf, inf) should be almost zero
        to avoid output NaN if policy is computed (dirty soloution)
 '''
-mu = np.array(11*[0])
-dev = 0.3*np.eye(11)
-dev[4,4] = 1E-15
-dev[5,5] = 1E-15
-dev[9,9] = 1E-15
-dev[10,10] = 1E-15
-
-# Set quadratic policy
 policy = POLICY(state_dim, action_dim, degree)
-
 iterator = MORE(0.1, policy, env)
 
-# setting reward 0 is always a bad idea..
-thetas = iterator.iterate(0, dev, mu)
-print("worked so far.")
+#policy_id = "polynomial_policy"
+policy_id = "nn_policy"
 
-# # Initalize sample generator
-# sample_generator = SAMPLE(env, policy)
-#
-# # Generate samles for our policy
-# rewards, thetas = sample_generator.sample(10, 3,  np.random.multivariate_normal, mu, dev)
-#
-# #X = X(thetas)
-# beta_hat = linear_regression(thetas, rewards)
-# print("beta: ", beta_hat.shape)
-# print("d = ", np.asarray(thetas).shape[1])
-# R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
-#
-# opti = OPTIMIZATION(dev, mu, R, r, 1, 1)
-# x0 = np.ones(2) # starting point for etha and omega
-# g = opti.objective(x0) # Entweder ca. 560 oder nan
-# print("g = ", g)
-# sol = opti.SLSQP(x0)
-# print(sol) # print(sol.fun) print(sol.x) for specific information
-#
-# # Update pi
-# etha = 1 # sol.x[0]
-# omega = 0 # sol.x[1]
-# F = np.linalg.inv(etha * np.linalg.inv(dev) - 2*R)
-# f = etha * np.linalg.inv(dev) @ mu + r
-#
-# mu_new, dev_new = opti.update_pi(F, f, etha, omega)
-#
-# rewards, thetas = sample_generator.sample(10, 3, np.random.multivariate_normal, mu_new, dev_new)
-# print("update worked")
+if policy_id == "polynomial_policy":
+    mu = np.array(11*[0])
+    dev = 0.3*np.eye(11)
+    dev[4,4] = 1E-15
+    dev[5,5] = 1E-15
+    dev[9,9] = 1E-15
+    dev[10,10] = 1E-15
+elif policy_id == "nn_policy":
+    number_of_nn_params = sum(p.numel() for p in policy.nn_model.parameters())
+    mu = np.array(number_of_nn_params * [0])
+    dev = 0.3 * np.eye(number_of_nn_params)
+
+# setting reward 0 is always a bad idea..
+thetas = iterator.iterate(0, dev, mu, policy_id)
+print("worked so far.")
+# Call methods set theta to pass our policy the new params
