@@ -57,3 +57,9 @@ class OPTIMIZATION(object):
         cons = {'type': 'ineq', 'fun': self.constraint}
         soloution = minimize(self.objective, x0, method = 'SLSQP',constraints = cons)
         return soloution
+
+    '''
+        Updates our mu and dev for the sampling method
+    '''
+    def update_pi(self, F, f, etha, omega):
+        return F @ f, F * (etha + omega)

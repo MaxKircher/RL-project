@@ -39,10 +39,10 @@ dev[10,10] = 1E-15
 policy = POLICY(state_dim, action_dim, degree)
 
 # Initalize sample generator
-sample_generator = SAMPLE(env, policy, mu, dev)
+sample_generator = SAMPLE(env, policy)
 
 # Generate samles for our policy
-rewards, thetas = sample_generator.sample(10, 3)
+rewards, thetas = sample_generator.sample(10, 3,  np.random.multivariate_normal, mu, dev)
 
 '''
     Do linear regression
@@ -63,3 +63,14 @@ g = opti.objective(x0) # Entweder ca. 560 oder nan
 print("g = ", g)
 sol = opti.SLSQP(x0)
 print(sol) # print(sol.fun) print(sol.x) for specific information
+
+# Update pi
+etha = 1 # sol.x[0]
+omega = 0 # sol.x[1]
+F = np.linalg.inv(etha * np.linalg.inv(dev) - 2*R)
+f = etha * np.linalg.inv(dev) @ mu + r
+
+mu_new, dev_new = opti.update_pi(F, f, etha, omega)
+
+rewards, thetas = sample_generator.sample(10, 3, np.random.multivariate_normal, mu_new, dev_new)
+print("update worked")

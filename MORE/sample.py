@@ -10,14 +10,16 @@ class SAMPLE(object):
                  - polynomial
                  - NN
                  - etc
-        mu:      Expectation value for multivariate gaussian
-        dev:    Standard deviation for multivariate gaussian
+        Weniger Sinnvoll mu und dev zu setzen, sondern konkret in sample übergeben,
+        da sich die immer ändern
+        mu: F*f Expectation value for multivariate gaussian
+        dev: F(etha + omega) Standard deviation for multivariate gaussian
     '''
-    def __init__(self, env, policy, mu, dev):
+    def __init__(self, env, policy):
         self.env = env
         self.policy = policy
-        self.mu = mu
-        self.dev = dev
+        # self.mu = mu
+        # self.dev = dev
 
         # Store the dimension of state and action space
         self.state_dim = env.observation_space.shape[0]
@@ -29,18 +31,19 @@ class SAMPLE(object):
 
         N_per_theta:        Query the env N times with this set of Thetas
         number_of_thetas:   number of theta-sample sets
+        pi:                 The probability distribution to be sampled from
 
         Returns:
          - rewards: Is a list where the i-th entry corresponds to the average reward of the i-th theta_i
          - thetas:  Is a list where the i-th entry is a random value returned from the multivariate Gaussian
     '''
-    def sample(self, N_per_theta, number_of_thetas):
+    def sample(self, N_per_theta, number_of_thetas, pi, mu, dev):
         rewards = []
         thetas = []
 
         for j in range(number_of_thetas):
             # theta is a numpy matrix and needs to be transformed in desired list format
-            theta =  np.random.multivariate_normal(self.mu, self.dev)
+            theta = pi(mu, dev)
 
             # transforms theta into the desired list format
             theta_transformed = self.theta_as_list(theta, self.state_dim)
