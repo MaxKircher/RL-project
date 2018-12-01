@@ -96,7 +96,7 @@ def R_squared():
 
 '''
     Reconstruct R Matrix from beta_hat
-    NB: for polynomial_policy 11
+    NB: for polynomial_policy Grad 2: R = np.eye(11) (falls np.eye(d) ein Fehler wirft)
 '''
 def compute_quadratic_surrogate(beta_hat, d):
 
@@ -105,7 +105,7 @@ def compute_quadratic_surrogate(beta_hat, d):
     r0 = beta_hat[int(d * (d+1)/2 + d) - 1]
     # Construct R matrix
     R_param = np.asarray(R_param)
-    R = np.eye(d)
+    R = np.eye(d) # siehe Kommentar für polynomial policy von Grad 2
 
     j = 0
     k = 0
