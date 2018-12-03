@@ -12,13 +12,16 @@ state_dim = env.observation_space.shape[0] # = 5
 action_dim = env.action_space.shape[0] # = 1
 
 '''
+    We assume that all degrees occur
+
     Policy is a polynomial p of degree 2, i.e.: a_2*x² + a_1*x + a_0
     a_i are parameter row-vectors of the form a_i = [a_1i, a_2i, ... , a_ni]
     where n = state_dim
     a_0 bias term
     p: state_dim -> action_dim
 '''
-degree = 2
+degree = 4
+d = 1 + degree * state_dim
 
 '''
     Compute parameter for multivariate Gaussian to choose parameter
@@ -32,16 +35,16 @@ degree = 2
 policy = POLICY(state_dim, action_dim, degree)
 iterator = MORE(0.1, policy, env)
 
-#policy_id = "polynomial_policy"
+# policy_id = "polynomial_policy"
 policy_id = "nn_policy"
 
 if policy_id == "polynomial_policy":
-    mu = np.array(11*[0])
-    dev = 0.3*np.eye(11)
-    dev[4,4] = 1E-15
-    dev[5,5] = 1E-15
-    dev[9,9] = 1E-15
-    dev[10,10] = 1E-15
+    mu = np.array(d*[0])
+    dev = 0.3*np.eye(d)
+    # dev[4,4] = 1E-15
+    # dev[5,5] = 1E-15
+    # dev[9,9] = 1E-15
+    # dev[10,10] = 1E-15
 elif policy_id == "nn_policy":
     number_of_nn_params = sum(p.numel() for p in policy.nn_model.parameters())
     mu = np.array(number_of_nn_params * [0])
