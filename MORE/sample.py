@@ -34,13 +34,12 @@ class SAMPLE(object):
         N_per_theta:        Query the env N times with this set of Thetas
         number_of_thetas:   number of theta-sample sets
         pi:                 The probability distribution to be sampled from
-        policy_id:          String to handle diffrent policies
 
         Returns:
          - rewards: Is a list where the i-th entry corresponds to the average reward of the i-th theta_i
          - thetas:  Is a list where the i-th entry is a random value returned from the multivariate Gaussian
     '''
-    def sample(self, N_per_theta, number_of_thetas, pi, mu, dev, policy_id):
+    def sample(self, N_per_theta, number_of_thetas, pi, mu, dev):
         rewards = []
         thetas = []
 
@@ -51,19 +50,8 @@ class SAMPLE(object):
             s = self.env.reset()
 
             for i in range(N_per_theta):
-                if policy_id == "polynomial_policy":
-                    # transforms theta into the desired list format
-                    theta_transformed = self.theta_as_list(theta, self.state_dim)
-
-                    # Preprocessing for the second loop
-                    self.policy.set_theta(theta_transformed)
-                    a = self.policy.polynomial_policy(s)
-                elif policy_id == "nn_policy":
-                    self.policy.nn_model.set_theta_NN(theta)
-                    a = self.policy.nn_model(torch.tensor(s)).detach().numpy()
-                else:
-                    print("invalid policy_id")
-                    return None
+                self.policy.set_theta(theta)
+                a = self.policy.get_action(s)
 
             s, r, d, i = self.env.step(np.asarray(a))
             reward += r
@@ -75,28 +63,3 @@ class SAMPLE(object):
             thetas += [theta]
         print("Sampling successfull")
         return rewards, thetas
-
-    '''
-        TODO:
-         - Generalize w.r.t. state dimension
-         - Belongs to polynomial policy because of the special structure
-
-        Transforms theta which is a numpy array into a list to compute the dot product
-        in the function (see policy.py) polynomial_policy
-
-        Returns:
-         - list of the format [a_0, array([a_11, a_21, ..., a_m1]), ..., array([a_1n, a_2n, ..., a_mn])]
-            - a_0 =         Bias term of the polyonomial
-            - a_1-vector =  array([a_11, a_21, ..., a_m1]) the coefficient of x¹
-            - a_n-vector =  array([a_1n, a_2n, ..., a_mn]) the coefficient of x^n
-            - m = state_dimension
-    '''
-    def theta_as_list(self, theta, state_dim):
-
-        list = [theta[0]]
-        T = (theta.shape[0] - 1) / state_dim
-
-        for i in range(int(T)):
-            list += [np.array(theta[state_dim * i + 1 : state_dim * (i + 1) + 1])]
-
-        return list

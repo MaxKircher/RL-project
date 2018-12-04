@@ -21,7 +21,7 @@ action_dim = env.action_space.shape[0] # = 1
     p: state_dim -> action_dim
 '''
 degree = 4
-d = 1 + degree * state_dim
+# d = 1 + degree * state_dim
 
 '''
     Compute parameter for multivariate Gaussian to choose parameter
@@ -32,25 +32,18 @@ d = 1 + degree * state_dim
      - variance for states with state_dim.low/high in (-inf, inf) should be almost zero
        to avoid output NaN if policy is computed (dirty soloution)
 '''
-policy = POLICY(state_dim, action_dim, degree)
+# policy = NeuronalNetworkPolicy(state_dim, action_dim)
+policy = PolynomialPolicy(state_dim, action_dim, degree)
+
 iterator = MORE(0.1, policy, env)
+d = policy.get_number_of_parameters()
+mu = np.array(d*[0])
+dev = 0.3*np.eye(d)
 
-# policy_id = "polynomial_policy"
-policy_id = "nn_policy"
-
-if policy_id == "polynomial_policy":
-    mu = np.array(d*[0])
-    dev = 0.3*np.eye(d)
-    # dev[4,4] = 1E-15
-    # dev[5,5] = 1E-15
-    # dev[9,9] = 1E-15
-    # dev[10,10] = 1E-15
-elif policy_id == "nn_policy":
-    number_of_nn_params = sum(p.numel() for p in policy.nn_model.parameters())
-    mu = np.array(number_of_nn_params * [0])
-    dev = 0.3 * np.eye(number_of_nn_params)
 
 # setting reward 0 is always a bad idea..
-thetas = iterator.iterate(0, dev, mu, policy_id)
+thetas = iterator.iterate(0, dev, mu)
 print("worked so far.")
+
+
 # Call methods set theta to pass our policy the new params
