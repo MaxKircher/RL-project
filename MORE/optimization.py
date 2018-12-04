@@ -33,7 +33,7 @@ class OPTIMIZATION(object):
         self.b = self.b.reshape(self.b.size, 1)
         self.r = self.r.reshape(self.r.size, 1)
 
-        F = etha * np.linalg.inv(self.Q) - 2 * np.linalg.inv(self.R)
+        F = np.linalg.inv(etha * np.linalg.inv(self.Q) - 2 * self.R)
         f = etha *  np.linalg.inv(self.Q) @ self.b + self.r
 
         # Our objective Function g, see Chapter 2.2
@@ -49,15 +49,16 @@ class OPTIMIZATION(object):
     '''
     def constraint(self, x):
         etha = x[0]
-        F = np.linalg.det(etha * np.linalg.inv(self.Q) - 2 *  np.linalg.inv(self.R)) - 1e-10
-        return F
+        det_F = np.linalg.det(np.linalg.inv(etha * np.linalg.inv(self.Q) - 2 *  self.R)) - 1e-10
+        return det_F
 
     '''
         Constraint übergeben?
     '''
     def SLSQP(self, x0):
+        bnds = ((1e-5, None), (1e-5, None))
         cons = {'type': 'ineq', 'fun': self.constraint}
-        soloution = minimize(self.objective, x0, method = 'SLSQP',constraints = cons)
+        soloution = minimize(self.objective, x0, method = 'SLSQP', bounds = bnds, constraints = cons)
         return soloution
 
     '''
@@ -76,7 +77,8 @@ class OPTIMIZATION(object):
     def compute_beta(self, gamma, Q):
         k = Q.shape[0]
         H_q = (k/2) + (k * np.log(2 * np.pi)) / 2 + np.log(np.linalg.det(Q)) / 2
-        H_pi0 = -75
+        print("H_q: ", H_q)
+        H_pi0 = -5
         beta = gamma * (H_q - H_pi0) + H_pi0
 
         return beta

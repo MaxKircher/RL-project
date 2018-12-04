@@ -68,7 +68,7 @@ def __X__(thetas):
         phi_theta_i = __phi__(thetas[i])
         phi_theta_i_m = np.array([phi_theta_i])
         X = np.append(X, phi_theta_i_m, 0)
-    print("X: " ,X.shape)
+    #print("X: " ,X.shape)
     return X
 
 '''
@@ -83,7 +83,7 @@ def __X__(thetas):
 '''
 def linear_regression(thetas, rewards): # X as usual in a linear regression and rewards is the y value
     X = __X__(thetas)
-    beta_hat = np.linalg.lstsq(X, rewards)[0]
+    beta_hat = np.linalg.lstsq(X, rewards, rcond=None)[0]
     return beta_hat
 
 '''

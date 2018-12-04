@@ -33,30 +33,30 @@ class SAMPLE(object):
 
         N_per_theta:        Query the env N times with this set of Thetas
         number_of_thetas:   number of theta-sample sets
-        pi:                 The probability distribution to be sampled from
+        mu:                 expectation for theta sampling
+        dev:                covariance matrix for theta sampling
 
         Returns:
          - rewards: Is a list where the i-th entry corresponds to the average reward of the i-th theta_i
          - thetas:  Is a list where the i-th entry is a random value returned from the multivariate Gaussian
     '''
-    def sample(self, N_per_theta, number_of_thetas, pi, mu, dev):
+    def sample(self, N_per_theta, number_of_thetas, mu, dev):
         rewards = []
         thetas = []
 
         for j in range(number_of_thetas):
             # theta is a numpy matrix and needs to be transformed in desired list format
-            theta = pi(mu, dev)
+            theta = np.random.multivariate_normal(mu, dev)
+            self.policy.set_theta(theta)
+
             reward = 0
             s = self.env.reset()
-
             for i in range(N_per_theta):
-                self.policy.set_theta(theta)
                 a = self.policy.get_action(s)
-
-            s, r, d, i = self.env.step(np.asarray(a))
-            reward += r
-            if d:
-                s = self.env.reset()
+                s, r, d, i = self.env.step(np.asarray(a))
+                reward += r
+                if d:
+                    s = self.env.reset()
 
             avg_reward = reward / N_per_theta
             rewards += [avg_reward]

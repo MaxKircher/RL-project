@@ -20,8 +20,7 @@ action_dim = env.action_space.shape[0] # = 1
     a_0 bias term
     p: state_dim -> action_dim
 '''
-degree = 4
-# d = 1 + degree * state_dim
+degree = 2
 
 '''
     Compute parameter for multivariate Gaussian to choose parameter
@@ -32,17 +31,20 @@ degree = 4
      - variance for states with state_dim.low/high in (-inf, inf) should be almost zero
        to avoid output NaN if policy is computed (dirty soloution)
 '''
-policy = NeuronalNetworkPolicy(state_dim, action_dim)
-# policy = PolynomialPolicy(state_dim, action_dim, degree)
+#policy = NeuronalNetworkPolicy(state_dim, action_dim)
+policy = PolynomialPolicy(state_dim, action_dim, degree)
+
+print("Number of model parameters: ", policy.get_number_of_parameters())
+
 
 iterator = MORE(0.1, policy, env)
 d = policy.get_number_of_parameters()
 mu = np.array(d*[0])
-dev = 0.3*np.eye(d)
+dev = 10.*np.eye(d)
 
 
 # setting reward 0 is always a bad idea..
-thetas = iterator.iterate(0, dev, mu)
+thetas = iterator.iterate(dev, mu)
 print("worked so far.")
 
 

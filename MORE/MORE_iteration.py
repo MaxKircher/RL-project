@@ -13,23 +13,18 @@ class MORE(object):
 
     def __init__(self, delta, policy, env):
         self.delta = delta
-        self.policy = policy
-        self.env = env
+        self.sample_generator = SAMPLE(env, policy)
+
 
     '''
         Dachte eine Abbruchbedingung für R reicht aus, oder wollen wir für R und Theta
         sicherstellen, dass die Verbesserung größer delta ist, bevor es zum Abbruch kommt?
-
-        reward_old: integer
     '''
-    def iterate(self, reward_old, Q, b):
-        # Initalize sample generator
-        sample_generator = SAMPLE(self.env, self.policy)
+    def iterate(self, Q, b):
 
         # Generate samles for our policy
-        rewards, thetas = sample_generator.sample(10, 3,  np.random.multivariate_normal, b, Q)
+        rewards, thetas = self.sample_generator.sample(100, 10, b, Q)
 
-        print("Number of model parameters: ",len(thetas[1]))
         # actually wo don't use a variable beta_hat_new, deswegen kann man die auch nur beta_hat bezeichnen(?)
         beta_hat_old = linear_regression(thetas, rewards)
 
@@ -38,28 +33,33 @@ class MORE(object):
         # TODO: set diffrent epsilon, beta and start values for the optimization
         opti = OPTIMIZATION(Q, b, R, r, 1, 0.99)
         x0 = np.ones(2) # starting point for etha and omega
-        g = opti.objective(x0) # Entweder ca. 560 oder nan
+
+        # Müssen wir nicht aufrufen, oder:
+        #g = opti.objective(x0) # Entweder ca. 560 oder nan
+
         sol = opti.SLSQP(x0)
+        print("Computed etha: {}, omega: {}".format(sol.x[0], sol.x[1]))
 
         # Update pi
-        etha = 1 # sol.x[0]
-        omega = 0 # sol.x[1]
+        etha = sol.x[0]
+        omega = sol.x[1]
         F = np.linalg.inv(etha * np.linalg.inv(Q) - 2 * R)
         f = etha * np.linalg.inv(Q) @ b + r
 
         b_new, Q_new = opti.update_pi(F, f, etha, omega)
 
-        rewards_new, thetas_new = sample_generator.sample(10, 3, np.random.multivariate_normal, b_new, Q_new)
-        print("update worked")
+        #rewards_new, thetas_new = sample_generator.sample(10, 3, np.random.multivariate_normal, b_new, Q_new)
+        #print("update worked")
 
-        # compute average reward over thetas
-        reward_new = 0
-        for rew in rewards_new:
-            reward_new += rew
-        # Does this make sense?
-        reward_new = reward_new / len(rewards_new)
+        # # compute average reward over thetas
+        # reward_new = 0
+        # for rew in rewards_new:
+        #     reward_new += rew
+        # # Does this make sense?
+        # reward_new = reward_new / len(rewards_new)
 
-        print("Reward new: ", reward_new)
+        print("parameter change: ", np.abs(b - b_new).sum())
+        print("Reward: ", max(rewards))
 
         # because reward_old is negative we exit right away. Set np.absolute
         # brakets diffrent
@@ -69,4 +69,6 @@ class MORE(object):
             return thetas_new[0] # maybe the one yielding the highest avg reward?
         else:
             print("Still improving...")
-            return self.iterate(reward_new, Q_new, b_new)
+            return self.iterate(Q_new, b_new)
+
+    #def step(self, Q, b):
