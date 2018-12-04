@@ -4,7 +4,7 @@ from sample import *
 from regression import * # , X
 from optimization import *
 
-class MORE(object):
+class More(object):
     '''
         Does the MORE iterations until convergance is reached
         Convergance is archieved if the improvment from the prev iteration
@@ -14,14 +14,24 @@ class MORE(object):
     def __init__(self, delta, policy, env):
         self.delta = delta
         self.sample_generator = SAMPLE(env, policy)
-
+        self.policy = policy
 
     '''
         Dachte eine Abbruchbedingung für R reicht aus, oder wollen wir für R und Theta
         sicherstellen, dass die Verbesserung größer delta ist, bevor es zum Abbruch kommt?
     '''
-    def iterate(self, Q, b):
+    def iterate(self):
+        d = self.policy.get_number_of_parameters()
+        b = np.array(d*[0])
+        Q = 10.*np.eye(d)
 
+        # Abbruchbedingung -> Kaüitel 2 letzter Satz, asymptotic to point estimate
+        while np.diag(Q).sum() > self.delta:
+            print("Still improving...", np.diag(Q).sum())
+            b, Q = self.__more_step__(b, Q)
+
+
+    def __more_step__(self, b, Q):
         # Generate samles for our policy
         rewards, thetas = self.sample_generator.sample(100, 10, b, Q)
 
@@ -48,10 +58,4 @@ class MORE(object):
         print("parameter change: ", np.abs(b - b_new).sum())
         print("Reward: ", max(rewards))
 
-        # Abbruchbedingung -> Kaüitel 2 letzter Satz, asymptotic to point estimate
-        if np.absolute(np.diag(Q_new)).sum() < self.delta:
-            print("Found best thetas.") # wich of the 3 thetas do we return?
-            return thetas_new[0] # maybe the one yielding the highest avg reward?
-        else:
-            print("Still improving...")
-            return self.iterate(Q_new, b_new)
+        return b_new, Q_new

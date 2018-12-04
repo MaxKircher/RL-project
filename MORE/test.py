@@ -37,14 +37,10 @@ policy = PolynomialPolicy(state_dim, action_dim, degree)
 print("Number of model parameters: ", policy.get_number_of_parameters())
 
 
-iterator = MORE(0.1, policy, env)
-d = policy.get_number_of_parameters()
-mu = np.array(d*[0])
-dev = 10.*np.eye(d)
-
+iterator = More(0.1, policy, env)
 
 # setting reward 0 is always a bad idea..
-thetas = iterator.iterate(dev, mu)
+thetas = iterator.iterate()
 print("worked so far.")
 
 
