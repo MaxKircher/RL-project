@@ -108,7 +108,7 @@ def compute_quadratic_surrogate(beta_hat, d):
     R = np.eye(d) # siehe Kommentar für polynomial policy von Grad 2
 
     j = 0
-    k = 0
+    k = 0 # itereirt über Spalten
     for i in range(R_param.shape[0]):
         if k < d:
             R[j,k] = R_param[i]

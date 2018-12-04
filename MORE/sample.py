@@ -6,6 +6,8 @@ from policy import *
 class SAMPLE(object):
 
     '''
+        > Vererben einbauen!
+
         policy: The current policy for which we want to update Parameter
                  - polynomial
                  - NN
@@ -57,6 +59,7 @@ class SAMPLE(object):
                     self.policy.set_theta(theta_transformed)
                     a = self.policy.polynomial_policy(s)
                 elif policy_id == "nn_policy":
+                    self.policy.nn_model.set_theta_NN(theta)
                     a = self.policy.nn_model(torch.tensor(s)).detach().numpy()
                 else:
                     print("invalid policy_id")

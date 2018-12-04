@@ -32,6 +32,8 @@ class MORE(object):
         print("Number of model parameters: ",len(thetas[1]))
         # actually wo don't use a variable beta_hat_new, deswegen kann man die auch nur beta_hat bezeichnen(?)
         beta_hat_old = linear_regression(thetas, rewards)
+
+        # TODO: statt "np.asarray(thetas).shape[1]" - anders schreiben
         R, r, r0 = compute_quadratic_surrogate(beta_hat_old, np.asarray(thetas).shape[1])
         # TODO: set diffrent epsilon, beta and start values for the optimization
         opti = OPTIMIZATION(Q, b, R, r, 1, 1)
@@ -59,6 +61,7 @@ class MORE(object):
 
         # because reward_old is negative we exit right away. Set np.absolute
         # brakets diffrent
+        # TODO: andere Abbruchbedingung
         if np.absolute((reward_new - reward_old) / reward_old) < self.delta:
             print("Found best thetas.") # wich of the 3 thetas do we return?
             return thetas_new[0] # maybe the one yielding the highest avg reward?

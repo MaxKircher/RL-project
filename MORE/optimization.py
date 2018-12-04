@@ -8,6 +8,8 @@ from scipy.optimize import minimize
 
     Variables have to be in numpy
     We need to pass a starting point, I suggest x = (1,1) (could be discussed with Boris)
+
+    # TODO: weitere Nebenbedingung etha, omega > 0
 '''
 
 class OPTIMIZATION(object):
