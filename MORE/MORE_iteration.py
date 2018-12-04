@@ -34,35 +34,20 @@ class MORE(object):
         opti = OPTIMIZATION(Q, b, R, r, 1, 0.99)
         x0 = np.ones(2) # starting point for etha and omega
 
-        # Müssen wir nicht aufrufen, oder:
-        #g = opti.objective(x0) # Entweder ca. 560 oder nan
-
         sol = opti.SLSQP(x0)
         print("Computed etha: {}, omega: {}".format(sol.x[0], sol.x[1]))
 
         # Update pi
-        etha = sol.x[0]
-        omega = sol.x[1]
+        etha = 1#sol.x[0]
+        omega = 1#sol.x[1]
         F = np.linalg.inv(etha * np.linalg.inv(Q) - 2 * R)
         f = etha * np.linalg.inv(Q) @ b + r
 
         b_new, Q_new = opti.update_pi(F, f, etha, omega)
 
-        #rewards_new, thetas_new = sample_generator.sample(10, 3, np.random.multivariate_normal, b_new, Q_new)
-        #print("update worked")
-
-        # # compute average reward over thetas
-        # reward_new = 0
-        # for rew in rewards_new:
-        #     reward_new += rew
-        # # Does this make sense?
-        # reward_new = reward_new / len(rewards_new)
-
         print("parameter change: ", np.abs(b - b_new).sum())
         print("Reward: ", max(rewards))
 
-        # because reward_old is negative we exit right away. Set np.absolute
-        # brakets diffrent
         # Abbruchbedingung -> Kaüitel 2 letzter Satz, asymptotic to point estimate
         if np.absolute(np.diag(Q_new)).sum() < self.delta:
             print("Found best thetas.") # wich of the 3 thetas do we return?
@@ -70,5 +55,3 @@ class MORE(object):
         else:
             print("Still improving...")
             return self.iterate(Q_new, b_new)
-
-    #def step(self, Q, b):
