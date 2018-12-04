@@ -36,7 +36,7 @@ class MORE(object):
         # TODO: statt "np.asarray(thetas).shape[1]" - anders schreiben
         R, r, r0 = compute_quadratic_surrogate(beta_hat_old, np.asarray(thetas).shape[1])
         # TODO: set diffrent epsilon, beta and start values for the optimization
-        opti = OPTIMIZATION(Q, b, R, r, 1, 1)
+        opti = OPTIMIZATION(Q, b, R, r, 1, 0.99)
         x0 = np.ones(2) # starting point for etha and omega
         g = opti.objective(x0) # Entweder ca. 560 oder nan
         sol = opti.SLSQP(x0)
@@ -59,10 +59,12 @@ class MORE(object):
         # Does this make sense?
         reward_new = reward_new / len(rewards_new)
 
+        print("Reward new: ", reward_new)
+
         # because reward_old is negative we exit right away. Set np.absolute
         # brakets diffrent
-        # TODO: andere Abbruchbedingung
-        if np.absolute((reward_new - reward_old) / reward_old) < self.delta:
+        # Abbruchbedingung -> Kaüitel 2 letzter Satz, asymptotic to point estimate
+        if np.absolute(np.diag(Q_new)).sum() < self.delta:
             print("Found best thetas.") # wich of the 3 thetas do we return?
             return thetas_new[0] # maybe the one yielding the highest avg reward?
         else:
