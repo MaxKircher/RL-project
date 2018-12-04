@@ -112,7 +112,7 @@ class NeuronalNetworkPolicy(Policy):
         return action
 
     def set_theta(self, theta):
-        theta = torch.tensor(theta)
+        theta = torch.tensor(theta).float()
         theta = theta.view(-1)
         # print(theta.size())
 

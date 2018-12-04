@@ -32,8 +32,8 @@ degree = 4
      - variance for states with state_dim.low/high in (-inf, inf) should be almost zero
        to avoid output NaN if policy is computed (dirty soloution)
 '''
-# policy = NeuronalNetworkPolicy(state_dim, action_dim)
-policy = PolynomialPolicy(state_dim, action_dim, degree)
+policy = NeuronalNetworkPolicy(state_dim, action_dim)
+# policy = PolynomialPolicy(state_dim, action_dim, degree)
 
 iterator = MORE(0.1, policy, env)
 d = policy.get_number_of_parameters()
