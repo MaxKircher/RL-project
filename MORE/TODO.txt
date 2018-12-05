@@ -1,0 +1,10 @@
+Paper:
+- Parameter in der Test festlegen und zentral verarbeiten
+    - epsilon verändern
+    - gamma verändern
+    - Mindestgröße für etha festlegen
+    - b, Q (?)
+    - L, N_thetas etc. 
+- Environmentabhängige Initialisierung?
+    - CartPole: weights im NN nicht Null initialisieren(?)
+    - Andere env, anders inititalisieren

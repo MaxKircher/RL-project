@@ -20,8 +20,8 @@ class SAMPLE(object):
     def __init__(self, env, policy):
         self.env = env
         self.policy = policy
-        # self.mu = mu
-        # self.dev = dev
+        self.theta_memory = []
+        self.reward_memory = []
 
         # Store the dimension of state and action space
         self.state_dim = env.observation_space.shape[0]
@@ -33,6 +33,7 @@ class SAMPLE(object):
 
         N_per_theta:        Query the env N times with this set of Thetas
         number_of_thetas:   number of theta-sample sets
+        L:                  Size of number of memorized thetas/samples
         mu:                 expectation for theta sampling
         dev:                covariance matrix for theta sampling
 
@@ -40,7 +41,7 @@ class SAMPLE(object):
          - rewards: Is a list where the i-th entry corresponds to the average reward of the i-th theta_i
          - thetas:  Is a list where the i-th entry is a random value returned from the multivariate Gaussian
     '''
-    def sample(self, N_per_theta, number_of_thetas, mu, dev):
+    def sample(self, N_per_theta, number_of_thetas, L, mu, dev):
         rewards = []
         thetas = []
 
@@ -59,7 +60,10 @@ class SAMPLE(object):
                     s = self.env.reset()
 
             avg_reward = reward / N_per_theta
-            rewards += [avg_reward]
-            thetas += [theta]
+            self.reward_memory += [avg_reward]
+            self.theta_memory += [theta]
         print("Sampling successfull")
-        return rewards, thetas
+        self.reward_memory = self.reward_memory[-L:]
+        self.theta_memory = self.theta_memory[-L:]
+
+        return self.reward_memory, self.theta_memory
