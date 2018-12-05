@@ -87,14 +87,6 @@ def linear_regression(thetas, rewards): # X as usual in a linear regression and 
     return beta_hat
 
 '''
-    Compute the R² to determine how good the regression is
-     - Use diffrent measures for plausibility because R² risies with number of parameter
-     - # NOTE: We should always implement an evaluation function
-'''
-def R_squared():
-    return -1
-
-'''
     Reconstruct R Matrix from beta_hat
     NB: for polynomial_policy Grad 2: R = np.eye(11) (falls np.eye(d) ein Fehler wirft)
 '''

@@ -8,16 +8,14 @@ from scipy.optimize import minimize
 
     Variables have to be in numpy
     We need to pass a starting point, I suggest x = (1,1) (could be discussed with Boris)
-
-    # TODO: weitere Nebenbedingung etha, omega > 0
 '''
 
-class OPTIMIZATION(object):
+class Optimization(object):
     def __init__(self, Q, b, R, r, epsilon, gamma):
-        self.Q = Q # .detach().numpy()
-        self.b = b # .detach().numpy()
-        self.R = R # .detach().numpy()
-        self.r = r # .detach().numpy()
+        self.Q = Q
+        self.b = b
+        self.R = R
+        self.r = r
         self.epsilon = epsilon
         self.beta = self.compute_beta(gamma, Q)
 
@@ -78,6 +76,7 @@ class OPTIMIZATION(object):
         k = Q.shape[0]
         H_q = (k/2) + (k * np.log(2 * np.pi)) / 2 + np.log(np.linalg.det(Q)) / 2
         print("H_q: ", H_q)
+        # TODO: H_pi0 übergeben
         H_pi0 = -5
         beta = gamma * (H_q - H_pi0) + H_pi0
 

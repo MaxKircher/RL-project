@@ -3,7 +3,7 @@ import gym
 import quanser_robots
 from policy import *
 
-class SAMPLE(object):
+class Sample(object):
 
     '''
         > Vererben einbauen!

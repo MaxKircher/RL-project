@@ -4,7 +4,12 @@ Paper:
     - gamma verändern
     - Mindestgröße für etha festlegen
     - b, Q (?)
-    - L, N_thetas etc. 
+    - L, N_thetas etc.
+    - Start vals optimization
+    - H_pi0
+    - R² maß um Güte der Regression zu ermitteln (Len)
 - Environmentabhängige Initialisierung?
     - CartPole: weights im NN nicht Null initialisieren(?)
     - Andere env, anders inititalisieren
+- Warnings prüfen, beim Log
+- Idee: H_q als Abbruchbedingung?

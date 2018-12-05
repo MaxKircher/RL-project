@@ -96,7 +96,7 @@ class NeuronalNetworkPolicy(Policy):
     def __init__(self, state_dim, action_dim):
         Policy.__init__(self, state_dim, action_dim)
         # Wir brauchen keine thetas, da wir das NN irgendwie initialisieren
-        # TODO: NN "generalisieren über Konstruktor"
+        
         inter_dim_1 = 10
         inter_dim_2 = 10
         self.nn_model = torch.nn.Sequential(
