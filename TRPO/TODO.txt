@@ -12,3 +12,7 @@
   - gamma
   - delta (KL Schranke, im Paper 1e-2)
 - Prüfen ob sich die Policy tatsächlich bessert
+- Klassen nach TODO scannen
+
+--> Auf Drive Dokument mit Fragen/Updatedoku
+- bei der Updatedoku, Plots einbauen wo sinnvoll

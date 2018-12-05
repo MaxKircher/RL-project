@@ -15,3 +15,7 @@ Paper:
 - Idee: H_q als Abbruchbedingung?
 - Negative Spur unserer Kovarianzmatrix Q
 - Überall hinzufügen in welchem Format eine Variable ist Numpy vs. Torch
+
+
+--> Auf Drive Dokument mit Fragen/Updatedoku
+- bei der Updatedoku, Plots einbauen wo sinnvoll
