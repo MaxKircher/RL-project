@@ -13,3 +13,5 @@ Paper:
     - Andere env, anders inititalisieren
 - Warnings prüfen, beim Log
 - Idee: H_q als Abbruchbedingung?
+- Negative Spur unserer Kovarianzmatrix Q
+- Überall hinzufügen in welchem Format eine Variable ist Numpy vs. Torch

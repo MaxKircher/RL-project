@@ -16,10 +16,10 @@ class NN(object):
         self.s_dim = s_dim
         self.a_dim = a_dim
         inter_dim = 10
-        self.model = torch.nn.Sequential( # neuronale Netzwerk
-            torch.nn.Linear(self.s_dim, inter_dim), #Applies a linear transformation to the incoming data
+        self.model = torch.nn.Sequential(
+            torch.nn.Linear(self.s_dim, inter_dim),
             # inter_dim Knoten im intermediate layer
-            torch.nn.ReLU(), # Activation functeion, see rectified linear unit
+            torch.nn.ReLU(),
             torch.nn.Linear(inter_dim, self.a_dim),
         )
         # std = pow(e, lambda) -> lambda = log(std)
