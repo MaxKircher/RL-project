@@ -4,6 +4,7 @@ import quanser_robots
 from trpo import *
 from policy import *
 from sampling import *
+from conjugate_gradient import *
 
 env = gym.make('CartpoleStabShort-v0')
 s0 = env.reset()
@@ -14,6 +15,7 @@ a_dim = env.action_space.shape[0]
 
 policy = NN(s_dim, a_dim)
 trpo = TRPO(env, gamma, policy)
+cg = ConjugateGradient(10)
 iterations = 10 # recommanded 10 iterations on last page (above Appendix D)
 
 for i in range(iterations):
@@ -24,10 +26,15 @@ for i in range(iterations):
     FIM = np.matrix(trpo.compute_FIM_mean())
 
     A = JM.T * FIM * JM # where A is the FIM w.r.t. to the Parameters theta see C
-    print("dim(A): 2x2 < ", A.shape)
+    # print("dim(A): 2x2 < ", A.shape)
 
     # TODO: Als conjugate gradient schreiben
     s = np.linalg.lstsq(A, g.transpose(0,1))[0]
+    # TODO: Startwert? vs NAN
+    # s_cg = cg.cg(g.detach().numpy().T, JM, FIM, np.zeros(g.shape[1]).reshape(-1,1))
+
+    # print(s_cg.T)
+
     beta = trpo.beta(0.01, np.matrix(s), A)
 
     theta_old = policy.get_parameter_as_tensor()
