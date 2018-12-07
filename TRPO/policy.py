@@ -61,14 +61,17 @@ class NN(object):
                       do nn.Parameters(theta_new)
     '''
     def update_policy_parameter(self, theta_new):
+        theta_new = theta_new.view(-1)
+        print(theta_new.size())
 
-        theta_new = theta_new.view(-1) # we had [1, 73] but 1 was nonsense
-        # print(theta_new.size())
+        # keine negativen Varianzen, da wir den logarithmus speichern
+        self.model.log_std.data = theta_new[:self.a_dim]
 
         # split parameter for the desired model
         number_of_layers = len(self.model)
-        j = 0 # get right position where we get the params from theta_new
-        for i in range(self.a_dim, number_of_layers):
+        # get right position where we get the params from theta_new:
+        j = self.a_dim
+        for i in range(number_of_layers):
 
             if type(self.model[i]) == torch.nn.modules.linear.Linear:
                 size_weight = self.model[i].weight.size()
@@ -85,9 +88,7 @@ class NN(object):
                 self.model[i].weight.data = theta_new_weights.view(size_weight)
                 self.model[i].bias.data = theta_new_bias.view(size_bias)
 
-        # keine negativen Varianzen, da wir den logarithmus speichern
-        # print(torch.max(torch.zeros(self.model.log_std.size()),theta_new[j:]))
-        self.model.log_std.data = theta_new[:self.a_dim]
+        assert j == theta_new.size(0)
 
     def get_parameter_as_tensor(self):
         parameters = list(self.model.parameters())

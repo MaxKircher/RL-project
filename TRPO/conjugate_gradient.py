@@ -11,23 +11,29 @@ class ConjugateGradient(object):
     def cg(self, g, J, M, x):
         Jx = J @ x
         MJx = M @ Jx
-        JtMJx = J.T @ MJx
+        Ax = J.T @ MJx # was JtMJx
 
-        Ax = JtMJx
+        #Ax = JtMJx
         r = g - Ax
         d = r
+
+        print("d: ", d.sum())
 
         r_norm_2 = r.T @ r
 
         for i in range(self.k):
             Jd = J @ d
             MJd = M @ Jd
-            JtMJd = J.T @ MJd
+            z = J.T @ MJd # was JtMJd
 
-            Ad = JtMJd
-            z = Ad
+            #Ad = JtMJd
+            #z = Ad
+
+            print("z: ", z.sum())
+            print("d: ", d.sum())
 
             dz = d.T @ z
+            assert dz != 0
             alpha = r_norm_2 / dz
 
             x += alpha[0,0] * d
@@ -39,5 +45,8 @@ class ConjugateGradient(object):
             r_norm_2 = r_kplus1_norm_2
 
             d = r + beta[0,0] * d
+
+            if r_norm_2[0,0] < 1e-10:
+                break
 
         return x
