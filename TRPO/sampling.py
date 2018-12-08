@@ -19,12 +19,14 @@ def sample_sp(policy, s0, T, env, gamma):
     states = [s0]
     actions = []
     rewards = []
+    dones   = []
     for i in range(T):
         a = policy.choose_a(s)
         s, r, done, info = env.step(a)
 
         if done:
             s = env.reset()
+            dones += [i]
 
         states  += [s]
         actions += [a]
@@ -35,7 +37,11 @@ def sample_sp(policy, s0, T, env, gamma):
     actions = np.array(actions)
     Q = np.zeros(T + 1)
 
-    for i in range(T-1, -1, -1):
-        Q[i] = gamma * Q[i + 1] + rewards[i]
+    dones += [T-1]
+    t0 = -1
+    for tend in dones:
+        for i in range(tend, t0, -1):
+            Q[i] = gamma * Q[i + 1] + rewards[i]
+        t0 = tend
 
     return states, actions, Q
