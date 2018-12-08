@@ -62,7 +62,7 @@ class NN(object):
     '''
     def update_policy_parameter(self, theta_new):
         theta_new = theta_new.view(-1)
-        print(theta_new.size())
+        #print(theta_new.size())
 
         # keine negativen Varianzen, da wir den logarithmus speichern
         self.model.log_std.data = theta_new[:self.a_dim]

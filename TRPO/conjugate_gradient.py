@@ -17,7 +17,7 @@ class ConjugateGradient(object):
         r = g - Ax
         d = r
 
-        print("d: ", d.sum())
+        #print("d: ", d.sum())
 
         r_norm_2 = r.T @ r
 
@@ -29,8 +29,8 @@ class ConjugateGradient(object):
             #Ad = JtMJd
             #z = Ad
 
-            print("z: ", z.sum())
-            print("d: ", d.sum())
+            #print("z: ", z.sum())
+            #print("d: ", d.sum())
 
             dz = d.T @ z
             assert dz != 0

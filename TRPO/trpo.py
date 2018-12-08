@@ -117,9 +117,9 @@ class TRPO(object):
     '''
     def line_search(self, beta, delta, s, theta_old, states, actions, Q):
         # For debugging:
-        theta_old_sum = self.policy.get_parameter_as_tensor().sum()
+        theta_old_sum = self.policy.get_parameter_as_tensor().detach().numpy().sum()
 
-        old_loss = self.loss_theta(self.policy.pi_theta, states, actions, Q)
+        old_obj = self.objective_theta(self.policy.pi_theta, states, actions, Q)
         log_std_old = self.policy.model.log_std.detach().numpy()
         mean_old = self.policy.model(torch.tensor(states, dtype = torch.float)).detach().numpy()
 
@@ -133,7 +133,8 @@ class TRPO(object):
             policy_theta_new = copy.deepcopy(self.policy)
             policy_theta_new.update_policy_parameter(theta_new)
 
-            assert self.policy.get_parameter_as_tensor().sum() == theta_old_sum
+            assert self.policy.get_parameter_as_tensor().detach().numpy().sum() == theta_old_sum
+            assert policy_theta_new.get_parameter_as_tensor().sum() == theta_new.sum()
 
             mean_new = policy_theta_new.model(torch.tensor(states, dtype = torch.float)).detach().numpy()
             log_std_new = policy_theta_new.model.log_std.detach().numpy()
@@ -143,8 +144,9 @@ class TRPO(object):
 
             # Check if KL-Divergenz is <= delta
             if delta_threshold <= delta:
-                loss = self.loss_theta(policy_theta_new.pi_theta, states, actions, Q)
-                if loss <= old_loss:
+                obj = self.objective_theta(policy_theta_new.pi_theta, states, actions, Q)
+                if obj >= old_obj:
+                    print("new objective: ", obj[0])
                     return policy_theta_new
             beta = beta * np.exp(-0.5 * i) # beta / 2 # How to reduce beta?
             print("beta = ", beta, "iteration = ", i)
@@ -157,17 +159,18 @@ class TRPO(object):
         Use, that only variances are given -> dimensions are independant
     """
     def kl_normal_distribution(self, mu_new, mu_old, log_std_new, log_std_old):
-        var_old = np.power(np.exp(log_std_old), 2)
         var_new = np.power(np.exp(log_std_new), 2)
+        var_old = np.power(np.exp(log_std_old), 2)
         print((mu_new - mu_old).sum(), (var_new - var_old).sum())
 
         kl = log_std_new - log_std_old + (var_old - np.power(mu_old - mu_new, 2)) / (2.0 * var_new) -0.5
-        kl = np.sum(np.abs(kl))
+        # average over samples, sum over action dim
+        kl = np.abs(kl.mean(0)).sum(0)
         print("kl: ", kl)
         return kl
 
     # Das Innere von Formel (14) (hier machen wir empirischen Eerwartungswert)
-    def loss_theta(self, pi_theta, states, actions, Q):
+    def objective_theta(self, pi_theta, states, actions, Q):
         sum = torch.zeros(1).double()
 
         for i in range(actions.shape[0]):
@@ -176,9 +179,9 @@ class TRPO(object):
             sum += pi_theta(s, a) * Q[i] / torch.tensor(self.policy.q(s, a)).double()
         return sum/actions.shape[0]
 
-    def compute_loss_gradients(self, states, actions, Q):
+    def compute_objective_gradients(self, states, actions, Q):
         self.policy.model.zero_grad()
-        to_opt = self.loss_theta(self.policy.pi_theta, states, actions, Q)
+        to_opt = self.objective_theta(self.policy.pi_theta, states, actions, Q)
         to_opt.backward()
 
         g = self.policy.get_gradients_as_tensor()

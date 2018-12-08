@@ -20,7 +20,7 @@ iterations = 10 # recommanded 10 iterations on last page (above Appendix D)
 
 for i in range(iterations):
     states, actions, Q = sample_sp(policy, s0, 1000, env, gamma)
-    g = trpo.compute_loss_gradients(states, actions, Q).detach().numpy().T
+    g = trpo.compute_objective_gradients(states, actions, Q).detach().numpy().T
 
     JM = np.matrix(trpo.compute_Jacobian(states))
     FIM = np.matrix(trpo.compute_FIM_mean())
@@ -29,15 +29,15 @@ for i in range(iterations):
     # print("dim(A): 2x2 < ", A.shape)
 
     s = np.linalg.lstsq(A, g.transpose(0,1), rcond=None)[0]
-    # TODO: Startwert? vs NAN
-    #s = cg.cg(g, JM, FIM, np.zeros(g.shape))
+    # TODO: Startwert? g, should be kind of similar to s
+    #s = cg.cg(g, JM, FIM, g)
 
     #print("cg: ", s_cg.T)
     #print("lstsq: ", s.T)
 
     beta = trpo.beta(0.01, np.matrix(s), JM, FIM)
 
-    theta_old = policy.get_parameter_as_tensor()#.view(-1)
+    theta_old = policy.get_parameter_as_tensor().detach()
 
     policy = trpo.line_search(beta, 0.1, s, theta_old, states, actions, Q)
 
@@ -45,4 +45,5 @@ for i in range(iterations):
 
     # Correct forumla and does it work?
     delta = (theta_new - theta_old) / theta_old
+    trpo.policy = policy
     print("Iteration {} Relative change of parameter = ".format(i), delta)
