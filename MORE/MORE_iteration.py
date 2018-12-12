@@ -25,9 +25,10 @@ class More(object):
         ####
 
         # Abbruchbedingung -> Kaüitel 2 letzter Satz, asymptotic to point estimate
-        while np.diag(Q).sum() > self.delta:
+        while np.absolute(np.diag(Q).sum()) > self.delta:
+            # Q violates properties of covariance matrix
             b, Q = self.__more_step__(b, Q)
-            print("Still improving...", np.diag(Q).sum())            
+            print("Still improving...", np.diag(Q).sum())
 
 
     def __more_step__(self, b, Q):
@@ -41,14 +42,15 @@ class More(object):
         R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
         # TODO: set diffrent epsilon, beta and start values for the optimization
         opti = Optimization(Q, b, R, r, 1, 0.99)
-        x0 = np.ones(2) # starting point for etha and omega
+        etha0 = self.__compute_etha0__(1, Q, R)
+        x0 = np.asarray([etha0, 1]) # starting point for etha and omega, where etha is large enough s.t. F is p.d.
 
         sol = opti.SLSQP(x0)
         print("Computed etha: {}, omega: {}".format(sol.x[0], sol.x[1]))
 
         # Update pi
-        etha = 1#sol.x[0]
-        omega = 1#sol.x[1]
+        etha = sol.x[0]
+        omega = sol.x[1]
         F = np.linalg.inv(etha * np.linalg.inv(Q) - 2 * R)
         f = etha * np.linalg.inv(Q) @ b + r
 
@@ -58,3 +60,15 @@ class More(object):
         print("Reward: ", max(rewards))
 
         return b_new, Q_new
+
+    def __compute_etha0__(self, etha0, Q, R):
+        F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)
+        print("inv(Q): ", np.linalg.inv(Q))
+        while not np.all(np.linalg.eigvals(F) > 0):
+            print(etha0)
+            etha0 += 1
+            F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)
+
+        print("etha0 = ", np.linalg.eigvals(F) > 0)
+
+        return etha0

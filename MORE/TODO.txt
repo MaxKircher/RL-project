@@ -2,20 +2,22 @@ Paper:
 - Parameter in der Test festlegen und zentral verarbeiten
     - epsilon verändern
     - gamma verändern
-    - Mindestgröße für etha festlegen
-    - b, Q (?)
+    - Mindestgröße für etha festlegen (geamcht, so dass F p.d.)
+    - b, Q (Probleme beim invertieren => Q nicht symm o. p.s.d.)
     - L, N_thetas etc.
-    - Start vals optimization
+    - Start vals optimization (implizit gemacht)
     - H_pi0
     - R² maß um Güte der Regression zu ermitteln (Len)
 - Environmentabhängige Initialisierung?
     - CartPole: weights im NN nicht Null initialisieren(?)
     - Andere env, anders inititalisieren
-- Warnings prüfen, beim Log
+- Warnings prüfen:
+    - beim Log in optimization line 41
+    - Covariance matrix not symmetric-positive-semidefinit sample.py 50/MORE_iteration
 - Idee: H_q als Abbruchbedingung?
 - Negative Spur unserer Kovarianzmatrix Q
 - Überall hinzufügen in welchem Format eine Variable ist Numpy vs. Torch
-
+- Rundungsfehler bei Matrixinversion
 
 --> Auf Drive Dokument mit Fragen/Updatedoku
 - bei der Updatedoku, Plots einbauen wo sinnvoll
