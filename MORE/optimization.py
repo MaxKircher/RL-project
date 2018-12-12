@@ -32,23 +32,32 @@ class Optimization(object):
         self.r = self.r.reshape(self.r.size, 1)
 
         F = np.linalg.inv(etha * np.linalg.inv(self.Q) - 2 * self.R)
+        # print("det F:", np.linalg.det(F))
         f = etha *  np.linalg.inv(self.Q) @ self.b + self.r
 
+        # print("Log warning 1: ", np.linalg.det(self.Q))
+        A = 2 * np.pi * (etha + omega) * F
+        detA = np.linalg.det(A)
+        if detA < 0:
+            print("Log warning 2: ", detA)
+            print(np.linalg.eigvals(A))
         # Our objective Function g, see Chapter 2.2
         g = etha * self.epsilon - self.beta * omega + .5 * (f.T @ F @ f \
                 - etha * self.b.T @  np.linalg.inv(self.Q) @ self.b \
-                - etha * np.log(2 * np.pi *  np.linalg.det(self.Q)) \
-                + (etha + omega) * np.log(np.linalg.det(2 * np.pi * (etha + omega) * F)))
+                - etha * np.log(np.linalg.det(2 * np.pi * self.Q)) \
+                + (etha + omega) * np.log(detA))
 
         return g[0,0]
 
     '''
-        F needs to be positive definite (det(F) > 0)
+        F needs to be positive definite (all evals of F > 0)
     '''
     def constraint(self, x):
         etha = x[0]
-        det_F = np.linalg.det(np.linalg.inv(etha * np.linalg.inv(self.Q) - 2 *  self.R)) - 1e-10
-        return det_F
+        # TODO prüfe ob alle evals größer Nulle
+        F = np.linalg.inv(etha * np.linalg.inv(self.Q) - 2 * self.R)
+        evals = np.linalg.eigvals(F) > 0
+        return evals.all() - 1e-10 # da F symm. sollte Realteil eh Null sein, aber sicher ist sicher wegen Rundngsfehler
 
     '''
         Constraint übergeben?
@@ -66,7 +75,6 @@ class Optimization(object):
         return F @ f, F * (etha + omega)
 
     '''
-        Bishop PDF page 69 Formel (1.93)
         H[pi0] = -75
         q = actual probability distribution
 
@@ -77,7 +85,7 @@ class Optimization(object):
         H_q = (k/2) + (k * np.log(2 * np.pi)) / 2 + np.log(np.linalg.det(Q)) / 2
         print("H_q: ", H_q)
         # TODO: H_pi0 übergeben
-        H_pi0 = -5
+        H_pi0 = -75
         beta = gamma * (H_q - H_pi0) + H_pi0
 
         return beta
