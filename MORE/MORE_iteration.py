@@ -41,11 +41,11 @@ class More(object):
         # TODO: statt "np.asarray(thetas).shape[1]" - anders schreiben
         R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
         # TODO: set diffrent epsilon, beta and start values for the optimization
-        opti = Optimization(Q, b, R, r, 1, 0.99)
+        opti = Optimization(Q, b, R, r, .01, 0.99)
         etha0 = self.__compute_etha0__(1, Q, R)
         x0 = np.asarray([etha0, 1]) # starting point for etha and omega, where etha is large enough s.t. F is p.d.
 
-        sol = opti.SLSQP(x0)
+        sol = opti.L_BFGS_B(x0) #SLSQP(x0)
         print("Computed etha: {}, omega: {}".format(sol.x[0], sol.x[1]))
 
         # Update pi

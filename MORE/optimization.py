@@ -57,15 +57,21 @@ class Optimization(object):
         # TODO prüfe ob alle evals größer Nulle
         F = np.linalg.inv(etha * np.linalg.inv(self.Q) - 2 * self.R)
         evals = np.linalg.eigvals(F) > 0
-        return evals.all() - 1e-10 # da F symm. sollte Realteil eh Null sein, aber sicher ist sicher wegen Rundngsfehler
+        return evals.all() - 1e-2 # da F symm. sollte Realteil eh Null sein, aber sicher ist sicher wegen Rundngsfehler
 
     '''
         Constraint übergeben?
     '''
     def SLSQP(self, x0):
-        bnds = ((1e-5, None), (1e-5, None))
+        bnds = ((x0[0], None), (1e-5, None))
         cons = {'type': 'ineq', 'fun': self.constraint}
         soloution = minimize(self.objective, x0, method = 'SLSQP', bounds = bnds, constraints = cons)
+        return soloution
+
+    def L_BFGS_B(self, x0):
+        bnds = ((x0[0], None), (1e-5, None))
+        cons = {'type': 'ineq', 'fun': self.constraint}
+        soloution = minimize(self.objective, x0, method = 'L-BFGS-B', bounds = bnds, constraints = cons)
         return soloution
 
     '''
