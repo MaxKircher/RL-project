@@ -6,9 +6,10 @@ from policy import *
 from sampling import *
 from conjugate_gradient import *
 
-env = gym.make('CartpoleStabShort-v0')
-s0 = env.reset()
-gamma = 0.99
+#env = gym.make('CartpoleStabShort-v0')
+env = gym.make('Pendulum-v2')
+s0 = tuple(env.reset())
+gamma = 0.9999
 
 delta = 0.1 # KL threshold in linesearch
 
@@ -21,9 +22,9 @@ trpo = TRPO(env, gamma, policy)
 # recommanded 10 iterations on last page (above Appendix D)
 cg = ConjugateGradient(10)
 
-iterations = 1000
+iterations = 100
 # Table 2 -> min 50.000
-num_steps = 50000
+num_steps = 5000
 for i in range(iterations):
     print("Iteration ", i, ":")
 
@@ -36,7 +37,6 @@ for i in range(iterations):
     FIM = np.matrix(trpo.compute_FIM_mean())
 
     A = JM.T * FIM * JM # where A is the FIM w.r.t. to the Parameters theta see C
-    # print("dim(A): 2x2 < ", A.shape)
 
     s = np.linalg.lstsq(A, g.transpose(0,1), rcond=None)[0]
     # TODO: Startwert? g, should be kind of similar to s
@@ -52,8 +52,7 @@ for i in range(iterations):
     policy = trpo.line_search(beta, delta, s, theta_old, states, actions, Q)
     trpo.policy = policy
 
-    # # Printing:
-    # theta_new = policy.get_parameter_as_tensor()
-    # # Correct forumla and does it work?
-    # delta = (theta_new - theta_old) / theta_old
-    # print("Iteration {} Relative change of parameter = ".format(i), delta)
+    # Printing:
+    theta_new = policy.get_parameter_as_tensor()
+    print_delta = (theta_new - theta_old) / theta_old
+    print("Iteration {} Relative change of parameter = ".format(i), print_delta)

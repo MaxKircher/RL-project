@@ -23,9 +23,11 @@ def sample_sp(policy, s0, T, env, gamma):
     for i in range(T):
         a = policy.choose_a(s)
         s, r, done, info = env.step(a)
+        if type(s) is np.ndarray:
+            s = tuple(s.reshape(-1))
 
         if done:
-            s = env.reset()
+            s = tuple(env.reset())
             dones += [i]
 
         states  += [s]
