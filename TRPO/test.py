@@ -10,19 +10,29 @@ env = gym.make('CartpoleStabShort-v0')
 s0 = env.reset()
 gamma = 0.99
 
+delta = 0.1 # KL threshold in linesearch
+
 s_dim = env.observation_space.shape[0]
 a_dim = env.action_space.shape[0]
 
 policy = NN(s_dim, a_dim)
 trpo = TRPO(env, gamma, policy)
-cg = ConjugateGradient(10)
-iterations = 10 # recommanded 10 iterations on last page (above Appendix D)
 
+# recommanded 10 iterations on last page (above Appendix D)
+cg = ConjugateGradient(10)
+
+iterations = 1000
+# Table 2 -> min 50.000
+num_steps = 50000
 for i in range(iterations):
-    states, actions, Q = sample_sp(policy, s0, 1000, env, gamma)
+    print("Iteration ", i, ":")
+
+    states, actions, Q = sample_sp(policy, s0, num_steps, env, gamma)
     g = trpo.compute_objective_gradients(states, actions, Q).detach().numpy().T
 
-    JM = np.matrix(trpo.compute_Jacobian(states))
+    subsampled_states = states[0::10] #get every tenth state (see above App D)
+
+    JM = np.matrix(trpo.compute_Jacobian(subsampled_states))
     FIM = np.matrix(trpo.compute_FIM_mean())
 
     A = JM.T * FIM * JM # where A is the FIM w.r.t. to the Parameters theta see C
@@ -39,11 +49,11 @@ for i in range(iterations):
 
     theta_old = policy.get_parameter_as_tensor().detach()
 
-    policy = trpo.line_search(beta, 0.1, s, theta_old, states, actions, Q)
-
-    theta_new = policy.get_parameter_as_tensor()
-
-    # Correct forumla and does it work?
-    delta = (theta_new - theta_old) / theta_old
+    policy = trpo.line_search(beta, delta, s, theta_old, states, actions, Q)
     trpo.policy = policy
-    print("Iteration {} Relative change of parameter = ".format(i), delta)
+
+    # # Printing:
+    # theta_new = policy.get_parameter_as_tensor()
+    # # Correct forumla and does it work?
+    # delta = (theta_new - theta_old) / theta_old
+    # print("Iteration {} Relative change of parameter = ".format(i), delta)

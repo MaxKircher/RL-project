@@ -19,6 +19,7 @@ class TRPO(object):
         self.env = env
         self.gamma = gamma
         self.policy = policy
+
     '''
         Computes the Jacobi-Matrix by doing the following steps
             1. Get the corrent policy model
@@ -52,7 +53,7 @@ class TRPO(object):
         # For given state expected action w.r.t. the underlying model
         mu_actions = policy_net(states)
 
-        # Compute the coloumns of the Jacobi-Matrix + pad with size of log_std
+        # Compute the coloumns of the Jacobi-Matrix
         number_cols = sum(p.numel() for p in policy_net.parameters())
 
         ''' TODO: Ist Jacobi_matrix[0,0] = 0 ??? '''
@@ -146,10 +147,11 @@ class TRPO(object):
             if delta_threshold <= delta:
                 obj = self.objective_theta(policy_theta_new.pi_theta, states, actions, Q)
                 if obj >= old_obj:
-                    print("new objective: ", obj[0])
+                    improvement = obj-old_obj
+                    print("beta = ", beta, "iteration = ", i)
+                    print("new objective: ", obj.detach().numpy()[0], " improved by ", improvement.detach().numpy()[0])
                     return policy_theta_new
             beta = beta * np.exp(-0.5 * i) # beta / 2 # How to reduce beta?
-            print("beta = ", beta, "iteration = ", i)
 
         print("Something went wrong!")
         return None
@@ -161,12 +163,12 @@ class TRPO(object):
     def kl_normal_distribution(self, mu_new, mu_old, log_std_new, log_std_old):
         var_new = np.power(np.exp(log_std_new), 2)
         var_old = np.power(np.exp(log_std_old), 2)
-        print((mu_new - mu_old).sum(), (var_new - var_old).sum())
+        #print((mu_new - mu_old).sum(), (var_new - var_old).sum())
 
         kl = log_std_new - log_std_old + (var_old - np.power(mu_old - mu_new, 2)) / (2.0 * var_new) -0.5
         # average over samples, sum over action dim
         kl = np.abs(kl.mean(0)).sum(0)
-        print("kl: ", kl)
+        #print("kl: ", kl)
         return kl
 
     # Das Innere von Formel (14) (hier machen wir empirischen Eerwartungswert)
