@@ -1,7 +1,7 @@
 import numpy as np
 import gym
 import quanser_robots
-from policy import *
+from policy1 import *
 import inspect
 
 class Sample(object):
@@ -45,25 +45,15 @@ class Sample(object):
     def sample(self, N_per_theta, number_of_thetas, L, mu, dev):
         rewards = []
         thetas = []
-        #print("mu, dev: ", mu.shape, dev.shape)
+        reward = 0
 
         for j in range(number_of_thetas):
-            # theta is a numpy matrix and needs to be transformed in desired list format
-            reward = 0
-            theta = np.random.multivariate_normal(mu, dev)
-            self.policy.set_theta(theta)
-            s = self.env.reset()
-            for i in range(N_per_theta):
-                a = self.policy.get_action(s)
-                s, r, d, i = self.env.step(np.asarray(a))
-                reward += r
-                if d:
-                    s = self.env.reset()
 
-            avg_reward = reward / N_per_theta
-            self.reward_memory += [avg_reward]
+            theta = np.random.normal(mu, dev)
+            reward = self.policy.set_theta(theta)
+            self.reward_memory += [reward]
             self.theta_memory += [theta]
-        print("Sampling successfull")
+
         self.reward_memory = self.reward_memory[-L:]
         self.theta_memory = self.theta_memory[-L:]
 
