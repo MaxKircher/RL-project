@@ -30,7 +30,7 @@ class DebugPolicy(Policy):
     #     x = thetas[0]
     #     y = thetas[1]
     #     return (x**2 + 2 * y**2) * np.exp(-x**2 - y**2)
-
+    # https://www.mathematik.tu-darmstadt.de/media/analysis/lehrmaterial_anapde/hallerd/Ana2Skript18.pdf Bsp. 14.9
     # def set_theta(self, thetas):
     #     x = thetas[0]
     #     y = thetas[1]

@@ -56,7 +56,9 @@ class More(object):
         b_new, Q_new = opti.update_pi(F, f, etha, omega)
 
         print("parameter change: ", np.abs(b - b_new).sum())
-        print("Reward: ", max(rewards))
+        print("Reward max: ", max(rewards))
+        print("Reward max - min: ", max(rewards) - min(rewards))
+        print("theta = ", b_new)
 
         return b_new, Q_new
 
