@@ -10,7 +10,7 @@ from MORE_iteration import *
 env = gym.make('CartpoleStabShort-v0')
 state_dim = env.observation_space.shape[0] # = 5
 action_dim = env.action_space.shape[0] # = 1
-
+print("state_dim, action_dim =  ", state_dim, ", ", action_dim)
 '''
     We assume that all degrees occur
 

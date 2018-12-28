@@ -26,20 +26,20 @@ class DebugPolicy(Policy):
     def __init__(self, state_dim, action_dim):
         Policy.__init__(self, state_dim, action_dim)
 
-    # def set_theta(self, thetas):
-    #     x = thetas[0]
-    #     y = thetas[1]
-    #     return (x**2 + 2 * y**2) * np.exp(-x**2 - y**2)
+    def set_theta(self, thetas):
+        x = thetas[0]
+        y = thetas[1]
+        return (x**2 + 2 * y**2) * np.exp(-x**2 - y**2)
     # https://www.mathematik.tu-darmstadt.de/media/analysis/lehrmaterial_anapde/hallerd/Ana2Skript18.pdf Bsp. 14.9
     # def set_theta(self, thetas):
     #     x = thetas[0]
     #     y = thetas[1]
     #     return np.exp(-x**2 - y**2) + np.exp(-(x-3)**2 - y**2)
-
-    def set_theta(self, thetas):
-        x = thetas[0]
-        y = thetas[1]
-        return -(x * y)**2 + 3
+    #
+    # def set_theta(self, thetas):
+    #     x = thetas[0]
+    #     y = thetas[1]
+    #     return -(x * y)**2 + 3
 
     def get_number_of_parameters(self):
         return 2

@@ -33,7 +33,7 @@ class More(object):
     def __more_step__(self, b, Q):
         # Generate samles for our policy
         # TODO: 10000,20,150 -> Übergeben
-        rewards, thetas = self.sample_generator.sample(10000, 20, 150, b, Q)
+        rewards, thetas = self.sample_generator.sample(1000, 20, 150, b, Q)
 
         beta_hat = linear_regression(thetas, rewards)
 

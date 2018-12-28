@@ -64,9 +64,15 @@ class Sample(object):
                     if d:
                         s = self.env.reset()
 
-            avg_reward = reward / N_per_theta
-            self.reward_memory += [avg_reward]
-            self.theta_memory += [theta]
+            if isinstance(self.policy, DebugPolicy):
+                avg_reward = reward
+                self.reward_memory += [avg_reward]
+                self.theta_memory += [theta]
+            else:
+                avg_reward = reward / N_per_theta
+                self.reward_memory += [avg_reward]
+                self.theta_memory += [theta]
+                
         print("Sampling successfull")
         self.reward_memory = self.reward_memory[-L:]
         self.theta_memory = self.theta_memory[-L:]
