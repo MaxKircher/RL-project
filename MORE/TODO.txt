@@ -21,3 +21,8 @@ Paper:
 
 --> Auf Drive Dokument mit Fragen/Updatedoku
 - bei der Updatedoku, Plots einbauen wo sinnvoll
+
+_______
+Zum Debuggen habe ich folgendes gemacht:
+- in der Klasse policy eine neue DebugPolicy implementiert
+    using -x*(x - 10)*(x - 2)*(x + 13)/1000 as objective and x = theta to debug the code

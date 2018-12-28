@@ -22,7 +22,6 @@ class Policy(object):
     def get_number_of_parameters(self):
         raise NotImplementedError("Sublcasses should implement this!")
 
-
 class PolynomialPolicy(Policy):
 
     def __init__(self, state_dim, action_dim, polynomial_degree):
