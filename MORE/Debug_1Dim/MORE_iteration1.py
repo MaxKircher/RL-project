@@ -18,7 +18,7 @@ class More(object):
 
 
     def iterate(self):
-        b, Q = 0, 1
+        b, Q = -10, 10
         while np.absolute(Q) > self.delta:
             # Q violates properties of covariance matrix
             b, Q = self.__more_step__(b, Q)
@@ -39,7 +39,7 @@ class More(object):
         etha0 = self.__compute_etha0__(1, Q, R)
         x0 = np.asarray([etha0, 1]) # starting point for etha and omega, where etha is large enough s.t. F is p.d.
 
-        sol = opti.SLSQP(x0) #L_BFGS_B(x0)
+        sol = opti.SLSQP(x0) #L_BFGS_B(x0) #
         print("Computed etha: {}, omega: {}".format(sol.x[0], sol.x[1]))
 
         # Update pi

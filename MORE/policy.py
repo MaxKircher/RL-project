@@ -22,6 +22,28 @@ class Policy(object):
     def get_number_of_parameters(self):
         raise NotImplementedError("Sublcasses should implement this!")
 
+class DebugPolicy(Policy):
+    def __init__(self, state_dim, action_dim):
+        Policy.__init__(self, state_dim, action_dim)
+
+    # def set_theta(self, thetas):
+    #     x = thetas[0]
+    #     y = thetas[1]
+    #     return (x**2 + 2 * y**2) * np.exp(-x**2 - y**2)
+
+    # def set_theta(self, thetas):
+    #     x = thetas[0]
+    #     y = thetas[1]
+    #     return np.exp(-x**2 - y**2) + np.exp(-(x-3)**2 - y**2)
+
+    def set_theta(self, thetas):
+        x = thetas[0]
+        y = thetas[1]
+        return -(x * y)**2 + 3
+
+    def get_number_of_parameters(self):
+        return 2
+
 class PolynomialPolicy(Policy):
 
     def __init__(self, state_dim, action_dim, polynomial_degree):

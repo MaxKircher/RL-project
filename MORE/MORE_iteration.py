@@ -21,7 +21,7 @@ class More(object):
         #### Raus in die test, cf. TODO
         d = self.policy.get_number_of_parameters()
         b = np.array(d*[0])
-        Q = 10.*np.eye(d)
+        Q = 1*np.eye(d)
         ####
         # Abbruchbedingung -> Kaüitel 2 letzter Satz, asymptotic to point estimate
         while np.absolute(np.diag(Q).sum()) > self.delta:

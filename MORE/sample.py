@@ -51,14 +51,18 @@ class Sample(object):
             # theta is a numpy matrix and needs to be transformed in desired list format
             reward = 0
             theta = np.random.multivariate_normal(mu, dev)
-            self.policy.set_theta(theta)
-            s = self.env.reset()
-            for i in range(N_per_theta):
-                a = self.policy.get_action(s)
-                s, r, d, i = self.env.step(np.asarray(a))
-                reward += r
-                if d:
-                    s = self.env.reset()
+
+            if isinstance(self.policy, DebugPolicy):
+                reward = self.policy.set_theta(theta)
+            else:
+                self.policy.set_theta(theta)
+                s = self.env.reset()
+                for i in range(N_per_theta):
+                    a = self.policy.get_action(s)
+                    s, r, d, i = self.env.step(np.asarray(a))
+                    reward += r
+                    if d:
+                        s = self.env.reset()
 
             avg_reward = reward / N_per_theta
             self.reward_memory += [avg_reward]
