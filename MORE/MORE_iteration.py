@@ -64,12 +64,12 @@ class More(object):
 
     def __compute_etha0__(self, etha0, Q, R):
         F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)
-        print("inv(Q): ", np.linalg.inv(Q))
+        # print("inv(Q): ", np.linalg.inv(Q))
         while not np.all(np.linalg.eigvals(F) > 0):
             print(etha0)
             etha0 += 1
             F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)
 
-        print("etha0 = ", np.linalg.eigvals(F) > 0)
+        # print("etha0 = ", np.linalg.eigvals(F) > 0)
 
         return etha0
