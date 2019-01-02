@@ -11,10 +11,11 @@ class More(object):
         is smaller than delta
     '''
 
-    def __init__(self, delta, policy, env):
+    def __init__(self, delta, policy, env, ts):
         self.delta = delta
         self.sample_generator = Sample(env, policy)
         self.policy = policy
+        self.ts = ts
 
 
     def iterate(self):
@@ -33,7 +34,8 @@ class More(object):
     def __more_step__(self, b, Q):
         # Generate samles for our policy
         # TODO: 10000,20,150 -> Übergeben
-        rewards, thetas = self.sample_generator.sample(1000, 20, 150, b, Q)
+        #rewards, thetas = self.sample_generator.sample(1000, 20, 150, b, Q)
+        rewards, thetas = self.sample_generator.training_sample(20, b, Q, self.ts)
 
         beta_hat = linear_regression(thetas, rewards)
 
@@ -66,7 +68,7 @@ class More(object):
         F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)
         # print("inv(Q): ", np.linalg.inv(Q))
         while not np.all(np.linalg.eigvals(F) > 0):
-            print(etha0)
+            #print(etha0)
             etha0 += 1
             F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)
 

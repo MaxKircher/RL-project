@@ -6,6 +6,7 @@ from policy import *
 # from regression import * # , X
 # from optimization import *
 from MORE_iteration import *
+from training_states import*
 
 env = gym.make('CartpoleStabShort-v0')
 state_dim = env.observation_space.shape[0] # = 5
@@ -31,14 +32,16 @@ degree = 2
      - variance for states with state_dim.low/high in (-inf, inf) should be almost zero
        to avoid output NaN if policy is computed (dirty soloution)
 '''
-#policy = NeuronalNetworkPolicy(state_dim, action_dim)
-policy = PolynomialPolicy(state_dim, action_dim, degree)
+policy = NeuronalNetworkPolicy(state_dim, action_dim)
+#policy = PolynomialPolicy(state_dim, action_dim, degree)
 #policy = DebugPolicy(state_dim, action_dim)
 
 print("Number of model parameters: ", policy.get_number_of_parameters())
 
+training_states = TrainingStates(env)
+ts = training_states.generate_training_states(300)
 
-iterator = More(0.1, policy, env)
+iterator = More(0.1, policy, env, ts)
 
 # setting reward 0 is always a bad idea..
 thetas = iterator.iterate()
