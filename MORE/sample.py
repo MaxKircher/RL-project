@@ -51,20 +51,58 @@ class Sample(object):
             # theta is a numpy matrix and needs to be transformed in desired list format
             reward = 0
             theta = np.random.multivariate_normal(mu, dev)
-            self.policy.set_theta(theta)
-            s = self.env.reset()
-            for i in range(N_per_theta):
-                a = self.policy.get_action(s)
-                s, r, d, i = self.env.step(np.asarray(a))
-                reward += r
-                if d:
-                    s = self.env.reset()
 
-            avg_reward = reward / N_per_theta
-            self.reward_memory += [avg_reward]
-            self.theta_memory += [theta]
+            if isinstance(self.policy, DebugPolicy):
+                reward = self.policy.set_theta(theta)
+            else:
+                self.policy.set_theta(theta)
+                s = self.env.reset()
+                for i in range(N_per_theta):
+                    a = self.policy.get_action(s)
+                    s, r, d, i = self.env.step(np.asarray(a))
+                    reward += r
+                    if d:
+                        s = self.env.reset()
+
+            if isinstance(self.policy, DebugPolicy):
+                avg_reward = reward
+                self.reward_memory += [avg_reward]
+                self.theta_memory += [theta]
+            else:
+                avg_reward = reward / N_per_theta
+                self.reward_memory += [avg_reward]
+                self.theta_memory += [theta]
+
         print("Sampling successfull")
         self.reward_memory = self.reward_memory[-L:]
         self.theta_memory = self.theta_memory[-L:]
 
         return self.reward_memory, self.theta_memory
+
+    def training_sample(self, number_of_thetas, mu, dev, ts):
+        rewards = []
+        thetas = []
+
+# Hier stimmt was mit der Schleife nicht, du musst das wie oben anpassen!
+# 1. was ist die innere, 2. was ist die äußere Schleife
+# 3. Wie updatest du die Listen?
+
+        for j in range(number_of_thetas):
+            reward = 0
+            theta = np.random.multivariate_normal(mu, dev)
+
+            self.policy.set_theta(theta)
+            for j in range(len(ts)):
+                state = ts[j]
+                a = self.policy.get_action(state)
+                s, r, d, i = self.env.step(np.asarray(a))
+                reward += r
+
+            #avg_reward = reward / N_per_theta
+            #rewards += [avg_reward]
+            rewards += [reward]
+            thetas += [theta]
+
+        print("Sampling successfull")
+
+        return rewards, thetas

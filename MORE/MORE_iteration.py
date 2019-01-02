@@ -11,17 +11,18 @@ class More(object):
         is smaller than delta
     '''
 
-    def __init__(self, delta, policy, env):
+    def __init__(self, delta, policy, env, ts):
         self.delta = delta
         self.sample_generator = Sample(env, policy)
         self.policy = policy
+        self.ts = ts
 
 
     def iterate(self):
         #### Raus in die test, cf. TODO
         d = self.policy.get_number_of_parameters()
         b = np.array(d*[0])
-        Q = 10.*np.eye(d)
+        Q = 1*np.eye(d)
         ####
         # Abbruchbedingung -> Kaüitel 2 letzter Satz, asymptotic to point estimate
         while np.absolute(np.diag(Q).sum()) > self.delta:
@@ -33,7 +34,8 @@ class More(object):
     def __more_step__(self, b, Q):
         # Generate samles for our policy
         # TODO: 10000,20,150 -> Übergeben
-        rewards, thetas = self.sample_generator.sample(10000, 20, 150, b, Q)
+        #rewards, thetas = self.sample_generator.sample(1000, 20, 150, b, Q)
+        rewards, thetas = self.sample_generator.training_sample(20, b, Q, self.ts)
 
         beta_hat = linear_regression(thetas, rewards)
 
@@ -56,18 +58,20 @@ class More(object):
         b_new, Q_new = opti.update_pi(F, f, etha, omega)
 
         print("parameter change: ", np.abs(b - b_new).sum())
-        print("Reward: ", max(rewards))
+        print("Reward max: ", max(rewards))
+        print("Reward max - min: ", max(rewards) - min(rewards))
+        print("theta = ", b_new)
 
         return b_new, Q_new
 
     def __compute_etha0__(self, etha0, Q, R):
         F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)
-        print("inv(Q): ", np.linalg.inv(Q))
+        # print("inv(Q): ", np.linalg.inv(Q))
         while not np.all(np.linalg.eigvals(F) > 0):
-            print(etha0)
+            #print(etha0)
             etha0 += 1
             F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)
 
-        print("etha0 = ", np.linalg.eigvals(F) > 0)
+        # print("etha0 = ", np.linalg.eigvals(F) > 0)
 
         return etha0

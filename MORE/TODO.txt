@@ -26,3 +26,7 @@ _______
 Zum Debuggen habe ich folgendes gemacht:
 - in der Klasse policy eine neue DebugPolicy implementiert
     using -x*(x - 10)*(x - 2)*(x + 13)/1000 as objective and x = theta to debug the code
+
+- Neue Policies?
+  a. https://medium.com/@ts1829/policy-gradient-reinforcement-learning-in-pytorch-df1383ea0baf
+  b. https://medium.freecodecamp.org/an-introduction-to-policy-gradients-with-cartpole-and-doom-495b5ef2207f
