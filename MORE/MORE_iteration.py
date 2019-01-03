@@ -3,6 +3,7 @@ from policy import *
 from sample import *
 from regression import * # , X
 from optimization import *
+from plot_data import *
 
 class More(object):
     '''
@@ -11,11 +12,11 @@ class More(object):
         is smaller than delta
     '''
 
-    def __init__(self, delta, policy, env, ts):
+    def __init__(self, delta, policy, env): #(self, delta, policy, env, ts): #
         self.delta = delta
         self.sample_generator = Sample(env, policy)
         self.policy = policy
-        self.ts = ts
+        #self.ts = ts
 
 
     def iterate(self):
@@ -23,19 +24,23 @@ class More(object):
         d = self.policy.get_number_of_parameters()
         b = np.array(d*[0])
         Q = 1*np.eye(d)
+        count = 0
         ####
         # Abbruchbedingung -> Kaüitel 2 letzter Satz, asymptotic to point estimate
         while np.absolute(np.diag(Q).sum()) > self.delta:
             # Q violates properties of covariance matrix
-            b, Q = self.__more_step__(b, Q)
+            b, Q, rewards, thetas = self.__more_step__(b, Q)
+            count += 1
             print("Still improving...", np.diag(Q).sum())
+            if (np.mod(count, 3500) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
+                plot(rewards, thetas, self.policy.get_number_of_parameters())
 
 
     def __more_step__(self, b, Q):
         # Generate samles for our policy
         # TODO: 10000,20,150 -> Übergeben
-        #rewards, thetas = self.sample_generator.sample(1000, 20, 150, b, Q)
-        rewards, thetas = self.sample_generator.training_sample(20, b, Q, self.ts)
+        rewards, thetas = self.sample_generator.sample(1000, 20, 300, b, Q)
+        #rewards, thetas = self.sample_generator.training_sample(20, b, Q, self.ts)
 
         beta_hat = linear_regression(thetas, rewards)
 
@@ -46,7 +51,7 @@ class More(object):
         etha0 = self.__compute_etha0__(1, Q, R)
         x0 = np.asarray([etha0, 1]) # starting point for etha and omega, where etha is large enough s.t. F is p.d.
 
-        sol = opti.L_BFGS_B(x0) #SLSQP(x0)
+        sol = opti.SLSQP(x0) #L_BFGS_B(x0) #
         print("Computed etha: {}, omega: {}".format(sol.x[0], sol.x[1]))
 
         # Update pi
@@ -62,7 +67,7 @@ class More(object):
         print("Reward max - min: ", max(rewards) - min(rewards))
         print("theta = ", b_new)
 
-        return b_new, Q_new
+        return b_new, Q_new, rewards, thetas
 
     def __compute_etha0__(self, etha0, Q, R):
         F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)
@@ -72,6 +77,6 @@ class More(object):
             etha0 += 1
             F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)
 
-        # print("etha0 = ", np.linalg.eigvals(F) > 0)
+        print("etha0 = ", np.linalg.eigvals(F) > 0)
 
         return etha0

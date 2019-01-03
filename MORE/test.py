@@ -33,16 +33,18 @@ degree = 2
        to avoid output NaN if policy is computed (dirty soloution)
 '''
 #policy = NeuronalNetworkPolicy(state_dim, action_dim)
-policy = PolynomialPolicy(state_dim, action_dim, degree)
-#policy = DebugPolicy(state_dim, action_dim)
+#policy = PolynomialPolicy(state_dim, action_dim, degree)
+policy = DebugPolicy(state_dim, action_dim)
 
 print("Number of model parameters: ", policy.get_number_of_parameters())
 
-training_states = TrainingStates(env)
-ts = training_states.generate_training_states(300)
+# training_states = TrainingStates(env)
+# ts = training_states.generate_training_states(300)
 
-iterator = More(0.1, policy, env, ts)
+bound = .1 * policy.get_number_of_parameters()
 
+#iterator = More(.1 * bound, policy, env, ts)
+iterator = More(bound, policy, env)
 # setting reward 0 is always a bad idea..
 thetas = iterator.iterate()
 print("worked so far.")

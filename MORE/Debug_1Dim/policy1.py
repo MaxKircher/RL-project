@@ -27,8 +27,8 @@ class DebugPolicy(Policy):
         Policy.__init__(self, state_dim, action_dim)
 
     def set_theta(self, thetas):
-        return 1.9
-        #return -thetas * (thetas - 10) * (thetas - 2) * (thetas + 13) / 1000
+        #return 1.9
+        return -thetas * (thetas - 20) * (thetas - 2) * (thetas + 23) / 1000
 
     def get_number_of_parameters(self):
         return 1
