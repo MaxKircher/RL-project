@@ -32,7 +32,7 @@ class More(object):
             b, Q, rewards, thetas = self.__more_step__(b, Q)
             count += 1
             print("Still improving...", np.diag(Q).sum())
-            if (np.mod(count, 4000) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
+            if (np.mod(count, 2000) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
                 plot(rewards, thetas, self.policy.get_number_of_parameters())
 
 
