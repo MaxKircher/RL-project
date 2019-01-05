@@ -3,6 +3,7 @@ from policy1 import *
 from sample1 import *
 from regression1 import * # , X
 from optimization1 import *
+from plot_data1 import *
 
 class More(object):
     '''
@@ -19,10 +20,14 @@ class More(object):
 
     def iterate(self):
         b, Q = -10, 10
+        count = 0
         while np.absolute(Q) > self.delta:
             # Q violates properties of covariance matrix
-            b, Q = self.__more_step__(b, Q)
+            b, Q, rewards, x = self.__more_step__(b, Q)
             print("Still improving...", Q)
+            count += 1
+            if (np.mod(count, 100) == 0) or (np.absolute(Q) <= self.delta):
+                plot(rewards, x)
 
 
     def __more_step__(self, b, Q):
@@ -52,9 +57,10 @@ class More(object):
 
         print("parameter change: ", np.abs(b - b_new))
         print("Reward max - min: ", max(rewards) - min(rewards))
+        print("Reward max: ", max(rewards))
         print("theta = ", b_new)
 
-        return b_new, Q_new
+        return b_new, Q_new, rewards, thetas
 
     def __compute_etha0__(self, etha0, Q, R):
         F = 1/(etha0/Q - 2 * R)
@@ -62,8 +68,5 @@ class More(object):
         while not F > 0:
             etha0 += 1
             F = 1/(etha0/Q - 2 * R)
-
-        return etha0
-
 
         return etha0
