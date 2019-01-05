@@ -46,4 +46,6 @@ def sample_sp(policy, s0, T, env, gamma):
             Q[i] = gamma * Q[i + 1] + rewards[i]
         t0 = tend
 
-    return states, actions, Q
+    Q = (Q - Q.mean()) / Q.std()
+
+    return states, actions, Q, sum(rewards)

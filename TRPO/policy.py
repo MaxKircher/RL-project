@@ -15,16 +15,21 @@ class NN(object):
     def __init__(self, s_dim, a_dim):
         self.s_dim = s_dim
         self.a_dim = a_dim
-        inter_dim = 10
+        inter_dim = 16
         self.model = torch.nn.Sequential(
-            torch.nn.Linear(self.s_dim, inter_dim),
+            torch.nn.Linear(s_dim, inter_dim),
             # inter_dim Knoten im intermediate layer
-            torch.nn.ReLU(),
-            torch.nn.Linear(inter_dim, self.a_dim),
+            torch.nn.Tanh(),
+            torch.nn.Linear(inter_dim, inter_dim),
+            torch.nn.Tanh(),
+            torch.nn.Linear(inter_dim, a_dim),
         )
+        self.model[-1].weight.data.mul_(0.1)
+        self.model[-1].bias.data.mul_(0.0)
+
         # std = pow(e, lambda) -> lambda = log(std)
         ''''IS BY DEFAULT FIRST PARAMETER'''
-        self.model.log_std = torch.nn.Parameter(torch.ones(self.a_dim, requires_grad=True))
+        self.model.log_std = torch.nn.Parameter(torch.zeros(self.a_dim, requires_grad=True))
 
     def get_covariance_matrix_numpy(self):
         dev = np.exp(self.model.log_std.detach().numpy())

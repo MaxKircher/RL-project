@@ -5,13 +5,22 @@ from trpo import *
 from policy import *
 from sampling import *
 from conjugate_gradient import *
+import pickle
+from matplotlib import pyplot as plt
+
+#plt.figure()
+plt.show()
+axes = plt.gca()
+#plt.ion()
+axes.set_xlim(0, 100)
+rewards = np.array([]) # for plotting
 
 #env = gym.make('CartpoleStabShort-v0')
 env = gym.make('Pendulum-v2')
 s0 = tuple(env.reset())
 gamma = 0.9999
 
-delta = 0.1 # KL threshold in linesearch
+delta = 0.01 # KL threshold in linesearch
 
 s_dim = env.observation_space.shape[0]
 a_dim = env.action_space.shape[0]
@@ -24,11 +33,13 @@ cg = ConjugateGradient(10)
 
 iterations = 100
 # Table 2 -> min 50.000
-num_steps = 5000
+num_steps = 10000
 for i in range(iterations):
     print("Iteration ", i, ":")
 
-    states, actions, Q = sample_sp(policy, s0, num_steps, env, gamma)
+    states, actions, Q, r = sample_sp(policy, s0, num_steps, env, gamma)
+    rewards = np.append(rewards, r) # for plotting
+
     g = trpo.compute_objective_gradients(states, actions, Q).detach().numpy().T
 
     subsampled_states = states[0::10] #get every tenth state (see above App D)
@@ -53,6 +64,17 @@ for i in range(iterations):
     trpo.policy = policy
 
     # Printing:
-    theta_new = policy.get_parameter_as_tensor()
-    print_delta = (theta_new - theta_old) / theta_old
-    print("Iteration {} Relative change of parameter = ".format(i), print_delta)
+    #theta_new = policy.get_parameter_as_tensor()
+    #print_delta = (theta_new - theta_old) / theta_old
+    #print("Iteration {} Relative change of parameter = ".format(i), print_delta)
+
+
+    # Save in file
+    dict = {"policy": policy}
+    with open("my_policy2.pkl", "wb") as output:
+        pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
+
+    # Plotting
+    plt.plot(range(i+1), rewards, c='b')
+    plt.draw()
+    plt.pause(1e-17)
