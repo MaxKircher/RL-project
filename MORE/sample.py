@@ -60,7 +60,7 @@ class Sample(object):
                 for i in range(N_per_theta):
                     a = self.policy.get_action(s)
                     s, r, d, i = self.env.step(np.asarray(a))
-                    reward += r
+                    reward += r * 1e5
                     if d:
                         s = self.env.reset()
 

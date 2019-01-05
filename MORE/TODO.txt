@@ -38,3 +38,11 @@ Zum Debuggen habe ich folgendes gemacht:
   - ggf. Ridge Regression probieren
 - Plot von der objective, je weiter Weg die Optima liegen, desto größer kann man die Abbruchbedingung
   wählen
+  _______
+  1. Linkes Terminal: n = 100 & ts (davor  n = 20)
+  2. Terminal: n = 20 und 1000 Sample pro Theta + geänderter Reward
+  3. Terminal: n = 100 und 10 Sample pro Theta + geänderter Reward (geht viel schneller)
+  4. Terminal: n = 100 und 10 Sample pro Theta (nach 2000 Iterationen Bild gespeichert)
+  --> Prüfen ob L = ... richtig implementiert?!
+  --> Verhalten von MORE für sin(x) prüfen
+  --> Verstehe die Skalierung im MORE Paper nicht

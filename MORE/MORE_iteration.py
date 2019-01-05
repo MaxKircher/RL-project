@@ -31,7 +31,7 @@ class More(object):
             # Q violates properties of covariance matrix
             b, Q, rewards, thetas = self.__more_step__(b, Q)
             count += 1
-            print("Still improving...", np.diag(Q).sum())
+            print("Count: ", count, " Still improving...", np.diag(Q).sum())
             if (np.mod(count, 2000) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
                 plot(rewards, thetas, self.policy.get_number_of_parameters())
 
@@ -39,8 +39,8 @@ class More(object):
     def __more_step__(self, b, Q):
         # Generate samles for our policy
         # TODO: 10000,20,150 -> Übergeben
-        rewards, thetas = self.sample_generator.sample(1000, 20, 300, b, Q)
-        #rewards, thetas = self.sample_generator.training_sample(20, b, Q, self.ts)
+        rewards, thetas = self.sample_generator.sample(10, 100, 300, b, Q)
+        #rewards, thetas = self.sample_generator.training_sample(100, b, Q, self.ts)
 
         beta_hat = linear_regression(thetas, rewards)
 
