@@ -1,48 +1,16 @@
-Paper:
-- Parameter in der Test festlegen und zentral verarbeiten
-    - epsilon verändern
-    - gamma verändern
-    - Mindestgröße für etha festlegen (geamcht, so dass F p.d.)
-    - b, Q (Probleme beim invertieren => Q nicht symm o. p.s.d.)
-    - L, N_thetas etc.
-    - Start vals optimization (implizit gemacht)
-    - H_pi0
-    - R² maß um Güte der Regression zu ermitteln (Len)
-- Environmentabhängige Initialisierung?
-    - CartPole: weights im NN nicht Null initialisieren(?)
-    - Andere env, anders inititalisieren
-- Warnings prüfen:
-    - beim Log in optimization line 41
-    - Covariance matrix not symmetric-positive-semidefinit sample.py 50/MORE_iteration
-- Idee: H_q als Abbruchbedingung?
-- Negative Spur unserer Kovarianzmatrix Q
-- Überall hinzufügen in welchem Format eine Variable ist Numpy vs. Torch
+Notizen:
+- Habe die Abbruchbedingung angepasst, sodass die Varianz von jedem Theta kleiner
+  als 0.1 ist und nicht in Summe.
+- Je weiter weg die Maximalstellen der Objective liegen, desto großzügiger kann
+  die Abbruchbedingung gewählt werden
+
+Weiteres:
+--> Prüfen ob L = ... richtig implementiert?!
+--> Verhalten von MORE für sin(x) prüfen
+--> Verstehe die Skalierung der y-Achse im MORE-Paper nicht
+--> Parameterabstand von den Thetas künstlich vergrößern, damit man nicht so gehäufte Werte hat?
+
+Allgemeines:
+- MORE Test Funktionen im Paper mit unserer Implementierung vergleichen
+- Regression R² Maß berechnen, bei schlechter Regression: ggf. Ridge Regression probieren?
 - Rundungsfehler bei Matrixinversion
-
---> Auf Drive Dokument mit Fragen/Updatedoku
-- bei der Updatedoku, Plots einbauen wo sinnvoll
-
-_______
-Zum Debuggen habe ich folgendes gemacht:
-- in der Klasse policy eine neue DebugPolicy implementiert
-    using -x*(x - 10)*(x - 2)*(x + 13)/1000 as objective and x = theta to debug the code
-
-- Neue Policies?
-  a. https://medium.com/@ts1829/policy-gradient-reinforcement-learning-in-pytorch-df1383ea0baf
-  b. https://medium.freecodecamp.org/an-introduction-to-policy-gradients-with-cartpole-and-doom-495b5ef2207f
-
-- MORE Test Funktionen im paper
-- Parameter überprüfen
-- Lange laufen lassen
-- Regression R² Maß berechnen
-  - ggf. Ridge Regression probieren
-- Plot von der objective, je weiter Weg die Optima liegen, desto größer kann man die Abbruchbedingung
-  wählen
-  _______
-  1. Linkes Terminal: n = 100 & ts (davor  n = 20)
-  2. Terminal: n = 20 und 1000 Sample pro Theta + geänderter Reward
-  3. Terminal: n = 100 und 10 Sample pro Theta + geänderter Reward (geht viel schneller)
-  4. Terminal: n = 100 und 10 Sample pro Theta (nach 2000 Iterationen Bild gespeichert)
-  --> Prüfen ob L = ... richtig implementiert?!
-  --> Verhalten von MORE für sin(x) prüfen
-  --> Verstehe die Skalierung im MORE Paper nicht

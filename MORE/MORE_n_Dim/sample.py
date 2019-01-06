@@ -6,18 +6,6 @@ import inspect
 
 class Sample(object):
 
-    '''
-        > Vererben einbauen!
-
-        policy: The current policy for which we want to update Parameter
-                 - polynomial
-                 - NN
-                 - etc
-        Weniger Sinnvoll mu und dev zu setzen, sondern konkret in sample übergeben,
-        da sich die immer ändern
-        mu: F*f Expectation value for multivariate gaussian
-        dev: F(etha + omega) Standard deviation for multivariate gaussian
-    '''
     def __init__(self, env, policy):
         self.env = env
         self.policy = policy
@@ -45,10 +33,8 @@ class Sample(object):
     def sample(self, N_per_theta, number_of_thetas, L, mu, dev):
         rewards = []
         thetas = []
-        #print("mu, dev: ", mu.shape, dev.shape)
 
         for j in range(number_of_thetas):
-            # theta is a numpy matrix and needs to be transformed in desired list format
             reward = 0
             theta = np.random.multivariate_normal(mu, dev)
 
@@ -60,7 +46,7 @@ class Sample(object):
                 for i in range(N_per_theta):
                     a = self.policy.get_action(s)
                     s, r, d, i = self.env.step(np.asarray(a))
-                    reward += r * 1e5
+                    reward += r * 1e5 # TODO: Als Skalierungsfaktor übergeben?
                     if d:
                         s = self.env.reset()
 
@@ -83,10 +69,6 @@ class Sample(object):
         rewards = []
         thetas = []
 
-# Hier stimmt was mit der Schleife nicht, du musst das wie oben anpassen!
-# 1. was ist die innere, 2. was ist die äußere Schleife
-# 3. Wie updatest du die Listen?
-
         for j in range(number_of_thetas):
             reward = 0
             theta = np.random.multivariate_normal(mu, dev)
@@ -98,8 +80,6 @@ class Sample(object):
                 s, r, d, i = self.env.step(np.asarray(a))
                 reward += r
 
-            #avg_reward = reward / N_per_theta
-            #rewards += [avg_reward]
             rewards += [reward]
             thetas += [theta]
 

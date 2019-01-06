@@ -1,5 +1,4 @@
 import numpy as np
-# import torch
 
 '''
     Class that should contains diffrent policies

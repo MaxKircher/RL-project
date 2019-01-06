@@ -32,14 +32,14 @@ def __X__(thetas):
 '''
     Input:
      - thetas: A list of parameter wich corresponds to rewards
-     - rewards: A list of rewards wich corresponds to theta
+     - rewards: A list of rewards wich corresponds to theta (y of linear regression)
 
     Computes regression Matrix X
 
     Returns:
      - beta_hat, which contains the parameter for our quadratic surrogate model R
 '''
-def linear_regression(thetas, rewards): # X as usual in a linear regression and rewards is the y value
+def linear_regression(thetas, rewards):
     X = __X__(thetas)
     beta_hat = np.linalg.lstsq(X, rewards, rcond=None)[0]
     return beta_hat

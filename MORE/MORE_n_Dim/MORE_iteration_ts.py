@@ -5,18 +5,13 @@ from regression import * # , X
 from optimization import *
 from plot_data import *
 
-class More(object):
-    '''
-        Does the MORE iterations until convergance is reached
-        Convergance is archieved if the improvment from the prev iteration
-        is smaller than delta
-    '''
+class MoreTS(object):
 
-    def __init__(self, delta, policy, env): #(self, delta, policy, env, ts): #
+    def __init__(self, delta, policy, env, ts):
         self.delta = delta
         self.sample_generator = Sample(env, policy)
         self.policy = policy
-        #self.ts = ts
+        self.ts = ts
 
 
     def iterate(self):
@@ -25,8 +20,7 @@ class More(object):
         b = np.array(d*[0])
         Q = 1*np.eye(d)
         count = 0
-        ####
-        # Abbruchbedingung -> Kaüitel 2 letzter Satz, asymptotic to point estimate
+
         while np.absolute(np.diag(Q).sum()) > self.delta:
             # Q violates properties of covariance matrix
             b, Q, rewards, thetas = self.__more_step__(b, Q)
@@ -37,19 +31,15 @@ class More(object):
 
 
     def __more_step__(self, b, Q):
-        # Generate samles for our policy
         # TODO: 10000,20,150 -> Übergeben
-        rewards, thetas = self.sample_generator.sample(10, 100, 300, b, Q)
-        #rewards, thetas = self.sample_generator.training_sample(100, b, Q, self.ts)
-
+        rewards, thetas = self.sample_generator.training_sample(20, b, Q, self.ts)
         beta_hat = linear_regression(thetas, rewards)
 
-        # TODO: statt "np.asarray(thetas).shape[1]" - anders schreiben
         R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
         # TODO: set diffrent epsilon, beta and start values for the optimization
         opti = Optimization(Q, b, R, r, .01, 0.99)
         etha0 = self.__compute_etha0__(1, Q, R)
-        x0 = np.asarray([etha0, 1]) # starting point for etha and omega, where etha is large enough s.t. F is p.d.
+        x0 = np.asarray([etha0, 1])
 
         sol = opti.SLSQP(x0) #L_BFGS_B(x0) #
         print("Computed etha: {}, omega: {}".format(sol.x[0], sol.x[1]))

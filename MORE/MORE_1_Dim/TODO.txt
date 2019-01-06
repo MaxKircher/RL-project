@@ -1,0 +1,20 @@
+MORE_iteration.py
+ - l25: Prüfe (bspw. mit if Q <= 0), ob es die Eigenschaften der Varianz verletzt
+ - l36: sample_generator.sample() parameter übergeben
+ - l42: opti = Optimization(...) mit Parameter ggf. rumspielen,
+   jedoch funktionieren diese Parameter gut. Eher Extrefälle ausprobieren, insb.
+   für Omega (vgl. Frage im Forum "MORE - langragian Parameter")
+
+Optimization.py
+ - l76: in compute_beta mit H_pi0 rumspielen und Extrefälle ausprobieren, sowie
+ - l80: den Parameter übergeben
+
+Policy.py
+ - l29: Keine konvergenz bei konstanten Funktionen
+
+Regression.py
+ - R² berechnen um die Güte der Regression zu ermitteln
+
+ Sample.py
+  - reward/theta_memory richtig implementiert?
+  - für L (size of memorized samples) Extrefälle ausprobieren

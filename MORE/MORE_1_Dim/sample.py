@@ -1,23 +1,11 @@
 import numpy as np
 import gym
 import quanser_robots
-from policy1 import *
+from policy import *
 import inspect
 
 class Sample(object):
 
-    '''
-        > Vererben einbauen!
-
-        policy: The current policy for which we want to update Parameter
-                 - polynomial
-                 - NN
-                 - etc
-        Weniger Sinnvoll mu und dev zu setzen, sondern konkret in sample übergeben,
-        da sich die immer ändern
-        mu: F*f Expectation value for multivariate gaussian
-        dev: F(etha + omega) Standard deviation for multivariate gaussian
-    '''
     def __init__(self, env, policy):
         self.env = env
         self.policy = policy
@@ -32,7 +20,6 @@ class Sample(object):
         sample corresponds to the function pi in the paper. It samples values for theta
         that should optimize our objective function R_theta
 
-        N_per_theta:        Query the env N times with this set of Thetas
         number_of_thetas:   number of theta-sample sets
         L:                  Size of number of memorized thetas/samples
         mu:                 expectation for theta sampling
@@ -42,7 +29,7 @@ class Sample(object):
          - rewards: Is a list where the i-th entry corresponds to the average reward of the i-th theta_i
          - thetas:  Is a list where the i-th entry is a random value returned from the multivariate Gaussian
     '''
-    def sample(self, N_per_theta, number_of_thetas, L, mu, dev):
+    def sample(self, number_of_thetas, L, mu, dev):
         rewards = []
         thetas = []
         reward = 0

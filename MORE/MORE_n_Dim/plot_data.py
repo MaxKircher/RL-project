@@ -11,8 +11,6 @@ def plot(rewards, list_of_parameter, n):
 
 def get_thetas(lop, n):
     thetas = []
-    #print("Length, list_of_parameter (lop): ", len(lop))
     for parameter in lop:
-        #print("parameter: ", parameter)
         thetas += [sum(parameter) / n]
     return thetas

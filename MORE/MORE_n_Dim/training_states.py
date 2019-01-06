@@ -1,9 +1,7 @@
 import numpy as np
 
 class TrainingStates(object):
-    """
-    Sample Training States to test if MORE converges for a static set of states
-    """
+    
     def __init__(self, env):
         self.env = env
 

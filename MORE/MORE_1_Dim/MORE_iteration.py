@@ -1,9 +1,9 @@
 import numpy as np
-from policy1 import *
-from sample1 import *
-from regression1 import * # , X
-from optimization1 import *
-from plot_data1 import *
+from policy import *
+from sample import *
+from regression import *
+from optimization import *
+from plot_data import *
 
 class More(object):
     '''
@@ -33,11 +33,10 @@ class More(object):
     def __more_step__(self, b, Q):
         # Generate samles for our policy
         # TODO: 10000,20,150 -> Übergeben
-        rewards, thetas = self.sample_generator.sample(1, 20, 150, b, Q)
+        rewards, thetas = self.sample_generator.sample(20, 150, b, Q)
 
         beta_hat = linear_regression(thetas, rewards)
 
-        # TODO: statt "np.asarray(thetas).shape[1]" - anders schreiben
         R, r, r0 = compute_quadratic_surrogate(beta_hat)
         # TODO: set diffrent epsilon, beta and start values for the optimization
         opti = Optimization(Q, b, R, r, .01, 0.99)
