@@ -92,7 +92,7 @@ class TRPO(object):
         return Jacobi_matrix
 
     '''
-        # TODO: actiospace dimension > 1 (talk to Boris for parametrization of FIM)
+        # TODO: action_space dimension > 1 (talk to Boris for parametrization of FIM)
 
         Computes the Fisher-Information Matrix (FIM)
         We choose the Gaussian-Distribution as our distribution of intrest. Therfore
