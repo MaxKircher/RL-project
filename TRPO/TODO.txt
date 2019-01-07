@@ -11,3 +11,8 @@
 - Alle Parameter in die Test übernehmen
 - Prüfen ob sich die Policy tatsächlich bessert
 - Klassen nach TODO scannen
+
+______
+- Frage im Forum
+- Vgl. conjugate_gradient in misc.py (unsere Implementierung sollte stimmen)
+  -> Tdm. noch genauer testen!
