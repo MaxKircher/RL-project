@@ -15,8 +15,21 @@ for i in range(15):
 J = np.matrix((row1, row2))
 M = np.matrix([[2, 0], [0, 1]])
 
-Matrix = J.T @ M @ J
-b = np.ones(15)
+Matrix = J.T * M * J
+g = np.ones((15, 1))
+g_lstsq = np.ones(15)
 
-print(Matrix)
-print(np.linalg.matrix_rank(Matrix))
+#print(J.shape)
+#print(Matrix)
+#print(np.linalg.matrix_rank(Matrix))
+
+cg = ConjugateGradient(10)
+x0 = .5 * np.ones((15, 1))
+
+x_cg = cg.cg(g, J, M, x0)
+x_lstsq = np.linalg.lstsq(Matrix, g_lstsq, rcond=None)[0]
+
+#print("x_cg: ", x_cg)
+#print("x_lstsq: ", np.matrix(x_lstsq).T)
+
+print(np.abs(x_cg - np.matrix(x_lstsq).T))

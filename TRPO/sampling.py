@@ -43,5 +43,5 @@ def sample_sp(policy, s0, T, env, gamma):
         for i in range(tend, t0, -1):
             Q[i] = gamma * Q[i + 1] + rewards[i]
         t0 = tend
-        
+
     return states, actions, Q

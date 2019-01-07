@@ -36,7 +36,7 @@ for i in range(iterations):
     FIM = np.matrix(trpo.compute_FIM_mean())
 
     A = JM.T * FIM * JM # where A is the FIM w.r.t. to the Parameters theta see C
-    # print("dim(A): 2x2 < ", A.shape)
+    print("dim(A): 2x2 < ", A.shape)
 
     s = np.linalg.lstsq(A, g.transpose(0,1), rcond=None)[0]
     # TODO: Startwert? g, should be kind of similar to s
