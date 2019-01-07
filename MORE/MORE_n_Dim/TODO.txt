@@ -7,6 +7,7 @@ MORE_iteration_ts.py/MORE_iteration.py
 
 Optimization.py
  - Mit startwerten rumspielen und Extremfälle prüfen
+ - Mit großem omega starten und Tipps aus dem Forum einbauen
  - l84: in compute_beta mit H_pi0 rumspielen und Extrefälle ausprobieren, sowie
  - l88: den Parameter übergeben
 
