@@ -4,13 +4,12 @@ from scipy.stats import multivariate_normal
 
 class NN(object):
     '''
-        Parameter:
-            - model:    Linear neural network:
-                         - 4 Layers with 1 hidden layer:
-                            1. Input-Layer of dimension s_dim
-                            2. Intermediate-Layer of dimension inter_dim - (Hidden layer)
-                            3. Activation function (counts to layer)
-                            4. Outpout-Layer of dimension a_dim
+        Linear neural network:
+         - 4 Layers with 1 hidden layer:
+            1. Input-Layer of dimension s_dim
+            2. Intermediate-Layer of dimension inter_dim - (Hidden layer)
+            3. Activation function (counts to layer)
+            4. Outpout-Layer of dimension a_dim
     '''
     def __init__(self, s_dim, a_dim):
         self.s_dim = s_dim
