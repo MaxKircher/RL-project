@@ -86,8 +86,8 @@ class TRPO(object):
             assert j == Jacobi_matrix.shape[1] + 1
 
             # Add the derivatives for the log_std which are ones because std is a theta-param
-            assert (mu_actions.size(1) == self.policy.model.log_std.size(0)) , "dimensions have to match"
-            Jacobi_matrix[1, 0] = 1
+        assert (mu_actions.size(1) == self.policy.model.log_std.size(0)) , "dimensions have to match"
+        Jacobi_matrix[1, 0] = 1
 
         return Jacobi_matrix
 
