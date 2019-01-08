@@ -11,17 +11,19 @@ state_dim = env.observation_space.shape[0] # = 5
 action_dim = env.action_space.shape[0] # = 1
 
 degree = 2 #we assume that all degrees occur
-policy = PolynomialPolicy(state_dim, action_dim, degree)
+#policy = PolynomialPolicy(state_dim, action_dim, degree)
 #policy = NeuronalNetworkPolicy(state_dim, action_dim)
 #policy = DebugPolicy(state_dim, action_dim)
+policy = Rosenbrock(state_dim, action_dim)
 
 print("(state_dim, action_dim) =  ", "(", state_dim, ",", action_dim, ")")
 print("Number of model parameters: ", policy.get_number_of_parameters())
 
-bound = .1 * policy.get_number_of_parameters()
-
+bound = .01 * policy.get_number_of_parameters()
+#N_per_theta, number_of_thetas, memory_size = 10000,20,150
+N_per_theta, number_of_thetas, memory_size = 1, 10, 50
 # Without training states
-iterator = More(bound, policy, env)
+iterator = More(bound, policy, env, N_per_theta, number_of_thetas, memory_size)
 thetas = iterator.iterate()
 
 # With training states
