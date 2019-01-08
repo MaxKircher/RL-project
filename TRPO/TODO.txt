@@ -6,24 +6,20 @@
 - Über Klassenstruktur Gedanken machen
 - KL Divergenz wird nicht 0 wenn beta (Step-size, siehe trpo.beta) = 0...
   - gibt es ein sinnvolles Packages in np, statt manueller Berechnung
+  - Done ?
 - line_search: Wie reduzieren wir beta?
     So: beta = beta * exp(-lambda * i), wobei lambda frei wählbar
 - Alle Parameter in die Test übernehmen
 - Prüfen ob sich die Policy tatsächlich bessert
 - Klassen nach TODO scannen
 
-______
-- Figure 3
-- Frage im Forum
-- Vgl. conjugate_gradient in misc.py (unsere Implementierung sollte stimmen)
-  -> Tdm. noch genauer testen!
-- sampling_sp durchsprechen
-- trpo.py
-  - l74: passt das so? Woher weiß Pytorch bzgl. was er die Gradienten berechnen soll?
-    weil er ja nicht weiß ob die Action gut oder schlecht war...
-  - l90: Kann man nicht über Pytorch einen Gradienten für log_std bekommen?
-  - l81ff: drüber quatschen
-  - linesearch, besprechen und für was assert?
-    auch das: policy_theta_new.model(torch.tensor(states, -> states ist Liste, oder?
-- policy.py
-  - q vs pi_theta einzige Unterschied war beim return, das wir in pi_theta torch.normal haben?
+--> Auf Drive Dokument mit Fragen/Updatedoku
+- bei der Updatedoku, Plots einbauen wo sinnvoll
+
+
+Normalize s,a
+
+compute gradient with respect to log prob
+
+
+rewrite KL?

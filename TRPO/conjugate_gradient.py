@@ -39,13 +39,59 @@ class ConjugateGradient(object):
             x += alpha[0,0] * d
             r = r - alpha[0,0] * z
 
-            r_kplus1_norm_2 = r.T @ r
-            beta = r_kplus1_norm_2 / r_norm_2
+            new_norm_2 = r.T @ r
+            beta = new_norm_2 / r_norm_2
 
-            r_norm_2 = r_kplus1_norm_2
+            r_norm_2 = new_norm_2
 
             d = r + beta[0,0] * d
 
+            #print("r norm: ", r_norm_2)
+            if r_norm_2[0,0] < 1e-10:
+                break
+
+        return x
+
+
+
+    def cg_torch(self, g, fvp, states, x):
+
+        fvp_x = fvp(states, x)
+        #print("fvp_x: ", fvp_x)
+        r = g - fvp_x
+        d = r
+
+        r_norm_2 = r.pow(2).sum()
+
+        #print("rnorm: ", r_norm_2.size())
+
+        for i in range(self.k):
+            z = fvp(states, d).detach()
+
+            #print("z: ", z)
+            #print("d: ", d)
+
+            dz = (d * z).sum()
+            #print("dz: ", dz.size())
+            assert dz != 0
+            alpha = r_norm_2 / dz
+            #print("alpha: ", alpha.size())
+
+
+            x += alpha[0,0] * d
+            r = r - alpha[0,0] * z
+
+            #print("r: ", r.size())
+
+
+            new_norm_2 = r.pow(2).sum()
+            beta = new_norm_2 / r_norm_2
+
+            r_norm_2 = new_norm_2
+
+            d = r + beta[0,0] * d
+
+            #print("r norm: ", r_norm_2)
             if r_norm_2[0,0] < 1e-10:
                 break
 

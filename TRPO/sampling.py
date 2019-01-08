@@ -46,6 +46,22 @@ def sample_sp(policy, s0, T, env, gamma):
             Q[i] = gamma * Q[i + 1] + rewards[i]
         t0 = tend
 
-    Q = (Q - Q.mean()) / Q.std()
+    # print("s_mean: ", states.mean(0))
+    # print("s_std: ", states.std(0))
+    # print("a_mean: ", actions.mean(0))
+    # print("a_std: ", actions.std(0))
+    return states, actions, Q
 
-    return states, actions, Q, sum(rewards)
+
+
+
+# Evaluated once for pendulum:
+# s_mean =  np.array([-0.47201  -0.053921])
+# s_std =  np.array([2.759836 1.75064 ])
+# a_mean =  np.array([0.390378])
+# a_std =  np.array([1.739343])
+#
+# def normalize(states, actions):
+#     states = (states - s_mean) / s_std
+#     actions = (actions - a_mean) / a_std
+#     return states, actions

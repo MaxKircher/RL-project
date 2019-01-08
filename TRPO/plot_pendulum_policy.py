@@ -5,8 +5,11 @@ import gym
 import quanser_robots
 import torch
 
+
+
+
 #with open("policy.pkl", "rb") as input:
-input = open("my_policy2.pkl", "rb")
+input = open("my_policy.pkl", "rb")
 data = pickle.load(input)
 policy = data.get("policy")
 
@@ -30,6 +33,6 @@ a = policy.model(torch.tensor(states, dtype=torch.float)).detach().numpy().resha
 print("shapes: ", X.shape, Y.shape, a.shape)
 
 fig, ax = plt.subplots()
-CS = plt.contour(a,15)
+CS = plt.contour(a,levels=25)
 ax.clabel(CS, inline=1, fontsize=10)
 plt.show()
