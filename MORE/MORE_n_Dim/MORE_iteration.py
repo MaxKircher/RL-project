@@ -7,10 +7,13 @@ from plot_data import *
 
 class More(object):
 
-    def __init__(self, delta, policy, env):
+    def __init__(self, delta, policy, env, N_per_theta, number_of_thetas, memory_size):
         self.delta = delta
-        self.sample_generator = Sample(env, policy)
+        self.sample_generator = Sample(env, policy, N_per_theta, number_of_thetas, memory_size)
         self.policy = policy
+        self.N_per_theta = N_per_theta
+        self.number_of_thetas = number_of_thetas
+        self.memory_size = memory_size
 
     def iterate(self):
         #### Raus in die test, cf. TODO
@@ -24,13 +27,13 @@ class More(object):
             b, Q, rewards, thetas = self.__more_step__(b, Q)
             count += 1
             print("Count: ", count, " Still improving...", np.diag(Q).sum())
-            if (np.mod(count, 2000) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
+            if (np.mod(count, 20) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
                 plot(rewards, thetas, self.policy.get_number_of_parameters())
 
 
     def __more_step__(self, b, Q):
         # TODO: 10000,20,150 -> Übergeben
-        rewards, thetas = self.sample_generator.sample(10, 100, 300, b, Q)
+        rewards, thetas = self.sample_generator.sample(b, Q)
         beta_hat = linear_regression(thetas, rewards)
 
         R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
@@ -38,7 +41,7 @@ class More(object):
         opti = Optimization(Q, b, R, r, .01, 0.99)
         etha0 = self.__compute_etha0__(1, Q, R)
         x0 = np.asarray([etha0, 1])
-        
+
         sol = opti.SLSQP(x0) #L_BFGS_B(x0) #
         print("Computed etha: {}, omega: {}".format(sol.x[0], sol.x[1]))
 
