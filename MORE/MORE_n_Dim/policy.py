@@ -51,22 +51,10 @@ class Rosenbrock(DebugPolicy):
     def __init__(self, state_dim, action_dim):
         Policy.__init__(self, state_dim, action_dim)
 
-    # Bsp. 14.9: https://www.mathematik.tu-darmstadt.de/media/analysis/lehrmaterial_anapde/hallerd/Ana2Skript18.pdf
-    # Minimum (0,0)
-    # Maxiumum (0,1) und (0,-1)
     def set_theta(self, thetas):
         return rosen(thetas)
 
-    # def set_theta(self, thetas):
-    #     x = thetas[0]
-    #     y = thetas[1]
-    #     return np.exp(-x**2 - y**2) + np.exp(-(x-3)**2 - y**2)
-    #
-    # def set_theta(self, thetas):
-    #     x = thetas[0]
-    #     y = thetas[1]
-    #     return -(x * y)**2 + 3
-
+    # Number of parameters / dimension of rosenbrock can be changed arbitrarily here:
     def get_number_of_parameters(self):
         return 2
 
