@@ -69,7 +69,7 @@ for i in range(iterations):
 
     print("beta: ", beta)
     print("beta_cg: ", beta_cg)
-    print("beta - beta_cg:, " beta - beta_cg)
+    print("beta - beta_cg: ", beta - beta_cg)
 
     theta_old = policy.get_parameter_as_tensor().detach()
 
