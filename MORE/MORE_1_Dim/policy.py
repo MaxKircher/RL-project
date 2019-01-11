@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.optimize import rosen
 
 '''
     Class that should contains diffrent policies
@@ -32,3 +33,15 @@ class DebugPolicy(Policy):
 
     def get_number_of_parameters(self):
         return 1
+
+# 
+# class Rosenbrock(DebugPolicy):
+#     def __init__(self, state_dim, action_dim):
+#         Policy.__init__(self, state_dim, action_dim)
+#
+#     def set_theta(self, thetas):
+#         return -rosen(thetas)[0]
+#
+#     # Number of parameters / dimension of rosenbrock can be changed arbitrarily here:
+#     def get_number_of_parameters(self):
+#         return 1
