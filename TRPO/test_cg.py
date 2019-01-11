@@ -58,17 +58,22 @@ for i in range(iterations):
     # print("A_avg.shape = ", A_avg.shape)
     s = np.linalg.lstsq(A_avg, g.transpose(0,1), rcond=None)[0]
     # TODO: Startwert? g, should be kind of similar to s
-    # s_cg = cg.cg(g, JMs, FIM, g)
-    #
-    # print("cg: ", s_cg.T)
-    # print("lstsq: ", s.T)
-    # print("cg - lstsq: ", s_cg.T - s.T)
+    s_cg = cg.cg(g, JMs, FIM, g)
+
+    print("cg: ", s_cg.T)
+    print("lstsq: ", s.T)
+    print("cg - lstsq: ", s_cg.T - s.T)
 
     beta = trpo.beta(0.01, np.matrix(s), A_avg)
+    beta_cg = trpo.beta(0.01, np.matrix(s_cg), A_avg)
+
+    print("beta: ", beta)
+    print("beta_cg: ", beta_cg)
+    print("beta - beta_cg:, " beta - beta_cg)
 
     theta_old = policy.get_parameter_as_tensor().detach()
 
-    policy = trpo.line_search(beta, delta, s, theta_old, states, actions, Q)
+    policy = trpo.line_search(beta_cg, delta, s_cg, theta_old, states, actions, Q)
     trpo.policy = policy
 
     # Printing:
@@ -86,4 +91,4 @@ for i in range(iterations):
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-plt.savefig("plot.png")
+plt.savefig("plot_cg.png")

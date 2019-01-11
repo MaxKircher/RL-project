@@ -4,16 +4,20 @@ class ConjugateGradient(object):
     def __init__(self, k):
         self.k = k
 
-
     '''
         x = x0
     '''
-    def cg(self, g, J, M, x):
-        Jx = J @ x
-        MJx = M @ Jx
-        Ax = J.T @ MJx # was JtMJx
+    def cg(self, g, Js, M, x):
 
-        #Ax = JtMJx
+        def fisher_vector_product(x):
+            Ax = np.zeros(g.shape)
+            for j in range(len(Js)):
+                Jx = np.matrix(Js[j]) @ x
+                MJx = M @ Jx
+                Ax += np.matrix(Js[j]).T @ MJx # was JtMJx
+            return Ax / len(Js)
+
+        Ax = fisher_vector_product(x)
         r = g - Ax
         d = r
 
@@ -22,9 +26,7 @@ class ConjugateGradient(object):
         r_norm_2 = r.T @ r
 
         for i in range(self.k):
-            Jd = J @ d
-            MJd = M @ Jd
-            z = J.T @ MJd # was JtMJd
+            z = fisher_vector_product(d)
 
             #Ad = JtMJd
             #z = Ad
