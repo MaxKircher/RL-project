@@ -31,9 +31,9 @@ trpo = TRPO(env, gamma, policy)
 # recommanded 10 iterations on last page (above Appendix D)
 cg = ConjugateGradient(10)
 
-iterations = 100
+iterations = 200
 # Table 2 -> min 50.000
-num_steps = 10000
+num_steps = 50000
 for i in range(iterations):
     print("Iteration ", i, ":")
 
@@ -44,19 +44,25 @@ for i in range(iterations):
 
     subsampled_states = states[0::10] #get every tenth state (see above App D)
 
-    JM = np.matrix(trpo.compute_Jacobian(subsampled_states))
+    JMs = trpo.compute_Jacobians(subsampled_states)
     FIM = np.matrix(trpo.compute_FIM_mean())
 
-    A = JM.T * FIM * JM # where A is the FIM w.r.t. to the Parameters theta see C
+    A = np.zeros((JMs[0].shape[1],JMs[0].shape[1]))
+    for j in range(len(JMs)):
+        A_x = np.matrix(JMs[j]).T @ FIM @ np.matrix(JMs[j]) # where A is the FIM w.r.t. to the Parameters theta see C
+        A += A_x
 
-    s = np.linalg.lstsq(A, g.transpose(0,1), rcond=None)[0]
+    A_avg = A / len(JMs)
+    print("Rank(A_avg) = ", np.linalg.matrix_rank(A_avg))
+    print("A_avg.shape = ", A_avg.shape)
+    s = np.linalg.lstsq(A_avg, g.transpose(0,1), rcond=None)[0]
     # TODO: Startwert? g, should be kind of similar to s
-    #s = cg.cg(g, JM, FIM, g)
+    #s = cg.cg(g, JMs, FIM, g)
 
     #print("cg: ", s_cg.T)
     #print("lstsq: ", s.T)
 
-    beta = trpo.beta(0.01, np.matrix(s), JM, FIM)
+    beta = trpo.beta(0.01, np.matrix(s), A_avg)
 
     theta_old = policy.get_parameter_as_tensor().detach()
 
@@ -78,3 +84,4 @@ for i in range(iterations):
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
+plt.savefig("plot.png")

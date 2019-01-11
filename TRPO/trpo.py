@@ -42,7 +42,7 @@ class TRPO(object):
         3. Wir speichern das ergebnis als J(x')
         4. Benötigen wir J(x*) für ein anderes x*, so starten wir bei 1. mit x* statt x'
     '''
-    def compute_Jacobian(self, states):
+    def compute_Jacobians(self, states):
 
         # Get the policy model (currently an one layer linear NN)
         policy_net = self.policy.model
@@ -62,15 +62,16 @@ class TRPO(object):
 
         # TODO: Generalise for multi dimensional actions, because of unclearness w.r.t. to M Matrix (the FIM for mu)
         # Two rows for expectation and stdev
-        Jacobi_matrix = np.zeros((mu_actions.size(1) * 2, number_cols))
+        Jacobi_matrices = []
 
         # We compute gradients for each state in states and then average over the gradients
-        avg_grad = 0
         for i in range(mu_actions.size(0)):
+            Jacobi_matrix = np.zeros((mu_actions.size(1) * 2, number_cols))
+
             # zero-grad damit die Gradienten zurückgesetzt sind
             policy_net.zero_grad()
 
-            # TODO: actionspace dimension > 1 in Schleife bearbeiten
+            # Berechne die Gradienten bzgl. unseres Outputs
             mu_actions[i,0].backward(retain_graph=True)
 
             # Abspeichern der thetas = {weights, biases, stdev}
@@ -80,16 +81,18 @@ class TRPO(object):
             j = 1
             for theta in thetas:
                 grad = theta.grad.view(-1)
-                Jacobi_matrix[0,j:j + grad.size(0)] += grad
+                Jacobi_matrix[0,j:j + grad.size(0)] = grad
                 j += grad.size(0) # see TODO: Hopefully the first entry of the first row is 0
 
             assert j == Jacobi_matrix.shape[1] + 1
 
             # Add the derivatives for the log_std which are ones because std is a theta-param
-        assert (mu_actions.size(1) == self.policy.model.log_std.size(0)) , "dimensions have to match"
-        Jacobi_matrix[1, 0] = 1
+            assert (mu_actions.size(1) == self.policy.model.log_std.size(0)) , "dimensions have to match"
+            Jacobi_matrix[1, 0] = self.policy.model.log_std.exp()
+            Jacobi_matrices += [Jacobi_matrix]
 
-        return Jacobi_matrix
+
+        return Jacobi_matrices
 
     '''
         # TODO: action_space dimension > 1 (talk to Boris for parametrization of FIM)
@@ -191,11 +194,5 @@ class TRPO(object):
         return g
 
 
-    def beta(self, delta, s, JM, FIM):
-        JM_s = JM @ s
-        FIM_JM_s = FIM @ JM_s
-        JMT_FIM_JM_s = JM.T @ FIM_JM_s
-
-        #print(s.T @ JMT_FIM_JM_s)
-
-        return np.power((2*delta)/(s.T @ JMT_FIM_JM_s)[0,0], 0.5)
+    def beta(self, delta, s, A):
+        return np.power((2*delta)/(s.T @ A @ s)[0,0], 0.5)
