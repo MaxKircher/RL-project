@@ -18,7 +18,7 @@ class More(object):
     def iterate(self):
         #### Raus in die test, cf. TODO
         d = self.policy.get_number_of_parameters()
-        b = np.array(d*[0])
+        b = np.array(d*[1])
         Q = 1*np.eye(d)
         count = 0
 
@@ -27,7 +27,7 @@ class More(object):
             b, Q, rewards, thetas = self.__more_step__(b, Q)
             count += 1
             print("Count: ", count, " Still improving...", np.diag(Q).sum())
-            if (np.mod(count, 20) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
+            if (np.mod(count, 2000) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
                 plot(rewards, thetas, self.policy.get_number_of_parameters())
 
 
@@ -50,6 +50,8 @@ class More(object):
         omega = sol.x[1]
         F = np.linalg.inv(etha * np.linalg.inv(Q) - 2 * R)
         f = etha * np.linalg.inv(Q) @ b + r
+        print("f: ", f)
+        print("F: ", F)
 
         b_new, Q_new = opti.update_pi(F, f, etha, omega)
 
@@ -71,3 +73,14 @@ class More(object):
         print("etha0 = ", np.linalg.eigvals(F) > 0)
 
         return etha0
+
+
+    def my_inv(self, M):
+        new = np.zeros(M.shape)
+        new[0,0] = M[1,1]
+        new[1,0] = -M[1,0]
+        new[0,1] = -M[0,1]
+        new[1,1] = M[0,0]
+        print("1/det: ", 1/np.linalg.det(M))
+
+        return (1/np.linalg.det(M)) * new

@@ -10,6 +10,9 @@ Optimization.py
  - Mit großem omega starten und Tipps aus dem Forum einbauen
  - l84: in compute_beta mit H_pi0 rumspielen und Extrefälle ausprobieren, sowie
  - l88: den Parameter übergeben
+ - Machen constraints Sinn?
+ - Berechnen wir beta nur einmal?
+ - 2.1 (1) braucht man 1 = integral(pi)?
 
 Policy.py
  - l29: Keine konvergenz bei konstanten Funktionen

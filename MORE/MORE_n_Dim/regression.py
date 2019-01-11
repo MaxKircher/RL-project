@@ -84,6 +84,9 @@ def __X__(thetas):
 def linear_regression(thetas, rewards): # X as usual in a linear regression and rewards is the y value
     X = __X__(thetas)
     beta_hat = np.linalg.lstsq(X, rewards, rcond=None)[0]
+
+    coefficient_of_determination(rewards, thetas, beta_hat)
+
     return beta_hat
 
 '''
@@ -116,3 +119,21 @@ def compute_quadratic_surrogate(beta_hat, d):
     # print(R - R.T) # if it's not a Null-Matrix, something went wrong
 
     return R, r, r0
+
+
+
+
+def coefficient_of_determination(true_rewards, thetas, beta_hat):
+    avg_true_rewards = sum(true_rewards)/len(true_rewards)
+
+    true_rewards = np.array(true_rewards)
+
+    X = __X__(thetas)
+    estimated_rewards = X @ beta_hat
+
+    sqr = ((true_rewards - estimated_rewards)**2).sum()
+    sqt = ((true_rewards - avg_true_rewards)**2).sum()
+
+    assert sqt != 0
+
+    print("coefficient_of_determination: ", 1 - (sqr / sqt))

@@ -52,7 +52,7 @@ class Rosenbrock(DebugPolicy):
         Policy.__init__(self, state_dim, action_dim)
 
     def set_theta(self, thetas):
-        return rosen(thetas)
+        return -rosen(thetas)
 
     # Number of parameters / dimension of rosenbrock can be changed arbitrarily here:
     def get_number_of_parameters(self):
