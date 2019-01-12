@@ -19,7 +19,7 @@ axes.set_xlim(0, iterations)
 rewards = np.array([]) # for plotting
 
 #env = gym.make('CartpoleStabShort-v0')
-env = gym.make('Pendulum-v2')
+env = gym.make('CartpoleStabShort-v0')
 s0 = tuple(env.reset())
 gamma = 0.9999
 
@@ -48,28 +48,28 @@ for i in range(iterations):
     JMs = trpo.compute_Jacobians(subsampled_states)
     FIM = np.matrix(trpo.compute_FIM_mean())
 
-    A = np.zeros((JMs[0].shape[1],JMs[0].shape[1]))
-    for j in range(len(JMs)):
-        A_x = np.matrix(JMs[j]).T @ FIM @ np.matrix(JMs[j]) # where A is the FIM w.r.t. to the Parameters theta see C
-        A += A_x
-
-    A_avg = A / len(JMs)
-    print("Rank(A_avg) = ", np.linalg.matrix_rank(A_avg))
+    # A = np.zeros((JMs[0].shape[1],JMs[0].shape[1]))
+    # for j in range(len(JMs)):
+    #     A_x = np.matrix(JMs[j]).T @ FIM @ np.matrix(JMs[j]) # where A is the FIM w.r.t. to the Parameters theta see C
+    #     A += A_x
+    #
+    # A_avg = A / len(JMs)
+    # print("Rank(A_avg) = ", np.linalg.matrix_rank(A_avg))
     # print("A_avg.shape = ", A_avg.shape)
-    s = np.linalg.lstsq(A_avg, g.transpose(0,1), rcond=None)[0]
+    # s = np.linalg.lstsq(A_avg, g.transpose(0,1), rcond=None)[0]
     # TODO: Startwert? g, should be kind of similar to s
     s_cg = cg.cg(g, JMs, FIM, g)
 
-    print("cg: ", s_cg.T)
-    print("lstsq: ", s.T)
-    print("cg - lstsq: ", s_cg.T - s.T)
+    # print("cg: ", s_cg.T)
+    # print("lstsq: ", s.T)
+    # print("cg - lstsq: ", s_cg.T - s.T)
 
-    beta = trpo.beta(0.01, np.matrix(s), A_avg)
+    # b<eta = trpo.beta(0.01, np.matrix(s), A_avg)
     beta_cg = trpo.beta(0.01, np.matrix(s_cg), A_avg)
 
-    print("beta: ", beta)
-    print("beta_cg: ", beta_cg)
-    print("beta - beta_cg: ", beta - beta_cg)
+    # print("beta: ", beta)
+    # print("beta_cg: ", beta_cg)
+    # print("beta - beta_cg: ", beta - beta_cg)
 
     theta_old = policy.get_parameter_as_tensor().detach()
 
@@ -83,12 +83,12 @@ for i in range(iterations):
 
 
     # Save in file
-    dict = {"policy": policy}
-    with open("my_policy2_cg.pkl", "wb") as output:
+    dict = {"policy_cartpole_cg": policy}
+    with open("my_policy_cartpole_cg.pkl", "wb") as output:
         pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
     # Plotting
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-plt.savefig("plot_cg.png")
+plt.savefig("plot_cartpole_cg.png")
