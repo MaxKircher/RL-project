@@ -84,7 +84,7 @@ for i in range(iterations):
 
     # Save in file
     dict = {"policy_cartpole_cg": policy}
-    with open("my_policy_cartpole_cg.pkl", "wb") as output:
+    with open("policies/my_policy_cartpole_cg.pkl", "wb") as output:
         pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
     # Plotting

@@ -5,8 +5,7 @@ import gym
 import quanser_robots
 import torch
 
-#with open("policy.pkl", "rb") as input:
-input = open("my_policy2.pkl", "rb")
+input = open("policies/my_policy2_cg.pkl", "rb")
 data = pickle.load(input)
 policy = data.get("policy")
 
