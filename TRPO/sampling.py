@@ -13,6 +13,21 @@ Returns:
  - states:  sampled states beginning with initial state s0
  - actions: sampled actions by passing a state to our policy
  - Q:       state-action value function see page 2 above formula (1)
+
+
+
+ ---> cf.: https://git.ias.informatik.tu-darmstadt.de/quanser/clients/tree/master/quanser_robots/cartpole
+
+    import gym
+    from quanser_robots import GentlyTerminating
+    env = GentlyTerminating(gym.make('CartpoleSwingRR-v0'))
+    ctrl = ...  # some function f: s -> a
+    obs = env.reset()
+    done = False
+    while not done:
+        act = ctrl(obs)
+        obs, rwd, done, info = env.step(act)
+
 '''
 def sample_sp(policy, s0, T, env, gamma):
     s = s0
