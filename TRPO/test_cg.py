@@ -48,14 +48,14 @@ for i in range(iterations):
     JMs = trpo.compute_Jacobians(subsampled_states)
     FIM = np.matrix(trpo.compute_FIM_mean())
 
-    # A = np.zeros((JMs[0].shape[1],JMs[0].shape[1]))
-    # for j in range(len(JMs)):
-    #     A_x = np.matrix(JMs[j]).T @ FIM @ np.matrix(JMs[j]) # where A is the FIM w.r.t. to the Parameters theta see C
-    #     A += A_x
-    #
-    # A_avg = A / len(JMs)
-    # print("Rank(A_avg) = ", np.linalg.matrix_rank(A_avg))
-    # print("A_avg.shape = ", A_avg.shape)
+    A = np.zeros((JMs[0].shape[1],JMs[0].shape[1]))
+    for j in range(len(JMs)):
+        A_x = np.matrix(JMs[j]).T @ FIM @ np.matrix(JMs[j]) # where A is the FIM w.r.t. to the Parameters theta see C
+        A += A_x
+
+    A_avg = A / len(JMs)
+    print("Rank(A_avg) = ", np.linalg.matrix_rank(A_avg))
+    print("A_avg.shape = ", A_avg.shape)
     # s = np.linalg.lstsq(A_avg, g.transpose(0,1), rcond=None)[0]
     # TODO: Startwert? g, should be kind of similar to s
     s_cg = cg.cg(g, JMs, FIM, g)
@@ -64,7 +64,7 @@ for i in range(iterations):
     # print("lstsq: ", s.T)
     # print("cg - lstsq: ", s_cg.T - s.T)
 
-    # b<eta = trpo.beta(0.01, np.matrix(s), A_avg)
+    # beta = trpo.beta(0.01, np.matrix(s), A_avg)
     beta_cg = trpo.beta(0.01, np.matrix(s_cg), A_avg)
 
     # print("beta: ", beta)
