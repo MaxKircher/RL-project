@@ -85,7 +85,7 @@ def linear_regression(thetas, rewards): # X as usual in a linear regression and 
     X = __X__(thetas)
     beta_hat = np.linalg.lstsq(X, rewards, rcond=None)[0]
 
-    coefficient_of_determination(rewards, thetas, beta_hat)
+    # coefficient_of_determination(rewards, thetas, beta_hat)
 
     return beta_hat
 

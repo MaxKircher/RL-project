@@ -59,7 +59,7 @@ class Optimization(object):
         Constraint übergeben?
     '''
     def SLSQP(self, x0):
-        bnds = ((x0[0], None), (1e-5, None))
+        bnds = ((1e-5, None), (1e-5, None))
         cons = {'type': 'ineq', 'fun': self.constraint}
         soloution = minimize(self.objective, x0, method = 'SLSQP', bounds = bnds, constraints = cons)
         return soloution
