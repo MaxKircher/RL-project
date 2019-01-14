@@ -20,18 +20,20 @@ class More(object):
         d = self.policy.get_number_of_parameters()
         b = np.array(d*[1])
         Q = 1*np.eye(d)
+        etha = 1e5
+        omega = 1
         count = 0
 
         while np.absolute(np.diag(Q).sum()) > self.delta:
             # Q violates properties of covariance matrix
-            b, Q, rewards, thetas = self.__more_step__(b, Q)
+            b, Q, rewards, thetas, etha, omega = self.__more_step__(b, Q, etha, omega)
             count += 1
             print("Count: ", count, " Still improving...", np.diag(Q).sum())
             if (np.mod(count, 2000) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
                 plot(rewards, thetas, self.policy.get_number_of_parameters())
 
 
-    def __more_step__(self, b, Q):
+    def __more_step__(self, b, Q, etha, omega):
         # TODO: 10000,20,150 -> Übergeben
         rewards, thetas = self.sample_generator.sample(b, Q)
         beta_hat = linear_regression(thetas, rewards)
@@ -39,8 +41,8 @@ class More(object):
         R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
         # TODO: set diffrent epsilon, beta and start values for the optimization
         opti = Optimization(Q, b, R, r, .01, 0.99)
-        etha0 = self.__compute_etha0__(1, Q, R)
-        x0 = np.asarray([etha0, 1])
+        # etha0 = self.__compute_etha0__(1, Q, R)
+        x0 = np.asarray([etha, omega])
 
         sol = opti.SLSQP(x0) #L_BFGS_B(x0) #
         print("Computed etha: {}, omega: {}".format(sol.x[0], sol.x[1]))
@@ -60,7 +62,7 @@ class More(object):
         print("Reward max - min: ", max(rewards) - min(rewards))
         print("theta = ", b_new)
 
-        return b_new, Q_new, rewards, thetas
+        return b_new, Q_new, rewards, thetas, etha, omega
 
     def __compute_etha0__(self, etha0, Q, R):
         F = np.linalg.inv(etha0 * np.linalg.inv(Q) - 2 * R)

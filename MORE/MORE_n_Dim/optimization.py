@@ -53,13 +53,13 @@ class Optimization(object):
         etha = x[0]
         F = np.linalg.inv(etha * np.linalg.inv(self.Q) - 2 * self.R)
         evals = np.linalg.eigvals(F) > 0
-        return evals.all() - 1e-
+        return evals.all() - 1e-2
 
     '''
         Constraint übergeben?
     '''
     def SLSQP(self, x0):
-        bnds = ((x0[0], None), (1e-5, None))
+        bnds = ((1e-5, None), (1e-5, None))
         cons = {'type': 'ineq', 'fun': self.constraint}
         soloution = minimize(self.objective, x0, method = 'SLSQP', bounds = bnds, constraints = cons)
         return soloution
