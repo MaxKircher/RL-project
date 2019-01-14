@@ -53,7 +53,7 @@ class Optimization(object):
         etha = x[0]
         F = np.linalg.inv(etha * np.linalg.inv(self.Q) - 2 * self.R)
         evals = np.linalg.eigvals(F) > 0
-        return evals.all() - 1e-
+        return evals.all() - 1e-2
 
     '''
         Constraint übergeben?
