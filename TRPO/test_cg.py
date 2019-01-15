@@ -33,7 +33,7 @@ a_dim = env.action_space.shape[0]
 input = open("policies/my_policy2_cg_cont.pkl", "rb")
 #input = open("policies/my_policy_cartpole_cg.pkl", "rb")
 data = pickle.load(input)
-policy = data.get("policy")
+policy = data.get("policy_cartpole_cg")
 
 trpo = TRPO(env, gamma, policy)
 
@@ -89,8 +89,7 @@ for i in range(iterations):
 
 
     # Save in file
-    # dict = {"policy_cartpole_cg": policy}
-    dict = {"policy_pendulum_cg_800": policy}
+    dict = {"policy_cartpole_cg": policy}
     with open("policies/my_policy_pendulum_cg_cont_800.pkl", "wb") as output:
         pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
