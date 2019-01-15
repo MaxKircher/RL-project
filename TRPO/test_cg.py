@@ -13,13 +13,13 @@ plt.show()
 axes = plt.gca()
 #plt.ion()
 
-iterations = 200
+iterations = 500
 
 axes.set_xlim(0, iterations)
 rewards = np.array([]) # for plotting
 
 #env = gym.make('CartpoleStabShort-v0')
-env = gym.make('CartpoleStabShort-v0')
+env = gym.make('Pendulum-v2')
 s0 = tuple(env.reset())
 gamma = 0.9999
 
@@ -28,7 +28,13 @@ delta = 0.01 # KL threshold in linesearch
 s_dim = env.observation_space.shape[0]
 a_dim = env.action_space.shape[0]
 
-policy = NN(s_dim, a_dim)
+# policy = NN(s_dim, a_dim)
+
+input = open("policies/my_policy2_cg_cont.pkl", "rb")
+#input = open("policies/my_policy_cartpole_cg.pkl", "rb")
+data = pickle.load(input)
+policy = data.get("policy")
+
 trpo = TRPO(env, gamma, policy)
 
 # recommanded 10 iterations on last page (above Appendix D)
@@ -83,12 +89,13 @@ for i in range(iterations):
 
 
     # Save in file
-    dict = {"policy_cartpole_cg": policy}
-    with open("policies/my_policy_cartpole_cg.pkl", "wb") as output:
+    # dict = {"policy_cartpole_cg": policy}
+    dict = {"policy_pendulum_cg_800": policy}
+    with open("policies/my_policy_pendulum_cg_cont_800.pkl", "wb") as output:
         pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
     # Plotting
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-plt.savefig("plot_cartpole_cg.png")
+plt.savefig("plot_policy2_cg_cont_800.png")
