@@ -40,7 +40,7 @@ class More(object):
         rewards, thetas = self.sample_generator.sample(b, Q)
         beta_hat = linear_regression(thetas, rewards)
 
-        R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
+        R, r = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
         #print("R: ", R, " r: ", r, " r0: ", r0)
         for i, theta in enumerate(thetas):
             print(rewards[i] , " : ", theta @ R @ np.array([theta]).T + theta @ r + r0)
