@@ -97,7 +97,7 @@ def compute_quadratic_surrogate(beta_hat, d):
 
     R_param = beta_hat[:int(d*(d+1)/2) ]
     r = beta_hat[int(d*(d+1)/2) : int(d*(d+1)/2 + d)]
-    r0 = beta_hat[int(d * (d+1)/2 + d) - 1]
+    r0 = beta_hat[int(d * (d+1)/2 + d)]
     # Construct R matrix
     R_param = np.asarray(R_param)
     R = np.eye(d) # siehe Kommentar für polynomial policy von Grad 2
