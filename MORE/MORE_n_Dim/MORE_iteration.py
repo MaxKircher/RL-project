@@ -18,7 +18,9 @@ class More(object):
     def iterate(self):
         #### Raus in die test, cf. TODO
         d = self.policy.get_number_of_parameters()
-        b = np.array(d*[1])
+        #b = np.array(d*[0])
+        b = np.random.randn(d)
+        b_history = [b]
         Q = 1*np.eye(d)
         etha = 1e5
         omega = 1
@@ -27,18 +29,21 @@ class More(object):
         while np.absolute(np.diag(Q).sum()) > self.delta:
             # Q violates properties of covariance matrix
             b, Q, rewards, thetas, etha, omega = self.__more_step__(b, Q, etha, omega)
+            b_history += [b]
             count += 1
             print("Count: ", count, " Still improving...", np.diag(Q).sum())
-            if (np.mod(count, 2000) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
-                plot(rewards, thetas, self.policy.get_number_of_parameters())
+            if (np.mod(count, 200) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
+                plot(rewards, thetas, self.policy.get_number_of_parameters(), b_history)
 
 
     def __more_step__(self, b, Q, etha, omega):
-        # TODO: 10000,20,150 -> Übergeben
         rewards, thetas = self.sample_generator.sample(b, Q)
         beta_hat = linear_regression(thetas, rewards)
 
-        R, r = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
+        R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
+        #print("R: ", R, " r: ", r, " r0: ", r0)
+        for i, theta in enumerate(thetas):
+            print(rewards[i] , " : ", theta @ R @ np.array([theta]).T + theta @ r + r0)
         # TODO: set diffrent epsilon, beta and start values for the optimization
         opti = Optimization(Q, b, R, r, .01, 0.99)
         # etha0 = self.__compute_etha0__(1, Q, R)
