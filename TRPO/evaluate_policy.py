@@ -5,11 +5,11 @@ import quanser_robots
 import torch
 import time
 
-input = open("policies/my_policy2_cg.pkl", "rb")
+input = open("policies/my_policy_pendulum_cg_cont_800.pkl", "rb")
 #input = open("policies/my_policy_cartpole_cg.pkl", "rb")
 data = pickle.load(input)
-policy = data.get("policy")
-#policy = data.get("policy_cartpole_cg")
+#policy = data.get("policy")
+policy = data.get("policy_cartpole_cg")
 
 env = gym.make('Pendulum-v2')
 #env = gym.make('CartpoleStabShort-v0')

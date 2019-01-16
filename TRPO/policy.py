@@ -28,7 +28,7 @@ class NN(object):
 
         # std = pow(e, lambda) -> lambda = log(std)
         ''''IS BY DEFAULT FIRST PARAMETER'''
-        self.model.log_std = torch.nn.Parameter(torch.zeros(self.a_dim, requires_grad=True))
+        self.model.log_std = 2.4 * torch.nn.Parameter(torch.ones(self.a_dim, requires_grad=True))
 
     def get_covariance_matrix_numpy(self):
         dev = np.exp(self.model.log_std.detach().numpy())
