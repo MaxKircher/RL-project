@@ -38,7 +38,7 @@ class More(object):
         rewards, thetas = self.sample_generator.sample(b, Q)
         beta_hat = linear_regression(thetas, rewards)
 
-        R, r, r0 = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
+        R, r = compute_quadratic_surrogate(beta_hat, np.asarray(thetas).shape[1])
         # TODO: set diffrent epsilon, beta and start values for the optimization
         opti = Optimization(Q, b, R, r, .01, 0.99)
         # etha0 = self.__compute_etha0__(1, Q, R)

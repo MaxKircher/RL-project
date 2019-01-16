@@ -97,28 +97,21 @@ def compute_quadratic_surrogate(beta_hat, d):
 
     R_param = beta_hat[:int(d*(d+1)/2) ]
     r = beta_hat[int(d*(d+1)/2) : int(d*(d+1)/2 + d)]
-    r0 = beta_hat[int(d * (d+1)/2 + d)]
+    #r0 = beta_hat[int(d * (d+1)/2 + d)]
     # Construct R matrix
     R_param = np.asarray(R_param)
     R = np.eye(d) # siehe Kommentar für polynomial policy von Grad 2
 
     j = 0
-    k = 0 # itereirt über Spalten
-    for i in range(R_param.shape[0]):
-        if k < d:
-            R[j,k] = R_param[i]
-            R[k,j] = R[j,k]
-            k += 1
-        else:
-            j += 1
-            k = j
-            R[j,k] = R_param[i]
-            R[k,j] = R[j,k]
-            k += 1
+    for i in range(d):
+        R[i, i:] = R_param[j:j+d-i]
+        R[i:, i] = R_param[j:j+d-i]
+        j += d-i
+
 
     # print(R - R.T) # if it's not a Null-Matrix, something went wrong
 
-    return R, r, r0
+    return R, r
 
 
 
