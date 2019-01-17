@@ -40,7 +40,7 @@ trpo = TRPO(env, gamma, policy)
 # recommanded 10 iterations on last page (above Appendix D)
 cg = ConjugateGradient(10)
 # Table 2 -> min 50.000
-num_steps = 100
+num_steps = 10000
 for i in range(iterations):
     print("Iteration ", i, ":")
 
