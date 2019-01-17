@@ -101,7 +101,7 @@ class NN(object):
 
         j = 0
         for param in parameters:
-            theta[:,j: j + param.nelement()] = param.view(self.a_dim, -1)
+            theta[:,j: j + param.nelement()] = param.view(1, -1)
             j += param.nelement()
 
         return theta

@@ -81,6 +81,7 @@ class TRPO(object):
             j = 1
             for theta in thetas:
                 grad = theta.grad.view(-1)
+                print("GRAD: ", grad)
                 Jacobi_matrix[0,j:j + grad.size(0)] = grad
                 j += grad.size(0) # see TODO: Hopefully the first entry of the first row is 0
 

@@ -69,6 +69,8 @@ class TRPO(object):
 
             # Berechne die Gradienten bzgl. unseres Outputs
             for k in range(mu_actions.size(1)):
+                print(k)
+                print("mu_actions.size(1); ", mu_actions.size(1))
                 mu_actions[i,k].backward(retain_graph=True) # : korrekt?
 
                 # Abspeichern der thetas = {weights, biases, stdev}
@@ -78,6 +80,11 @@ class TRPO(object):
                 j = 1
                 for theta in thetas:
                     grad = theta.grad.view(-1)
+                    #print(grad)
+                    print(grad)
+                    print(grad.size(0))
+                    axy = j + grad.size(0)
+                    print("Operation: ", axy)
                     Jacobi_matrix[k,j:j + grad.size(0)] = grad
                     j += grad.size(0) # see TODO: Hopefully the first entry of the first row is 0
 
