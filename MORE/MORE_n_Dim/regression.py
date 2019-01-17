@@ -8,6 +8,7 @@ def __phi__(thetas):
 
 def linear_regression(thetas, rewards):
     features = __phi__(thetas)
+    #print("features: ", features)
     reg = LinearRegression().fit(features, rewards)
     return reg.coef_
 

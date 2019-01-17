@@ -38,7 +38,7 @@ class More(object):
 
     def __more_step__(self, b, Q, etha, omega):
         rewards, thetas = self.sample_generator.sample(b, Q)
-
+        # Weighted Least Squares, weight for a given theta_i is given by pi(theta_i)/pi_i(theta_i) normalized to sum up to 1
         R, r = compute_quadratic_surrogate(thetas, rewards, np.asarray(thetas).shape[1])
         #print("R: ", R, " r: ", r, " r0: ", r0)
         #for i, theta in enumerate(thetas):

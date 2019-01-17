@@ -43,7 +43,8 @@ class Optimization(object):
                 - etha * self.b.T @  np.linalg.inv(self.Q) @ self.b \
                 - etha * np.log(np.linalg.det(2 * np.pi * self.Q)) \
                 + (etha + omega) * np.log(detA))
-
+        #dgeta = epsilon - KL(Ff, inv(F) || b,Q)
+        #dgomega = H(F) - beta
         return g[0,0]
 
     '''
