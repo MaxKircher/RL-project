@@ -12,8 +12,9 @@ def linear_regression(thetas, rewards):
     return reg.coef_
 
 
-def compute_quadratic_surrogate(beta_hat, d):
+def compute_quadratic_surrogate(thetas, rewards, d):
 
+    beta_hat = linear_regression(thetas, rewards)
     print("beta_hat: ", beta_hat)
     r = beta_hat[1 : d+1]
     #r0 = beta_hat[0]

@@ -61,13 +61,13 @@ class Optimization(object):
     def SLSQP(self, x0):
         bnds = ((1e-5, None), (1e-5, None))
         cons = {'type': 'ineq', 'fun': self.constraint}
-        soloution = minimize(self.objective, x0, method = 'SLSQP', bounds = bnds, constraints = cons)
+        soloution = minimize(self.objective, x0, method = 'SLSQP', bounds = bnds)#, constraints = cons)
         return soloution
 
     def L_BFGS_B(self, x0):
         bnds = ((x0[0], None), (1e-5, None))
         cons = {'type': 'ineq', 'fun': self.constraint}
-        soloution = minimize(self.objective, x0, method = 'L-BFGS-B', bounds = bnds, constraints = cons)
+        soloution = minimize(self.objective, x0, method = 'L-BFGS-B', bounds = bnds)#, constraints = cons)
         return soloution
 
     '''
@@ -79,13 +79,13 @@ class Optimization(object):
     '''
         H[pi0] = -75
         q = actual probability distribution
-        we use: https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Entropy
+        we use: https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Differential_entropy
     '''
     def compute_beta(self, gamma, Q):
         k = Q.shape[0]
-        H_q = (k/2) + (k * np.log(2 * np.pi)) / 2 + np.log(np.linalg.det(Q)) / 2
-        print("H_q: ", H_q)
-        #H_q = 0.5 * np.log(np.linalg.det(2 * np.pi * np.e * Q))
+        # H_q = (k/2) + (k * np.log(2 * np.pi)) / 2 + np.log(np.linalg.det(Q)) / 2
+        # print("H_q: ", H_q)
+        H_q = 0.5 * np.log(np.linalg.det(2 * np.pi * np.e * Q))
         #print("H_q: ", H_q)
         # TODO: H_pi0 übergeben
         H_pi0 = -75
