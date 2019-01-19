@@ -18,7 +18,8 @@ iterations = 800
 axes.set_xlim(0, iterations)
 rewards = np.array([]) # for plotting
 
-env = gym.make('CartpoleStabShort-v0')
+env = gym.make('Qube-v0')
+#env = gym.make('CartpoleStabShort-v0')
 #env = gym.make('Pendulum-v2')
 s0 = tuple(env.reset())
 gamma = 0.9999
@@ -89,12 +90,12 @@ for i in range(iterations):
 
 
     # Save in file
-    # dict = {"policy": policy}
-    # with open("policies/my_policy_cartpole.pkl", "wb") as output:
-    #     pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
-    #
-    # # Plotting
-    # plt.plot(range(i+1), rewards, c='b')
-    # plt.draw()
-    # plt.pause(1e-17)
-# plt.savefig("my_policy_cartpole.png")
+    dict = {"policy": policy}
+    with open("policies/my_policy_qube.pkl", "wb") as output:
+        pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
+
+    # Plotting
+    plt.plot(range(i+1), rewards, c='b')
+    plt.draw()
+    plt.pause(1e-17)
+plt.savefig("my_policy_qube.png")
