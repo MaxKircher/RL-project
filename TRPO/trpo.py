@@ -76,6 +76,7 @@ class TRPO(object):
 
             # Abspeichern der thetas = {weights, biases, stdev}
             thetas = list(policy_net.parameters())
+            print(thetas)
 
             # Macht man eine for-Schleife drum hat man die Jacobi-Matrix als Lsite aufgeschrieben
             j = 1
