@@ -6,9 +6,9 @@ import torch
 import time
 
 input = open("policies/my_policy_qube_cont.pkl", "rb")
-#input = open("policies/my_policy_cartpole_cg.pkl", "rb")
+# input = open("policies/my_policy_cartpole_cg.pkl", "rb")
 data = pickle.load(input)
-#policy = data.get("policy")
+# policy = data.get("policy")
 policy = data.get("policy")
 
 #env = gym.make('Pendulum-v2')
