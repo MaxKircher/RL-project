@@ -13,7 +13,7 @@ plt.show()
 axes = plt.gca()
 #plt.ion()
 
-iterations = 150
+iterations = 300
 
 axes.set_xlim(0, iterations)
 rewards = np.array([]) # for plotting
@@ -31,7 +31,7 @@ a_dim = env.action_space.shape[0]
 
 # policy = NN(s_dim, a_dim)
 
-input = open("policies/my_policy_qube.pkl", "rb")
+input = open("policies/my_policy_qube_cont.pkl", "rb")
 data = pickle.load(input)
 policy = data.get("policy")
 
@@ -97,4 +97,4 @@ for i in range(iterations):
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-plt.savefig("my_policy_qube_cont.png")
+plt.savefig("my_policy_qube_cont_2.png")
