@@ -5,7 +5,7 @@ import quanser_robots
 import torch
 import time
 
-input = open("policies/my_policy_qube.pkl", "rb")
+input = open("policies/my_policy_qube_cont.pkl", "rb")
 #input = open("policies/my_policy_cartpole_cg.pkl", "rb")
 data = pickle.load(input)
 #policy = data.get("policy")
