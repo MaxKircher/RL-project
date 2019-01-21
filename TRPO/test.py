@@ -13,7 +13,7 @@ plt.show()
 axes = plt.gca()
 #plt.ion()
 
-iterations = 800
+iterations = 150
 
 axes.set_xlim(0, iterations)
 rewards = np.array([]) # for plotting
@@ -29,12 +29,11 @@ delta = 0.01 # KL threshold in linesearch
 s_dim = env.observation_space.shape[0]
 a_dim = env.action_space.shape[0]
 
-policy = NN(s_dim, a_dim)
+# policy = NN(s_dim, a_dim)
 
-#input = open("policies/my_policy2_cg_cont.pkl", "rb")
-#input = open("policies/my_policy_cartpole_cg.pkl", "rb")
-#data = pickle.load(input)
-#policy = data.get("policy_cartpole_cg")
+input = open("policies/my_policy_qube.pkl", "rb")
+data = pickle.load(input)
+policy = data.get("policy")
 
 trpo = TRPO(env, gamma, policy)
 
@@ -91,11 +90,11 @@ for i in range(iterations):
 
     # Save in file
     dict = {"policy": policy}
-    with open("policies/my_policy_qube.pkl", "wb") as output:
+    with open("policies/my_policy_qube_cont.pkl", "wb") as output:
         pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
     # Plotting
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-plt.savefig("my_policy_qube.png")
+plt.savefig("my_policy_qube_cont.png")
