@@ -62,7 +62,7 @@ class Optimization(object):
     def SLSQP(self, x0):
         bnds = ((1e-5, None), (1e-5, None))
         cons = {'type': 'ineq', 'fun': self.constraint}
-        soloution = minimize(self.objective, x0, method = 'SLSQP', bounds = bnds)#, constraints = cons)
+        soloution = minimize(self.objective, x0, method = 'SLSQP', bounds = bnds)
         return soloution
 
     def L_BFGS_B(self, x0):
