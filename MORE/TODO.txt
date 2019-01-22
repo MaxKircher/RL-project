@@ -14,3 +14,36 @@ Allgemeines:
 - MORE Test Funktionen im Paper mit unserer Implementierung vergleichen
 - Regression R² Maß berechnen, bei schlechter Regression: ggf. Ridge Regression probieren?
 - Rundungsfehler bei Matrixinversion
+
+____________________________
+MORE_iteration_ts.py/MORE_iteration.py
+ - l25/23: Prüfe (bspw. mit if det(Q) <= 0), ob es die Eigenschaften der Varianz verletzt
+ - l35/33: sample_generator.sample() parameter übergeben
+ - l41/39: opti = Optimization(...) mit Parameter ggf. rumspielen,
+   jedoch funktionieren diese Parameter gut. Eher Extrefälle ausprobieren, insb.
+   für Omega (vgl. Frage im Forum "MORE - langragian Parameter")
+
+Optimization.py
+ - Mit startwerten rumspielen und Extremfälle prüfen
+ - Mit großem omega starten und Tipps aus dem Forum einbauen
+ - l84: in compute_beta mit H_pi0 rumspielen und Extrefälle ausprobieren, sowie
+ - l88: den Parameter übergeben
+ - Machen constraints Sinn?
+ - Berechnen wir beta nur einmal?
+ - 2.1 (1) braucht man 1 = integral(pi)?
+
+Policy.py
+ - l29: Keine konvergenz bei konstanten Funktionen
+
+Regression.py
+ - R² berechnen um die Güte der Regression zu ermitteln
+
+Sample.py
+ - reward/theta_memory richtig implementiert?
+ - für L (size of memorized samples) Extrefälle ausprobieren
+ - l49: den Skalierungsfaktor übergeben?
+ - l58: reward nicht averagen sondern einfach summieren?
+
+TrainingStates.py
+ - Zum rumspielen, damit man nicht immer konstanten Reward hat
+ - l12 und l13: Andere, ggf. extremere actions wählen
