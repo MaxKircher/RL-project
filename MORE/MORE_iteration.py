@@ -4,6 +4,7 @@ from sample import *
 from regression import * # , X
 from optimization import *
 from plot_data import *
+from matplotlib import pyplot as plt
 
 class More(object):
 
@@ -21,10 +22,14 @@ class More(object):
         #b = np.array(d*[0])
         b = np.random.randn(d)
         b_history = [b]
-        Q = 1*np.eye(d)
+        Q = 10*np.eye(d)
         etha = 1e5
         omega = 1
         count = 0
+
+        reward_list = np.array([])
+        plt.show()
+        axes = plt.gca()
 
         while np.absolute(np.diag(Q).sum()) > self.delta:
             # Q violates properties of covariance matrix
@@ -32,6 +37,15 @@ class More(object):
             b_history += [b]
             count += 1
             print("Count: ", count, " Still improving...", np.diag(Q).sum())
+
+            reward_list = np.append(reward_list, sum(rewards)/len(rewards))
+            # Plotting
+            plt.plot(range(count+1), reward_list, c='b')
+            plt.draw()
+            plt.pause(1e-17)
+            plt.savefig("snapshots/pendulum_nn.png")
+
+
             if (np.mod(count, 200) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
                 plot(rewards, thetas, self.policy.get_number_of_parameters(), b_history)
 

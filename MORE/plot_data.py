@@ -14,8 +14,7 @@ def plot(rewards, list_of_parameter, n, b_history):
         thetas = get_thetas(list_of_parameter, n)
         plt.scatter(thetas, rewards)
 
-    plt.show()
-
+    plt.show(block=False)
 
 def get_thetas(lop, n):
     thetas = []
