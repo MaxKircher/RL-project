@@ -5,6 +5,7 @@ from regression import * # , X
 from optimization import *
 from plot_data import *
 from matplotlib import pyplot as plt
+import pickle
 
 class More(object):
 
