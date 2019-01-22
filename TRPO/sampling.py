@@ -28,6 +28,9 @@ Returns:
         act = ctrl(obs)
         obs, rwd, done, info = env.step(act)
 
+
+if env.__str__() == '<TimeLimit<BallBalancerSim<BallBalancerSim-v0>>>':
+    s = s[0]
 '''
 def sample_sp(policy, s0, T, env, gamma):
     s = s0
@@ -36,10 +39,46 @@ def sample_sp(policy, s0, T, env, gamma):
     rewards = []
     dones   = []
     for i in range(T):
-        a = policy.choose_a(s)[0] # für env = Qube-v0
+        a = policy.choose_a(s)[0]
         s, r, done, info = env.step(a)
         if type(s) is np.ndarray:
             s = tuple(s.reshape(-1))
+
+        if done:
+            s = tuple(env.reset())
+            dones += [i]
+
+        states  += [s]
+        actions += [a]
+        rewards += [r]
+
+    # Make an array from the lists states and actions
+    states = np.array(states)
+    actions = np.array(actions)
+    Q = np.zeros(T + 1)
+
+    dones += [T-1]
+    t0 = -1
+    for tend in dones:
+        for i in range(tend, t0, -1):
+            Q[i] = gamma * Q[i + 1] + rewards[i]
+        t0 = tend
+
+    Q = (Q - Q.mean()) / Q.std()
+
+    return states, actions, Q, sum(rewards)
+
+def sample_sp_bb(policy, s0, T, env, gamma):
+    s = s0
+    states = [s]
+    actions = []
+    rewards = []
+    dones   = []
+    for i in range(T):
+        a = policy.choose_a(s)[0]
+        s, r, done, info = env.step(a)
+        #if type(s) is np.ndarray:
+        s = tuple(s.reshape(-1))
 
         if done:
             s = tuple(env.reset())

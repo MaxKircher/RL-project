@@ -97,11 +97,11 @@ class NN(object):
     def get_parameter_as_tensor(self):
         parameters = list(self.model.parameters())
         number_cols = sum(p.numel() for p in self.model.parameters())
-        theta = torch.zeros(self.a_dim, number_cols)
+        theta = torch.zeros(1, number_cols)
 
         j = 0
         for param in parameters:
-            theta[:,j: j + param.nelement()] = param.view(self.a_dim, -1)
+            theta[:,j: j + param.nelement()] = param.view(1, -1)
             j += param.nelement()
 
         return theta
@@ -109,11 +109,11 @@ class NN(object):
     def get_gradients_as_tensor(self):
         parameters = list(self.model.parameters())
         number_cols = sum(p.numel() for p in self.model.parameters())
-        gradient = torch.zeros(self.a_dim, number_cols)
+        gradient = torch.zeros(1, number_cols)
 
         j = 0
         for param in parameters:
-            gradient[:,j: j + param.nelement()] = param.grad.view(self.a_dim, -1)
+            gradient[:,j: j + param.nelement()] = param.grad.view(1, -1)
             j += param.nelement()
 
         return gradient

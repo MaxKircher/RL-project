@@ -13,13 +13,12 @@ plt.show()
 axes = plt.gca()
 #plt.ion()
 
-iterations = 300
+iterations = 650
 
 axes.set_xlim(0, iterations)
 rewards = np.array([]) # for plotting
 
 env = gym.make('Qube-v0')
-#env = gym.make('CartpoleStabShort-v0')
 #env = gym.make('Pendulum-v2')
 s0 = tuple(env.reset())
 gamma = 0.9999
@@ -44,7 +43,11 @@ num_steps = 50000
 for i in range(iterations):
     print("Iteration ", i, ":")
 
-    states, actions, Q, r = sample_sp(policy, s0, num_steps, env, gamma)
+    if env.__str__() == '<TimeLimit<BallBalancerSim<BallBalancerSim-v0>>>':
+        states, actions, Q, r = sample_sp_bb(policy, s0, num_steps, env, gamma)
+    else:
+        states, actions, Q, r = sample_sp(policy, s0, num_steps, env, gamma)
+
     rewards = np.append(rewards, r) # for plotting
 
     g = trpo.compute_objective_gradients(states, actions, Q).detach().numpy().T
@@ -90,11 +93,11 @@ for i in range(iterations):
 
     # Save in file
     dict = {"policy": policy}
-    with open("policies/my_policy_qube_cont.pkl", "wb") as output:
+    with open("policies/my_policy_qube_cont_bb.pkl", "wb") as output:
         pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
     # Plotting
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-plt.savefig("my_policy_qube_cont_2.png")
+    plt.savefig("snapshots/my_policy_qube_cont_3.png")
