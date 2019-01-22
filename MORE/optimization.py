@@ -37,7 +37,7 @@ class Optimization(object):
         detA = np.linalg.det(A)
         if detA < 0:
             print("Log warning 2: ", detA)
-            print(np.linalg.eigvals(A))
+            # print(np.linalg.eigvals(A))
         # Our objective Function g, see Chapter 2.2
         g = etha * self.epsilon - self.beta * omega + .5 * (f.T @ F @ f \
                 - etha * self.b.T @  np.linalg.inv(self.Q) @ self.b \

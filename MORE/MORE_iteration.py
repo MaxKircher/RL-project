@@ -56,14 +56,14 @@ class More(object):
         omega = sol.x[1]
         F = np.linalg.inv(etha * np.linalg.inv(Q) - 2 * R)
         f = etha * np.linalg.inv(Q) @ b + r
-        print("f: ", f)
-        print("F: ", F)
+        # print("f: ", f)
+        # print("F: ", F)
 
         b_new, Q_new = opti.update_pi(F, f, etha, omega)
 
-        print("parameter change: ", np.abs(b - b_new).sum())
+        #print("parameter change: ", np.abs(b - b_new).sum())
         print("Reward max: ", max(rewards))
-        print("Reward max - min: ", max(rewards) - min(rewards))
+        #print("Reward max - min: ", max(rewards) - min(rewards))
         print("theta = ", b_new)
 
         return b_new, Q_new, rewards, thetas, etha, omega

@@ -40,7 +40,7 @@ class Rosenbrock(DebugPolicy):
         return -rosen(thetas)
 
     def get_number_of_parameters(self):
-        return 20
+        return 2
 
 class Rastrigin(DebugPolicy):
     # https://en.wikipedia.org/wiki/Rastrigin_function
@@ -133,14 +133,14 @@ class NeuronalNetworkPolicy(Policy):
         inter_dim_2 = 5
         self.nn_model = torch.nn.Sequential(
             torch.nn.Linear(self.state_dim, inter_dim_1),
-            torch.nn.Sigmoid(),
+            torch.nn.Tanh(),
             torch.nn.Linear(inter_dim_1, inter_dim_2),
-            torch.nn.Sigmoid(),
+            torch.nn.Tanh(),
             torch.nn.Linear(inter_dim_2, self.action_dim),
         )
 
     def get_action(self, state):
-        action = self.nn_model(torch.tensor(state)).detach().numpy()
+        action = self.nn_model(torch.tensor(state, dtype = torch.float)).detach().numpy()
         return action
 
     def set_theta(self, theta):

@@ -14,7 +14,7 @@ def linear_regression(thetas, rewards):
 
 def compute_quadratic_surrogate(thetas, rewards, d):
     beta_hat = linear_regression(thetas, rewards)
-    print("beta_hat: ", beta_hat)
+    # print("beta_hat: ", beta_hat)
     r = beta_hat[1 : d+1]
     #r0 = beta_hat[0]
 
@@ -43,7 +43,7 @@ def compare(thetas, rewards, d):
     thetas = np.array(thetas)
 
     beta_hat = linear_regression(thetas, rewards)
-    print("beta_hat: ", beta_hat)
+    # print("beta_hat: ", beta_hat)
     r = beta_hat[1 : d+1]
     r0 = beta_hat[0]
 
@@ -64,6 +64,6 @@ def compare(thetas, rewards, d):
 
     correct_pred = reg.predict(features)
 
-    print("ours: ", np.diag(our_pred))
-    print("correct: ", correct_pred)
-    print("diff: ", np.diag(our_pred) - correct_pred)
+    # print("ours: ", np.diag(our_pred))
+    # print("correct: ", correct_pred)
+    # print("diff: ", np.diag(our_pred) - correct_pred)
