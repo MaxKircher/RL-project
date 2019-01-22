@@ -13,12 +13,12 @@ plt.show()
 axes = plt.gca()
 #plt.ion()
 
-iterations = 300
+iterations = 650
 
 axes.set_xlim(0, iterations)
 rewards = np.array([]) # for plotting
 
-env = gym.make('BallBalancerSim-v0')
+env = gym.make('Qube-v0')
 #env = gym.make('Pendulum-v2')
 s0 = tuple(env.reset())
 gamma = 0.9999
@@ -30,7 +30,7 @@ a_dim = env.action_space.shape[0]
 
 # policy = NN(s_dim, a_dim)
 
-input = open("policies/my_policy_BallBalancerSim.pkl", "rb")
+input = open("policies/my_policy_qube_cont.pkl", "rb")
 data = pickle.load(input)
 policy = data.get("policy")
 
@@ -39,7 +39,7 @@ trpo = TRPO(env, gamma, policy)
 # recommanded 10 iterations on last page (above Appendix D)
 cg = ConjugateGradient(10)
 # Table 2 -> min 50.000
-num_steps = 10000
+num_steps = 50000
 for i in range(iterations):
     print("Iteration ", i, ":")
 
@@ -93,11 +93,11 @@ for i in range(iterations):
 
     # Save in file
     dict = {"policy": policy}
-    with open("policies/my_policy_BallBalancerSim_cont.pkl", "wb") as output:
+    with open("policies/my_policy_qube_cont_bb.pkl", "wb") as output:
         pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
     # Plotting
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-plt.savefig("my_policy_BallBalancerSim_cont.png")
+plt.savefig("my_policy_qube_cont_3.png")

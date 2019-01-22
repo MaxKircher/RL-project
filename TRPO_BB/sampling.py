@@ -39,7 +39,7 @@ def sample_sp(policy, s0, T, env, gamma):
     rewards = []
     dones   = []
     for i in range(T):
-        a = policy.choose_a(s)
+        a = policy.choose_a(s)[0]
         s, r, done, info = env.step(a)
         if type(s) is np.ndarray:
             s = tuple(s.reshape(-1))
