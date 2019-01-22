@@ -93,7 +93,7 @@ class PolynomialPolicy(Policy):
         for i in range(1, self.polynomial_degree + 1):
             action += np.dot(self.thetas[i],np.power(state, i))
 
-        return action
+        return [action]
 
     def get_number_of_parameters(self):
         return 1 + self.polynomial_degree * self.state_dim
