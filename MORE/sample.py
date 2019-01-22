@@ -3,6 +3,7 @@ import gym
 import quanser_robots
 from policy import *
 import inspect
+from scipy.stats import multivariate_normal
 
 class Sample(object):
     '''
@@ -36,8 +37,6 @@ class Sample(object):
          - thetas:  Is a list where the i-th entry is a random value returned from the multivariate Gaussian
     '''
     def sample(self, mu, dev):
-        rewards = []
-        thetas = []
 
         for j in range(self.number_of_thetas):
             reward = 0
@@ -68,26 +67,13 @@ class Sample(object):
         self.reward_memory = self.reward_memory[-self.memory_size:]
         self.theta_memory = self.theta_memory[-self.memory_size:]
 
+        # For importance Sampling
+        weights = multivariate_normal.pdf(self.theta_memory, mu, dev)
+
+        print("weights unnormalied: ", weights, " weights.sum(): ", weights.sum())
+
+        weights = weights / weights.sum()
+
+        print("weights normalized: ", weights)
+
         return self.reward_memory, self.theta_memory
-
-    def training_sample(self, number_of_thetas, mu, dev, ts):
-        rewards = []
-        thetas = []
-
-        for j in range(self.number_of_thetas):
-            reward = 0
-            theta = np.random.multivariate_normal(mu, dev)
-
-            self.policy.set_theta(theta)
-            for j in range(len(ts)):
-                state = ts[j]
-                a = self.policy.get_action(state)
-                s, r, d, i = self.env.step(np.asarray(a))
-                reward += r
-
-            rewards += [reward]
-            thetas += [theta]
-
-        print("Sampling successfull")
-
-        return rewards, thetas

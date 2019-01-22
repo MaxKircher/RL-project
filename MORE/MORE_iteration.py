@@ -22,7 +22,7 @@ class More(object):
         #b = np.array(d*[0])
         b = np.random.randn(d)
         b_history = [b]
-        Q = 10*np.eye(d)
+        Q = 1*np.eye(d)
         etha = 1e5
         omega = 1
         count = 0
@@ -30,6 +30,7 @@ class More(object):
         reward_list = np.array([])
         plt.show()
         axes = plt.gca()
+        fig = plt.figure()
 
         while np.absolute(np.diag(Q).sum()) > self.delta:
             # Q violates properties of covariance matrix
@@ -40,13 +41,14 @@ class More(object):
 
             reward_list = np.append(reward_list, sum(rewards)/len(rewards))
             # Plotting
+            plt.figure(fig.number)
             plt.plot(range(count), reward_list, c='b')
             plt.draw()
             plt.pause(1e-17)
             plt.savefig("snapshots/pendulum_nn.png")
 
 
-            if (np.mod(count, 200) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
+            if (np.mod(count, 300) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
                 plot(rewards, thetas, self.policy.get_number_of_parameters(), b_history)
 
 

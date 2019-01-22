@@ -18,7 +18,7 @@ print("(state_dim, action_dim) =  ", "(", state_dim, ",", action_dim, ")")
 print("Number of model parameters: ", policy.get_number_of_parameters())
 
 bound = .000001 * policy.get_number_of_parameters()
-N_per_theta, number_of_thetas, memory_size = 10000,20,20 # For policies
+N_per_theta, number_of_thetas, memory_size = 10000,20,300 # For policies
 # N_per_theta, number_of_thetas, memory_size = 1, 1000, 1000 # For Debug
 
 iterator = More(bound, policy, env, N_per_theta, number_of_thetas, memory_size)
