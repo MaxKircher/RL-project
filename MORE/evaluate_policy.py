@@ -16,6 +16,8 @@ s = env.reset()
 
 for i in range(10000):
     env.render()
+    # a = policy.get_action(s)
+    # s, r, d, i = env.step(np.asarray(a))
     a = policy.model(torch.tensor(s, dtype=torch.float)).detach().numpy()
     s, r, done, info = env.step(a)
     if done:
