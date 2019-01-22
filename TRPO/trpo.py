@@ -46,6 +46,7 @@ class TRPO(object):
 
         # Get the policy model (currently an one layer linear NN)
         policy_net = self.policy.model
+        a_dim = self.policy.a_dim
 
         # Transform our states to a Tensor
         states = torch.tensor(states, dtype = torch.float)
@@ -56,41 +57,35 @@ class TRPO(object):
         # Compute the coloumns of the Jacobi-Matrix
         number_cols = sum(p.numel() for p in policy_net.parameters())
 
-        ''' TODO: Ist Jacobi_matrix[0,0] = 0 ??? '''
-        ''' TODO: Wenns korrekt läuft in Policy auslagern '''
-
-
         # TODO: Generalise for multi dimensional actions, because of unclearness w.r.t. to M Matrix (the FIM for mu)
         # Two rows for expectation and stdev
         Jacobi_matrices = []
 
         # We compute gradients for each state in states and then average over the gradients
         for i in range(mu_actions.size(0)):
-            Jacobi_matrix = np.zeros((mu_actions.size(1) * 2, number_cols))
+            Jacobi_matrix = np.zeros((a_dim * 2, number_cols))
 
             # zero-grad damit die Gradienten zurückgesetzt sind
             policy_net.zero_grad()
 
             # Berechne die Gradienten bzgl. unseres Outputs
-            mu_actions[i,0].backward(retain_graph=True)
+            for k in range(a_dim):
+                mu_actions[i,k].backward(retain_graph=True) # : korrekt?
 
-            # Abspeichern der thetas = {weights, biases, stdev}
-            thetas = list(policy_net.parameters())
-            print(thetas)
+                # Abspeichern der thetas = {weights, biases, stdev}
+                thetas = list(policy_net.parameters())
 
-            # Macht man eine for-Schleife drum hat man die Jacobi-Matrix als Lsite aufgeschrieben
-            j = 1
-            for theta in thetas:
-                grad = theta.grad.view(-1)
-                Jacobi_matrix[0,j:j + grad.size(0)] = grad
-                j += grad.size(0) # see TODO: Hopefully the first entry of the first row is 0
+                # Macht man eine for-Schleife drum hat man die Jacobi-Matrix als Lsite aufgeschrieben
+                j = 0
+                for theta in thetas:
+                    grad = theta.grad.view(-1)
+                    Jacobi_matrix[k,j:j + grad.size(0)] = grad
+                    j += grad.size(0) # see TODO: Hopefully the first entry of the first row is 0
 
-            assert j == Jacobi_matrix.shape[1] + 1
 
-            # Add the derivatives for the log_std which are ones because std is a theta-param
-            assert (mu_actions.size(1) == self.policy.model.log_std.size(0)) , "dimensions have to match"
-            Jacobi_matrix[1, 0] = self.policy.model.log_std.exp()
-            Jacobi_matrices += [Jacobi_matrix]
+                # Add the derivatives for the log_std which are ones because std is a theta-param
+                Jacobi_matrix[k + a_dim, k] = self.policy.model.log_std.exp()[k]
+                Jacobi_matrices += [Jacobi_matrix]
 
 
         return Jacobi_matrices
