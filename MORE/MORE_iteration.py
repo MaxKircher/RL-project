@@ -40,7 +40,7 @@ class More(object):
 
             reward_list = np.append(reward_list, sum(rewards)/len(rewards))
             # Plotting
-            plt.plot(range(count+1), reward_list, c='b')
+            plt.plot(range(count), reward_list, c='b')
             plt.draw()
             plt.pause(1e-17)
             plt.savefig("snapshots/pendulum_nn.png")
