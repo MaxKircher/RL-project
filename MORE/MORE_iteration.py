@@ -84,8 +84,8 @@ class More(object):
         print("theta = ", b_new)
 
         # Save policy in file
-        policy = self.policy.set_theta(b_new)
-        dict = {"policy": policy}
+        self.policy.set_theta(b_new)
+        dict = {"policy": self.policy}
         with open("policies/pendulum_nn.pkl", "wb") as output:
             pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
