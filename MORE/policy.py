@@ -26,26 +26,11 @@ class DebugPolicy(Policy):
     def __init__(self, state_dim, action_dim):
         Policy.__init__(self, state_dim, action_dim)
 
-    # Bsp. 14.9: https://www.mathematik.tu-darmstadt.de/media/analysis/lehrmaterial_anapde/hallerd/Ana2Skript18.pdf
-    # Minimum (0,0)
-    # Maxiumum (0,1) und (0,-1)
     def set_theta(self, thetas):
-        x = thetas[0]
-        y = thetas[1]
-        return (x**2 + 2 * y**2) * np.exp(-x**2 - y**2)
-
-    # def set_theta(self, thetas):
-    #     x = thetas[0]
-    #     y = thetas[1]
-    #     return np.exp(-x**2 - y**2) + np.exp(-(x-3)**2 - y**2)
-    #
-    # def set_theta(self, thetas):
-    #     x = thetas[0]
-    #     y = thetas[1]
-    #     return -(x * y)**2 + 3
+        raise NotImplementedError("Sublcasses should implement this!")
 
     def get_number_of_parameters(self):
-        return 2
+        raise NotImplementedError("Sublcasses should implement this!")
 
 class Rosenbrock(DebugPolicy):
     def __init__(self, state_dim, action_dim):
@@ -54,7 +39,19 @@ class Rosenbrock(DebugPolicy):
     def set_theta(self, thetas):
         return -rosen(thetas)
 
-    # Number of parameters / dimension of rosenbrock can be changed arbitrarily here:
+    def get_number_of_parameters(self):
+        return 20
+
+class Rastrigin(DebugPolicy):
+    # https://en.wikipedia.org/wiki/Rastrigin_function
+    def __init__(self, state_dim, action_dim):
+        Policy.__init__(self, state_dim, action_dim)
+
+    def set_theta(self, thetas):
+        A = 10
+        n = self.get_number_of_parameters()
+        return -(A * n + np.sum(thetas**2 - A * np.cos(2 * np.pi * thetas)))
+
     def get_number_of_parameters(self):
         return 2
 
