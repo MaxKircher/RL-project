@@ -82,6 +82,13 @@ class More(object):
         #print("Reward max - min: ", max(rewards) - min(rewards))
         print("theta = ", b_new)
 
+        # Save policy in file
+        policy = self.policy.set_theta(b_new)
+        dict = {"policy": policy}
+        with open("policies/pendulum_nn.pkl", "wb") as output:
+            pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
+
+
         return b_new, Q_new, rewards, thetas, etha, omega
 
     def __compute_etha0__(self, etha0, Q, R):

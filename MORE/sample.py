@@ -50,7 +50,7 @@ class Sample(object):
                 for i in range(self.N_per_theta):
                     a = self.policy.get_action(s)
                     s, r, d, i = self.env.step(np.asarray(a))
-                    reward += r * 1e5 # TODO: Als Skalierungsfaktor übergeben?
+                    reward += r
                     if d:
                         s = self.env.reset()
 
