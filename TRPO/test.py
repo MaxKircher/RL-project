@@ -7,6 +7,7 @@ from sampling import *
 from conjugate_gradient import *
 import pickle
 from matplotlib import pyplot as plt
+from quanser_robots import GentlyTerminating
 
 #plt.figure()
 plt.show()
@@ -18,8 +19,11 @@ iterations = 800
 axes.set_xlim(0, iterations)
 rewards = np.array([]) # for plotting
 
-env = gym.make('Qube-v0')
+#env = gym.make('Qube-v0')
 #env = gym.make('Pendulum-v2')
+
+env = GentlyTerminating(gym.make('QubeRR-v0'))
+
 s0 = tuple(env.reset())
 gamma = 0.9999
 
@@ -93,11 +97,11 @@ for i in range(iterations):
 
     # Save in file
     dict = {"policy": policy}
-    with open("policies/my_policy_qube_cont_bb.pkl", "wb") as output:
+    with open("policies/my_policy_qube_cont_bb_rr.pkl", "wb") as output:
         pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
     # Plotting
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-    plt.savefig("snapshots/my_policy_qube_cont_4.png")
+    plt.savefig("snapshots/my_policy_qube_rr.png")
