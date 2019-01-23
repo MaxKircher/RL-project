@@ -13,7 +13,7 @@ plt.show()
 axes = plt.gca()
 #plt.ion()
 
-iterations = 650
+iterations = 800
 
 axes.set_xlim(0, iterations)
 rewards = np.array([]) # for plotting
@@ -30,7 +30,7 @@ a_dim = env.action_space.shape[0]
 
 # policy = NN(s_dim, a_dim)
 
-input = open("policies/my_policy_qube_cont.pkl", "rb")
+input = open("policies/my_policy_qube_cont_bb.pkl", "rb")
 data = pickle.load(input)
 policy = data.get("policy")
 
@@ -39,7 +39,7 @@ trpo = TRPO(env, gamma, policy)
 # recommanded 10 iterations on last page (above Appendix D)
 cg = ConjugateGradient(10)
 # Table 2 -> min 50.000
-num_steps = 50000
+num_steps = 500
 for i in range(iterations):
     print("Iteration ", i, ":")
 
@@ -100,4 +100,4 @@ for i in range(iterations):
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-    plt.savefig("snapshots/my_policy_qube_cont_3.png")
+    plt.savefig("snapshots/my_policy_qube_cont_4.png")
