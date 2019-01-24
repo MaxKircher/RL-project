@@ -4,6 +4,7 @@ import quanser_robots
 from policy import *
 import inspect
 from scipy.stats import multivariate_normal
+from scipy.misc import logsumexp
 
 class Sample(object):
     '''
@@ -39,20 +40,8 @@ class Sample(object):
     def sample(self, mu, dev):
 
         for j in range(self.number_of_thetas):
-            reward = 0
             theta = np.random.multivariate_normal(mu, dev)
-
-            if isinstance(self.policy, DebugPolicy):
-                reward = self.policy.set_theta(theta)
-            else:
-                self.policy.set_theta(theta)
-                s = self.env.reset()
-                for i in range(self.N_per_theta):
-                    a = self.policy.get_action(s)
-                    s, r, d, i = self.env.step(np.asarray(a))
-                    reward += r
-                    if d:
-                        s = self.env.reset()
+            reward = self.sample_single_theta(theta)
 
             if isinstance(self.policy, DebugPolicy):
                 avg_reward = reward
@@ -68,12 +57,29 @@ class Sample(object):
         self.theta_memory = self.theta_memory[-self.memory_size:]
 
         # For importance Sampling
-        weights = multivariate_normal.pdf(self.theta_memory, mu, dev)
+        weights = multivariate_normal.logpdf(self.theta_memory, mu, dev)
 
-        print("weights unnormalied: ", weights, " weights.sum(): ", weights.sum())
+        print("weights unnormalized: ", weights, " weights.sum(): ", weights.sum())
 
-        weights = weights / weights.sum()
+        weights = weights - logsumexp(weights)
+        weights = np.exp(weights)
 
         print("weights normalized: ", weights)
 
-        return self.reward_memory, self.theta_memory
+        return self.reward_memory, self.theta_memory, weights
+
+    def sample_single_theta(self, theta):
+
+        reward = 0
+        if isinstance(self.policy, DebugPolicy):
+            reward = self.policy.set_theta(theta)
+        else:
+            self.policy.set_theta(theta)
+            s = self.env.reset()
+            for i in range(self.N_per_theta):
+                a = self.policy.get_action(s)
+                s, r, d, i = self.env.step(np.asarray(a))
+                reward += r
+                if d:
+                    s = self.env.reset()
+        return reward

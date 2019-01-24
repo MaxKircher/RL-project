@@ -1,5 +1,5 @@
 from sklearn.preprocessing import PolynomialFeatures
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, Ridge
 import numpy as np
 
 def __phi__(thetas):
@@ -11,9 +11,14 @@ def linear_regression(thetas, rewards):
     reg = LinearRegression(fit_intercept=False).fit(features, rewards)
     return reg.coef_
 
+# def linear_regression(thetas, rewards, weights):
+#     features = __phi__(thetas)
+#     reg = Ridge(fit_intercept=False).fit(features, rewards, weights)
+#     return reg.coef_
 
-def compute_quadratic_surrogate(thetas, rewards, d):
-    beta_hat = linear_regression(thetas, rewards)
+
+def compute_quadratic_surrogate(thetas, rewards, weights, d):
+    beta_hat = linear_regression(thetas, rewards)#, weights)
     # print("beta_hat: ", beta_hat)
     r = beta_hat[1 : d+1]
     #r0 = beta_hat[0]

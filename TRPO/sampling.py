@@ -69,7 +69,7 @@ def sample_sp(policy, s0, T, env, gamma):
     return states, actions, Q, sum(rewards)
 
 def sample_sp_bb(policy, s0, T, env, gamma):
-    s = s0
+    s = s0[0]
     states = [s]
     actions = []
     rewards = []
@@ -81,7 +81,7 @@ def sample_sp_bb(policy, s0, T, env, gamma):
         s = tuple(s.reshape(-1))
 
         if done:
-            s = tuple(env.reset())
+            s = tuple(env.reset())[0]
             dones += [i]
 
         states  += [s]

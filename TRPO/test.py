@@ -22,7 +22,7 @@ rewards = np.array([]) # for plotting
 #env = gym.make('Qube-v0')
 #env = gym.make('Pendulum-v2')
 
-env = GentlyTerminating(gym.make('QubeRR-v0'))
+env = GentlyTerminating(gym.make('BallBalancerRR-v0'))
 
 s0 = tuple(env.reset())
 gamma = 0.9999
@@ -34,7 +34,7 @@ a_dim = env.action_space.shape[0]
 
 # policy = NN(s_dim, a_dim)
 
-input = open("policies/my_policy_qube_cont_bb.pkl", "rb")
+input = open("policies/my_policy_BallBalancerSim_cont2_2.pkl", "rb")
 data = pickle.load(input)
 policy = data.get("policy")
 
@@ -47,7 +47,7 @@ num_steps = 100000
 for i in range(iterations):
     print("Iteration ", i, ":")
 
-    if env.__str__() == '<TimeLimit<BallBalancerSim<BallBalancerSim-v0>>>':
+    if True:#(env.__str__() == '<TimeLimit<BallBalancerSim<BallBalancerSim-v0>>>'):
         states, actions, Q, r = sample_sp_bb(policy, s0, num_steps, env, gamma)
     else:
         states, actions, Q, r = sample_sp(policy, s0, num_steps, env, gamma)
@@ -97,11 +97,11 @@ for i in range(iterations):
 
     # Save in file
     dict = {"policy": policy}
-    with open("policies/my_policy_qube_cont_bb_rr.pkl", "wb") as output:
+    with open("policies/my_policy_BallBalancerSim_cont2_2_rr.pkl", "wb") as output:
         pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
     # Plotting
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-    plt.savefig("snapshots/my_policy_qube_rr.png")
+    plt.savefig("snapshots/my_policy_BallBalancerSim_cont2_2_rr.png")

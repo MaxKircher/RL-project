@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from scipy.optimize import rosen
+from sklearn.kernel_approximation import RBFSampler
 '''
     Class that should contains diffrent policies
     Currently:
@@ -170,3 +171,18 @@ class NeuronalNetworkPolicy(Policy):
 
     def get_number_of_parameters(self):
         return sum(p.numel() for p in self.nn_model.parameters())
+
+class LinearRBF(Policy):
+    def __init__(self, state_dim, action_dim, number_of_features):
+        Policy.__init__(self, state_dim, action_dim)
+        self.rbf_feature = RBFSampler()
+        self.rbf_feature.set_params(n_components=number_of_features)
+
+    def set_theta(self, theta):
+        self.theta = theta
+
+    def get_action(self, state):
+        return self.rbf_feature.fit_transform(state.reshape(-1, 1)) @ self.theta # theta is np.array
+
+    def get_number_of_parameters(self):
+        return self.rbf_feature.get_params().get("n_components")

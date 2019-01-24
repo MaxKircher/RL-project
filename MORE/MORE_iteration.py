@@ -40,9 +40,10 @@ class More(object):
             count += 1
             print("Count: ", count, " Still improving...", np.diag(Q).sum())
 
-            reward_list = np.append(reward_list, sum(rewards)/len(rewards))
+            reward_list = np.append(reward_list, self.sample_generator.sample_single_theta(b))
             # Plotting
             plt.figure(fig.number)
+            # plt.semilogy()
             plt.plot(range(count), reward_list, c='b')
             plt.draw()
             plt.pause(1e-17)
@@ -54,9 +55,9 @@ class More(object):
 
 
     def __more_step__(self, b, Q, etha, omega):
-        rewards, thetas = self.sample_generator.sample(b, Q)
+        rewards, thetas, weights = self.sample_generator.sample(b, Q)
         # Weighted Least Squares, weight for a given theta_i is given by pi(theta_i)/pi_i(theta_i) normalized to sum up to 1
-        R, r = compute_quadratic_surrogate(thetas, rewards, np.asarray(thetas).shape[1])
+        R, r = compute_quadratic_surrogate(thetas, rewards, weights, np.asarray(thetas).shape[1])
         #print("R: ", R, " r: ", r, " r0: ", r0)
         #for i, theta in enumerate(thetas):
         #    print(rewards[i] , " : ", theta @ R @ np.array([theta]).T + theta @ r + r0)

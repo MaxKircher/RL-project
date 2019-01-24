@@ -37,6 +37,7 @@ class NN(object):
 
     # choose action
     def choose_a(self, s):
+        #print("l40 policy: ", s)
         mu = self.model(torch.tensor(s, dtype=torch.float)).detach().numpy()
         return np.random.multivariate_normal(mu, self.get_covariance_matrix_numpy(), 1)
 
