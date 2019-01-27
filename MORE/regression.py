@@ -6,28 +6,23 @@ def __phi__(thetas):
     poly = PolynomialFeatures(2)
     return poly.fit_transform(thetas)
 
-def linear_regression(thetas, rewards):
+def linear_regression(thetas, rewards, weights=None):
     features = __phi__(thetas)
-    reg = LinearRegression(fit_intercept=False).fit(features, rewards)
+    reg = Ridge(fit_intercept=False).fit(features, rewards, weights)
     return reg.coef_
 
-# def linear_regression(thetas, rewards, weights):
-#     features = __phi__(thetas)
-#     reg = Ridge(fit_intercept=False).fit(features, rewards, weights)
-#     return reg.coef_
 
-
-def compute_quadratic_surrogate(thetas, rewards, weights, d):
-    beta_hat = linear_regression(thetas, rewards)#, weights)
+def compute_quadratic_surrogate(thetas, rewards, weights):
+    d = thetas.shape[1]
+    beta_hat = linear_regression(thetas, rewards, weights)
     # print("beta_hat: ", beta_hat)
-    r = beta_hat[1 : d+1]
+
     #r0 = beta_hat[0]
-
+    r = beta_hat[1 : d+1]
     R_param = beta_hat[d+1:]
+
     # Construct R matrix
-
-    R = np.zeros((d,d)) # siehe Kommentar für polynomial policy von Grad 2
-
+    R = np.zeros((d,d))
     j = 0
     for i in range(d):
         R[i, i:] += R_param[j:j+d-i]

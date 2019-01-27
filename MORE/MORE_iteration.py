@@ -1,7 +1,7 @@
 import numpy as np
 from policy import *
 from sample import *
-from regression import * # , X
+from regression import compute_quadratic_surrogate
 from optimization import *
 from plot_data import *
 from matplotlib import pyplot as plt
@@ -9,59 +9,52 @@ import pickle
 
 class More(object):
 
-    def __init__(self, delta, policy, env, N_per_theta, number_of_thetas, memory_size):
-        self.delta = delta
+    def __init__(self, policy, env, N_per_theta, number_of_thetas, memory_size):
         self.sample_generator = Sample(env, policy, N_per_theta, number_of_thetas, memory_size)
         self.policy = policy
-        self.N_per_theta = N_per_theta
-        self.number_of_thetas = number_of_thetas
-        self.memory_size = memory_size
 
-    def iterate(self):
-        #### Raus in die test, cf. TODO
+    def iterate(self, delta, etha = 1e5, omega = 1):
         d = self.policy.get_number_of_parameters()
+
         #b = np.array(d*[0])
         b = np.random.randn(d)
-        b_history = [b]
-        Q = 1*np.eye(d)
-        etha = 1e5
-        omega = 1
-        count = 0
+        Q = np.eye(d)
 
+        b_history = [b]
         reward_list = np.array([])
-        plt.show()
-        axes = plt.gca()
         fig = plt.figure()
 
-        while np.absolute(np.diag(Q).sum()) > self.delta:
-            # Q violates properties of covariance matrix
+        count = 0
+        while np.absolute(np.diag(Q).sum()) > delta:
             b, Q, rewards, thetas, etha, omega = self.__more_step__(b, Q, etha, omega)
-            b_history += [b]
+
             count += 1
             print("Count: ", count, " Still improving...", np.diag(Q).sum())
 
-            reward_list = np.append(reward_list, self.sample_generator.sample_single_theta(b))
             # Plotting
+            b_history += [b]
+            reward_list = np.append(reward_list, self.sample_generator.sample_single_theta(b))
             plt.figure(fig.number)
             # plt.semilogy()
             plt.plot(range(count), reward_list, c='b')
-            plt.draw()
+            plt.show(block=False)
             plt.pause(1e-17)
             plt.savefig("snapshots/pendulum_nn.png")
 
+            if (np.mod(count, 30) == 0) or (np.absolute(np.diag(Q).sum()) <= delta):
+                plot(rewards, thetas, d, b_history)
 
-            if (np.mod(count, 300) == 0) or (np.absolute(np.diag(Q).sum()) <= self.delta):
-                plot(rewards, thetas, self.policy.get_number_of_parameters(), b_history)
+            # Save policy in file
+            self.policy.set_theta(b)
+            dict = {"policy": self.policy}
+            with open("policies/pendulum_nn.pkl", "wb") as output:
+                pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
 
     def __more_step__(self, b, Q, etha, omega):
         rewards, thetas, weights = self.sample_generator.sample(b, Q)
         # Weighted Least Squares, weight for a given theta_i is given by pi(theta_i)/pi_i(theta_i) normalized to sum up to 1
-        R, r = compute_quadratic_surrogate(thetas, rewards, weights, np.asarray(thetas).shape[1])
-        #print("R: ", R, " r: ", r, " r0: ", r0)
-        #for i, theta in enumerate(thetas):
-        #    print(rewards[i] , " : ", theta @ R @ np.array([theta]).T + theta @ r + r0)
-        # TODO: set diffrent epsilon, beta and start values for the optimization
+        R, r = compute_quadratic_surrogate(thetas, rewards, weights)
         opti = Optimization(Q, b, R, r, .01, 0.99)
         # etha0 = self.__compute_etha0__(1, Q, R)
         x0 = np.asarray([etha, omega])
@@ -82,14 +75,7 @@ class More(object):
         #print("parameter change: ", np.abs(b - b_new).sum())
         print("Reward max: ", max(rewards))
         #print("Reward max - min: ", max(rewards) - min(rewards))
-        print("theta = ", b_new)
-
-        # Save policy in file
-        self.policy.set_theta(b_new)
-        dict = {"policy": self.policy}
-        with open("policies/pendulum_nn.pkl", "wb") as output:
-            pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
-
+        #print("theta = ", b_new)
 
         return b_new, Q_new, rewards, thetas, etha, omega
 

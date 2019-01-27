@@ -15,16 +15,13 @@ class Sample(object):
     def __init__(self, env, policy, N_per_theta, number_of_thetas, memory_size):
         self.env = env
         self.policy = policy
-        self.theta_memory = []
-        self.reward_memory = []
+        self.theta_memory = np.zeros((0,policy.get_number_of_parameters()))
+        self.reward_memory = np.array([])
+        self.log_prob_memory = np.array([])
 
-        self.N_per_theta = N_per_theta
+        self.N_per_theta = int(N_per_theta)
         self.number_of_thetas = number_of_thetas
         self.memory_size = memory_size
-
-        # Store the dimension of state and action space
-        self.state_dim = env.observation_space.shape[0]
-        self.action_dim = env.action_space.shape[0]
 
     '''
         sample corresponds to the function pi in the paper. It samples values for theta
@@ -34,37 +31,20 @@ class Sample(object):
         dev:                covariance matrix for theta sampling
 
         Returns:
-         - rewards: Is a list where the i-th entry corresponds to the average reward of the i-th theta_i
-         - thetas:  Is a list where the i-th entry is a random value returned from the multivariate Gaussian
+         - rewards: Is a array, where the i-th entry corresponds to the average reward of the i-th theta_i
+         - thetas:  Is a array, where the i-th entry is a random value returned from the multivariate Gaussian
     '''
     def sample(self, mu, dev):
+        thetas = np.random.multivariate_normal(mu, dev, self.number_of_thetas)
+        rewards = [self.sample_single_theta(thetas[i]) for i in range(thetas.shape[0])]
+        log_probs = multivariate_normal.logpdf(thetas, mu, dev)
 
-        for j in range(self.number_of_thetas):
-            theta = np.random.multivariate_normal(mu, dev)
-            reward = self.sample_single_theta(theta)
+        self.theta_memory = np.concatenate((self.theta_memory, thetas),0)[-self.memory_size:,:]
+        self.reward_memory = np.append(self.reward_memory, rewards)[-self.memory_size:]
+        self.log_prob_memory = np.append(self.log_prob_memory, log_probs)[-self.memory_size:]
 
-            if isinstance(self.policy, DebugPolicy):
-                avg_reward = reward
-                self.reward_memory += [avg_reward]
-                self.theta_memory += [theta]
-            else:
-                avg_reward = reward / self.N_per_theta
-                self.reward_memory += [avg_reward]
-                self.theta_memory += [theta]
-
-        print("Sampling successfull")
-        self.reward_memory = self.reward_memory[-self.memory_size:]
-        self.theta_memory = self.theta_memory[-self.memory_size:]
-
-        # For importance Sampling
-        weights = multivariate_normal.logpdf(self.theta_memory, mu, dev)
-
-        print("weights unnormalized: ", weights, " weights.sum(): ", weights.sum())
-
-        weights = weights - logsumexp(weights)
-        weights = np.exp(weights)
-
-        print("weights normalized: ", weights)
+        new_log_probs = multivariate_normal.logpdf(self.theta_memory, mu, dev)
+        weights = np.exp(new_log_probs - self.log_prob_memory)
 
         return self.reward_memory, self.theta_memory, weights
 
@@ -76,10 +56,12 @@ class Sample(object):
         else:
             self.policy.set_theta(theta)
             s = self.env.reset()
-            for i in range(self.N_per_theta):
+            episode = 0
+            while episode < self.N_per_theta:
                 a = self.policy.get_action(s)
                 s, r, d, i = self.env.step(np.asarray(a))
                 reward += r
                 if d:
+                    episode += 1
                     s = self.env.reset()
-        return reward
+        return reward / self.N_per_theta

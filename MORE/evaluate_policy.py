@@ -11,15 +11,16 @@ data = pickle.load(input)
 #policy = data.get("policy")
 policy = data.get("policy")
 
-env = gym.make('Pendulum-v0')
+env = gym.make('CartpoleStabShort-v0')
 s = env.reset()
 
 for i in range(10000):
     env.render()
     # a = policy.get_action(s)
     # s, r, d, i = env.step(np.asarray(a))
-    a = policy.get_action(s)
+    a = np.array(policy.get_action(s))
+    print(a)
     s, r, done, info = env.step(a)
     if done:
         s = env.reset()
-    # time.sleep(0.1)
+    time.sleep(.1)
