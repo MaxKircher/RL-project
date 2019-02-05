@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from scipy.optimize import rosen
 from sklearn.kernel_approximation import RBFSampler
+from sklearn.preprocessing import PolynomialFeatures
 '''
     Class that should contains diffrent policies
     Currently:
@@ -55,74 +56,6 @@ class Rastrigin(DebugPolicy):
 
     def get_number_of_parameters(self):
         return 2
-
-class PolynomialPolicy(Policy):
-
-    def __init__(self, state_dim, action_dim, polynomial_degree):
-        Policy.__init__(self, state_dim, action_dim)
-        self.polynomial_degree = polynomial_degree
-
-    '''
-        thetas:
-         - List of matrices
-         - theta[i] corresponds to the i-th coefficient of the polynomial, i.e. x^i
-         - dim(theta[i]) = array([a_1i, a_2i, ..., a_mi]), where m = state_dim
-    '''
-    def set_theta(self, thetas):
-        self.thetas = self.__theta_as_list__(thetas)
-
-
-    '''
-    Computes an action w.r.t. the polynomial policy of a degree N
-
-    States:
-     - Current state the system has
-     - States are the concrete parametrization of our X values in the polynomial
-
-    P(x) = sum_{i=0}^n a_ix^i, where x in R^{state_dim}
-     - Power is element wise
-     - a_i * x_i is the dot product because of one dimensional action
-
-    Return:
-     - action: The concrete computed action when evaluation polynomial(states)
-    '''
-    def get_action(self, state):
-
-        # Bias term of the polynomial is the default action
-        action = self.thetas[0]
-
-        for i in range(1, self.polynomial_degree + 1):
-            action += np.dot(self.thetas[i],np.power(state, i))
-
-        return [action]
-
-    def get_number_of_parameters(self):
-        return 1 + self.polynomial_degree * self.state_dim
-
-    '''
-        TODO:
-         - Generalize w.r.t. state dimension
-
-        Transforms theta which is a numpy array into a list to compute the dot product
-        in the function (see policy.py) polynomial_policy
-
-        Returns:
-         - list of the format [a_0, array([a_11, a_21, ..., a_m1]), ..., array([a_1n, a_2n, ..., a_mn])]
-            - a_0 =         Bias term of the polyonomial
-            - a_1-vector =  array([a_11, a_21, ..., a_m1]) the coefficient of x¹
-            - a_n-vector =  array([a_1n, a_2n, ..., a_mn]) the coefficient of x^n
-            - m = state_dimension
-    '''
-    def __theta_as_list__(self, theta):
-
-        list = [theta[0]]
-        T = (theta.shape[0] - 1) / self.state_dim
-
-        for i in range(int(T)):
-            list += [np.array(theta[self.state_dim * i + 1 : self.state_dim * (i + 1) + 1])]
-
-        return list
-
 
 class NeuronalNetworkPolicy(Policy):
 
@@ -185,3 +118,19 @@ class LinearRBF(Policy):
 
     def get_number_of_parameters(self):
         return self.rbf_feature.get_params().get("n_components") + self.action_dim
+
+class LinearPolynomial(Policy):
+    def __init__(self, state_dim, action_dim, degree):
+        Policy.__init__(self, state_dim, action_dim)
+        self.features = PolynomialFeatures(degree)
+        self.features.fit(np.ones((1,state_dim)))
+
+    def set_theta(self, theta):
+        self.theta = theta
+
+    def get_action(self, state):
+        features = self.features.transform(state.reshape(1, -1))
+        return features @ self.theta
+
+    def get_number_of_parameters(self):
+        return self.features.n_output_features_ #+ self.action_dim

@@ -4,12 +4,12 @@ import quanser_robots
 from policy import *
 from MORE_iteration import *
 
-env = gym.make('Qube-v0')
+env = gym.make('CartpoleStabShort-v0')
 state_dim = env.observation_space.shape[0] # = 5
 action_dim = env.action_space.shape[0] # = 1
 
 #degree = 2 #we assume that all degrees occur
-policy = PolynomialPolicy(state_dim, action_dim, 4)
+policy = LinearPolynomial(state_dim, action_dim, 2)
 #policy = NeuronalNetworkPolicy(state_dim, action_dim)
 #policy = LinearRBF(state_dim, action_dim, 100)
 #policy = Rastrigin(state_dim, action_dim)
