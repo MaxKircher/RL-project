@@ -130,19 +130,16 @@ class NeuronalNetworkPolicy(Policy):
         Policy.__init__(self, state_dim, action_dim)
         # Wir brauchen keine thetas, da wir das NN irgendwie initialisieren
 
-        inter_dim_1 = 5
-        inter_dim_2 = 5
+        inter_dim_1 = 16
         self.nn_model = torch.nn.Sequential(
             torch.nn.Linear(self.state_dim, inter_dim_1),
             torch.nn.Tanh(),
-            torch.nn.Linear(inter_dim_1, inter_dim_2),
-            torch.nn.Tanh(),
-            torch.nn.Linear(inter_dim_2, self.action_dim),
+            torch.nn.Linear(inter_dim_1, self.action_dim),
         )
 
     def get_action(self, state):
         action = self.nn_model(torch.tensor(state, dtype = torch.float)).detach().numpy()
-        return action
+        return action * 50
 
     def set_theta(self, theta):
         theta = torch.tensor(theta).float()
@@ -175,14 +172,16 @@ class NeuronalNetworkPolicy(Policy):
 class LinearRBF(Policy):
     def __init__(self, state_dim, action_dim, number_of_features):
         Policy.__init__(self, state_dim, action_dim)
-        self.rbf_feature = RBFSampler()
-        self.rbf_feature.set_params(n_components=number_of_features)
+        self.rbf_feature = RBFSampler(gamma=25., n_components=number_of_features)
+        # TODO look at this again:
+        self.rbf_feature.fit(np.random.randn(action_dim, state_dim))
 
     def set_theta(self, theta):
         self.theta = theta
 
     def get_action(self, state):
-        return self.rbf_feature.fit_transform(state.reshape(-1, 1)) @ self.theta # theta is np.array
+        features = self.rbf_feature.transform(state.reshape(1, -1))
+        return features @ self.theta[:-self.action_dim] + self.theta[-self.action_dim:]
 
     def get_number_of_parameters(self):
-        return self.rbf_feature.get_params().get("n_components")
+        return self.rbf_feature.get_params().get("n_components") + self.action_dim

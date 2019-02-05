@@ -16,9 +16,9 @@ class More(object):
     def iterate(self, delta, etha = 1e5, omega = 1):
         d = self.policy.get_number_of_parameters()
 
-        #b = np.array(d*[0])
-        b = np.random.randn(d)
-        Q = np.eye(d)
+        b = np.array(d*[0])
+        #b = np.random.randn(d)
+        Q = 5*np.eye(d)
 
         b_history = [b]
         reward_list = np.array([])
