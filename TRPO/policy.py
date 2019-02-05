@@ -14,7 +14,7 @@ class NN(object):
     def __init__(self, s_dim, a_dim):
         self.s_dim = s_dim
         self.a_dim = a_dim
-        inter_dim = 16
+        inter_dim = 64
         self.model = torch.nn.Sequential(
             torch.nn.Linear(s_dim, inter_dim),
             # inter_dim Knoten im intermediate layer
@@ -28,7 +28,7 @@ class NN(object):
 
         # std = pow(e, lambda) -> lambda = log(std)
         ''''IS BY DEFAULT FIRST PARAMETER'''
-        self.model.log_std = torch.nn.Parameter(1.1 * torch.ones(self.a_dim, requires_grad=True))
+        self.model.log_std = torch.nn.Parameter(-0.1 * torch.ones(self.a_dim, requires_grad=True))
 
     def get_covariance_matrix_numpy(self):
         dev = np.exp(self.model.log_std.detach().numpy())
@@ -37,7 +37,6 @@ class NN(object):
 
     # choose action
     def choose_a(self, s):
-        #print("l40 policy: ", s)
         mu = self.model(torch.tensor(s, dtype=torch.float)).detach().numpy()
         return np.random.multivariate_normal(mu, self.get_covariance_matrix_numpy(), 1)
 
@@ -107,14 +106,14 @@ class NN(object):
 
         return theta
 
-    def get_gradients_as_tensor(self):
+    def get_gradients(self):
         parameters = list(self.model.parameters())
         number_cols = sum(p.numel() for p in self.model.parameters())
-        gradient = torch.zeros(1, number_cols)
+        gradient = np.zeros((number_cols, 1))
 
         j = 0
         for param in parameters:
-            gradient[:,j: j + param.nelement()] = param.grad.view(1, -1)
+            gradient[j: j + param.nelement(),:] = param.grad.view(-1, 1)
             j += param.nelement()
 
         return gradient

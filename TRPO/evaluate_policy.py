@@ -5,7 +5,7 @@ import quanser_robots
 import torch
 import time
 
-input = open("policies/my_policy_qube_cont_bb.pkl", "rb")
+input = open("policies/debugging3.pkl", "rb")
 #input = open("policies/my_policy_cartpole_cg.pkl", "rb")
 data = pickle.load(input)
 #policy = data.get("policy")
@@ -21,4 +21,4 @@ for i in range(10000):
     s, r, done, info = env.step(a)
     if done:
         s = env.reset()
-    # time.sleep(0.1)
+    time.sleep(0.1)

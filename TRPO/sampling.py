@@ -13,24 +13,6 @@ Returns:
  - states:  sampled states beginning with initial state s0
  - actions: sampled actions by passing a state to our policy
  - Q:       state-action value function see page 2 above formula (1)
-
-
-
- ---> cf.: https://git.ias.informatik.tu-darmstadt.de/quanser/clients/tree/master/quanser_robots/cartpole
-
-    import gym
-    from quanser_robots import GentlyTerminating
-    env = GentlyTerminating(gym.make('CartpoleSwingRR-v0'))
-    ctrl = ...  # some function f: s -> a
-    obs = env.reset()
-    done = False
-    while not done:
-        act = ctrl(obs)
-        obs, rwd, done, info = env.step(act)
-
-
-if env.__str__() == '<TimeLimit<BallBalancerSim<BallBalancerSim-v0>>>':
-    s = s[0]
 '''
 def sample_sp(policy, s0, T, env, gamma):
     s = s0
@@ -53,7 +35,7 @@ def sample_sp(policy, s0, T, env, gamma):
         rewards += [r]
 
     # Make an array from the lists states and actions
-    states = np.array(states)
+    states = np.array(states[:-1])
     actions = np.array(actions)
     Q = np.zeros(T + 1)
 
@@ -63,43 +45,8 @@ def sample_sp(policy, s0, T, env, gamma):
         for i in range(tend, t0, -1):
             Q[i] = gamma * Q[i + 1] + rewards[i]
         t0 = tend
-
-    Q = (Q - Q.mean()) / Q.std()
-
-    return states, actions, Q, sum(rewards)
-
-def sample_sp_bb(policy, s0, T, env, gamma):
-    s = s0[0]
-    states = [s]
-    actions = []
-    rewards = []
-    dones   = []
-    for i in range(T):
-        a = policy.choose_a(s)[0]
-        s, r, done, info = env.step(a)
-        #if type(s) is np.ndarray:
-        s = tuple(s.reshape(-1))
-
-        if done:
-            s = tuple(env.reset())[0]
-            dones += [i]
-
-        states  += [s]
-        actions += [a]
-        rewards += [r]
-
-    # Make an array from the lists states and actions
-    states = np.array(states)
-    actions = np.array(actions)
-    Q = np.zeros(T + 1)
-
-    dones += [T-1]
-    t0 = -1
-    for tend in dones:
-        for i in range(tend, t0, -1):
-            Q[i] = gamma * Q[i + 1] + rewards[i]
-        t0 = tend
-
-    Q = (Q - Q.mean()) / Q.std()
+    Q = Q[:-1]
+    #Q = (Q - Q.mean()) / Q.std()
 
     return states, actions, Q, sum(rewards)
+
