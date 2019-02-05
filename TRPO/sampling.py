@@ -1,27 +1,29 @@
 import numpy as np
 
 '''
-Samples values using the single path method (sp)
+Samples values using the single path method (sp) see chapter 5.1
 
 Parameter:
- - policy:  the policy that returns an action
- - s0:      initial state that is the beginning of our sampling sequence
-            see 5.1. Single Path
-- T:        Number of samples
+ - policy: {NN} the policy that returns an action
+ - T:      {int}  Number of samples
+ - env:    {TimeLimit} environment
+ - gamma:  {float} discount factor
 
 Returns:
- - states:  sampled states beginning with initial state s0
- - actions: sampled actions by passing a state to our policy
- - Q:       state-action value function see page 2 above formula (1)
+ - {numpy ndarray} sampled states
+ - {numpy ndarray} sampled actions by passing a state to our policy
+ - {numpy ndarray} state-action value function (Monte Carlo estimate)
+ - {float} summed reward over all samples
 '''
-def sample_sp(policy, s0, T, env, gamma):
-    s = s0
-    states = [s0]
+def sample_sp(policy, T, env, gamma):
+    s = tuple(env.reset())
+
+    states = [s]
     actions = []
     rewards = []
     dones   = []
     for i in range(T):
-        a = policy.choose_a(s)[0]
+        a = policy.choose_action(s)[0]
         s, r, done, info = env.step(a)
         if type(s) is np.ndarray:
             s = tuple(s.reshape(-1))
@@ -34,19 +36,18 @@ def sample_sp(policy, s0, T, env, gamma):
         actions += [a]
         rewards += [r]
 
-    # Make an array from the lists states and actions
     states = np.array(states[:-1])
     actions = np.array(actions)
     Q = np.zeros(T + 1)
 
     dones += [T-1]
     t0 = -1
-    for tend in dones:
-        for i in range(tend, t0, -1):
+    # Go through all episodes:
+    for t_end in dones:
+        # Compute Q values for one episode
+        for i in range(t_end, t0, -1):
             Q[i] = gamma * Q[i + 1] + rewards[i]
-        t0 = tend
+        t0 = t_end
     Q = Q[:-1]
-    #Q = (Q - Q.mean()) / Q.std()
 
     return states, actions, Q, sum(rewards)
-

@@ -9,10 +9,8 @@ import pickle
 from matplotlib import pyplot as plt
 from quanser_robots import GentlyTerminating
 
-#plt.figure()
 plt.show()
 axes = plt.gca()
-#plt.ion()
 
 iterations = 800
 
@@ -24,7 +22,6 @@ env = gym.make('Qube-v0')
 
 #env = GentlyTerminating(gym.make('BallBalancerRR-v0'))
 
-s0 = tuple(env.reset())
 gamma = 0.99
 
 delta = 0.1 # KL threshold in linesearch
@@ -45,7 +42,7 @@ num_steps = 20000
 for i in range(iterations):
     print("Iteration ", i, ":")
 
-    states, actions, Q, r = sample_sp(policy, s0, num_steps, env, gamma)
+    states, actions, Q, r = sample_sp(policy, num_steps, env, gamma)
 
     rewards = np.append(rewards, r) # for plotting
 
@@ -60,7 +57,7 @@ for i in range(iterations):
 
     beta_cg = trpo.beta(0.01, np.matrix(s), JMs, FIM)
 
-    theta_old = policy.get_parameter_as_tensor().detach()
+    theta_old = policy.get_parameters().detach()
 
     policy = trpo.line_search(beta_cg, delta, s, theta_old, states, actions, Q)
     trpo.policy = policy

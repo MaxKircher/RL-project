@@ -30,48 +30,52 @@ class NN(object):
         Return:
          covariance_matrix = {numpy ndarray}
     '''
-    def get_covariance_matrix_numpy(self):
+    def get_covariance_matrix(self):
         dev = np.exp(self.model.log_std.detach().numpy())
         covariance_matrix = np.diag(dev)
         return covariance_matrix
 
-    # choose action
-    def choose_a(self, s):
+    '''
+        Chooses a random action from normal distribution, where:
+        - mean: computed by NN for given state
+        - variance: get_get_covariance_matrix
+        
+        Params:
+         - s: {numpy ndaray} state
+    '''
+    def choose_action(self, s):
         mu = self.model(torch.tensor(s, dtype=torch.float)).detach().numpy()
-        return np.random.multivariate_normal(mu, self.get_covariance_matrix_numpy(), 1)
-
-    # pi_theta old
-    def q(self, s, a):
-        mu = self.model(torch.tensor(s, dtype = torch.float)).detach().numpy() # Vektor für den action space
-        return multivariate_normal.pdf(a, mu, self.get_covariance_matrix_numpy())
+        return np.random.multivariate_normal(mu, self.get_covariance_matrix(), 1)
 
     '''
-        von pytorch ausgerechnetete Wahrscheinlichkeit die man ableiten kann
-        liefert das gleiche zurück wie q nur für torch interpretierbar, sodass diese Funktion optmiert werden kann
+        Compute probability to choose action a in state s.
+        Computation is done in pytorch, so we can perform backward.
+        
+        Params:
+         - s: {numpy ndarray} state
+         - a: {numpy ndarray} action
+         
+         Return:
+          - {torch Tensor} probability of state a
     '''
     def pi_theta(self, s, a):
         mu = self.model(torch.tensor(s, dtype = torch.float)).double()
         dev = torch.exp(self.model.log_std).double()
         covariance_matrix = torch.diag(dev)
 
-        # aufstellen normal_distribution
         normal_distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covariance_matrix)
         return torch.exp(normal_distribution.log_prob(torch.tensor(a).double()))
 
     '''
-        Updates the parameter of the policy improve our policy
-        Parameter:
-         - theta_new: is ideally of the form nn.Parameters otherwise if it's a tensor
-                      do nn.Parameters(theta_new)
+        Updates the parameter of the policy
+        Parameters:
+         - theta_new: {torch Parameters} new parameters (weights and biases) for the network
     '''
     def update_policy_parameter(self, theta_new):
         theta_new = theta_new.view(-1)
-        #print(theta_new.size())
 
-        # keine negativen Varianzen, da wir den logarithmus speichern
         self.model.log_std.data = theta_new[:self.a_dim]
 
-        # split parameter for the desired model
         number_of_layers = len(self.model)
         # get right position where we get the params from theta_new:
         j = self.a_dim
@@ -94,7 +98,13 @@ class NN(object):
 
         assert j == theta_new.size(0)
 
-    def get_parameter_as_tensor(self):
+    '''
+        Returns parameters of the network
+ 
+        Return:
+         - {torch Tensor} parameters of the network
+    '''
+    def get_parameters(self):
         parameters = list(self.model.parameters())
         number_cols = sum(p.numel() for p in self.model.parameters())
         theta = torch.zeros(1, number_cols)
@@ -106,6 +116,13 @@ class NN(object):
 
         return theta
 
+    '''
+         Returns gradient of the network.
+         backward() has to be performed before
+
+         Return:
+          - {torch Tensor} gradients of the network
+     '''
     def get_gradients(self):
         parameters = list(self.model.parameters())
         number_cols = sum(p.numel() for p in self.model.parameters())

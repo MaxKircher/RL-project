@@ -1,2 +1,0 @@
-- Cartpole den reward in der Simulation mit dem reward vom Roboter vergleichen
-- Wie Robust ist unsere policy, wenn man gegen das Cartpole stupst?
