@@ -39,7 +39,7 @@ class More(object):
             plt.plot(range(count), reward_list, c='b')
             plt.show(block=False)
             plt.pause(1e-17)
-            plt.savefig("snapshots/pendulum_nn.png")
+            plt.savefig("snapshots/bb_rbf.png")
 
             if (np.mod(count, 30) == 0) or (np.absolute(np.diag(Q).sum()) <= delta):
                 plot(rewards, thetas, d, b_history)
@@ -47,7 +47,7 @@ class More(object):
             # Save policy in file
             self.policy.set_theta(b)
             dict = {"policy": self.policy}
-            with open("policies/pendulum_nn.pkl", "wb") as output:
+            with open("policies/bb_rbf.pkl", "wb") as output:
                 pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
 

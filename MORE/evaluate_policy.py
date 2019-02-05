@@ -5,13 +5,13 @@ import quanser_robots
 import torch
 import time
 
-input = open("policies/cartpole_pol2.pkl", "rb")
+input = open("policies/bb_rbf.pkl", "rb")
 #input = open("policies/my_policy_cartpole_cg.pkl", "rb")
 data = pickle.load(input)
 #policy = data.get("policy")
 policy = data.get("policy")
 
-env = gym.make('CartpoleStabShort-v0')
+env = gym.make('BallBalancerSim-v0')
 s = env.reset()
 
 for i in range(4000):
@@ -22,6 +22,6 @@ for i in range(4000):
     print("a", a)
     print("s", s)
     s, r, done, info = env.step(a)
-    if done or i%1000 == 0:
+    if done: # or i%1000 == 0:
         s = env.reset()
     #time.sleep(.1)

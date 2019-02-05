@@ -4,12 +4,10 @@ from scipy.stats import multivariate_normal
 
 class NN(object):
     '''
-        Linear neural network:
-         - 4 Layers with 1 hidden layer:
-            1. Input-Layer of dimension s_dim
-            2. Intermediate-Layer of dimension inter_dim - (Hidden layer)
-            3. Activation function (counts to layer)
-            4. Outpout-Layer of dimension a_dim
+        Creates a neural network
+        Params:
+         s_dim = dimension of the state space
+         a_dim = dimension of the action space
     '''
     def __init__(self, s_dim, a_dim):
         self.s_dim = s_dim
@@ -17,7 +15,6 @@ class NN(object):
         inter_dim = 64
         self.model = torch.nn.Sequential(
             torch.nn.Linear(s_dim, inter_dim),
-            # inter_dim Knoten im intermediate layer
             torch.nn.Tanh(),
             torch.nn.Linear(inter_dim, inter_dim),
             torch.nn.Tanh(),
@@ -25,14 +22,17 @@ class NN(object):
         )
         self.model[-1].weight.data.mul_(0.1)
         self.model[-1].bias.data.mul_(0.0)
-
-        # std = pow(e, lambda) -> lambda = log(std)
-        ''''IS BY DEFAULT FIRST PARAMETER'''
         self.model.log_std = torch.nn.Parameter(-0.1 * torch.ones(self.a_dim, requires_grad=True))
 
+    '''
+        Computes the covariance matrix for the current log_std
+
+        Return:
+         covariance_matrix = {numpy ndarray}
+    '''
     def get_covariance_matrix_numpy(self):
         dev = np.exp(self.model.log_std.detach().numpy())
-        covariance_matrix = np.diag(dev) # has dev the right dimension?
+        covariance_matrix = np.diag(dev)
         return covariance_matrix
 
     # choose action
