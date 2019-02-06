@@ -3,25 +3,43 @@ import torch
 from scipy.optimize import rosen
 from sklearn.kernel_approximation import RBFSampler
 from sklearn.preprocessing import PolynomialFeatures
-'''
-    Class that should contains diffrent policies
-    Currently:
-     - Polynomial policy of degree N
-     - Neuronal Network
-'''
+
+
 class Policy(object):
+    '''
+    Abstract class that serves as interface for the different policies
+    '''
 
     def __init__(self, state_dim, action_dim):
+        '''
+        Initialize the policy
+        :param state_dim: {int} dimension of state space
+        :param action_dim: {int} dimension of action space
+        '''
         self.state_dim = state_dim
         self.action_dim = action_dim
 
     def set_theta(self, theta):
+        '''
+        Set the parameters of the policy
+        :param theta: {numpy ndarray} the new parameters
+        :return: None
+        '''
         raise NotImplementedError("Sublcasses should implement this!")
 
     def get_action(self, state):
+        '''
+        Sample an action for the given state
+        :param state: {numpy ndarray} the current state
+        :return: {float} the action, that shall be performed
+        '''
         raise NotImplementedError("Sublcasses should implement this!")
 
     def get_number_of_parameters(self):
+        '''
+        Return the number of parameters
+        :return: {int} the number of parameters
+        '''
         raise NotImplementedError("Sublcasses should implement this!")
 
 class DebugPolicy(Policy):
@@ -58,10 +76,12 @@ class Rastrigin(DebugPolicy):
         return 2
 
 class NeuronalNetworkPolicy(Policy):
+    '''
+    A neural network as policy
+    '''
 
     def __init__(self, state_dim, action_dim):
         Policy.__init__(self, state_dim, action_dim)
-        # Wir brauchen keine thetas, da wir das NN irgendwie initialisieren
 
         inter_dim_1 = 16
         self.nn_model = torch.nn.Sequential(
@@ -77,7 +97,6 @@ class NeuronalNetworkPolicy(Policy):
     def set_theta(self, theta):
         theta = torch.tensor(theta).float()
         theta = theta.view(-1)
-        # print(theta.size())
 
         # split parameter for the desired model
         number_of_layers = len(self.nn_model)
@@ -103,10 +122,14 @@ class NeuronalNetworkPolicy(Policy):
         return sum(p.numel() for p in self.nn_model.parameters())
 
 class LinearRBF(Policy):
+    '''
+    RBF features
+    '''
+
     def __init__(self, state_dim, action_dim, number_of_features):
         Policy.__init__(self, state_dim, action_dim)
-        self.rbf_feature = RBFSampler(gamma=25., n_components=number_of_features)
         # TODO look at this again:
+        self.rbf_feature = RBFSampler(gamma=25., n_components=number_of_features)
         self.rbf_feature.fit(np.random.randn(action_dim, state_dim))
 
     def set_theta(self, theta):
@@ -120,6 +143,10 @@ class LinearRBF(Policy):
         return self.rbf_feature.get_params().get("n_components") + self.action_dim
 
 class LinearPolynomial(Policy):
+    '''
+    Polynomial features
+    '''
+
     def __init__(self, state_dim, action_dim, degree):
         Policy.__init__(self, state_dim, action_dim)
         self.features = PolynomialFeatures(degree)

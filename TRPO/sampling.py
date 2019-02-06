@@ -34,7 +34,7 @@ def sample_sp(policy, T, env, gamma):
 
         states  += [s]
         actions += [a]
-        rewards += [r]
+        rewards += [100*r]
 
     states = np.array(states[:-1])
     actions = np.array(actions)

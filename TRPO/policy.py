@@ -22,7 +22,7 @@ class NN(object):
         )
         self.model[-1].weight.data.mul_(0.1)
         self.model[-1].bias.data.mul_(0.0)
-        self.model.log_std = torch.nn.Parameter(-0.1 * torch.ones(self.a_dim, requires_grad=True))
+        self.model.log_std = torch.nn.Parameter(2.0 * torch.ones(self.a_dim, requires_grad=True))
 
     '''
         Computes the covariance matrix for the current log_std

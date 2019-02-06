@@ -1,14 +1,17 @@
 import numpy as np
 from scipy.optimize import minimize
 
-
-'''
-    Use: https://en.wikipedia.org/wiki/Sequential_quadratic_programming
-         method="SLSQP" https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
-'''
-
 class Optimization(object):
     def __init__(self, Q, b, R, r, epsilon, gamma):
+        '''
+        Initialize the optimizer
+        :param Q: {numpy matrix} Covariance matrix, that shall be optimized
+        :param b: {numpy ndarray} Mean, that shall be optimized
+        :param R: {numpy ndarray} quadratic parameter of surrogate objective
+        :param r: {numpy ndarray} linear parameter of surrogate objective
+        :param epsilon: {float} upper bound for KL divergence
+        :param gamma: {float} discount
+        '''
         self.Q = Q
         self.b = b
         self.R = R
@@ -16,28 +19,30 @@ class Optimization(object):
         self.epsilon = epsilon
         self.beta = self.compute_beta(gamma, Q)
 
-    '''
-        Our function g, which we want to minimize
-        Param x: contains the langragian parameter: etha and omega
-    '''
     def objective(self, x):
+        '''
+        Our function g, which we want to minimize
+        See Chapter 2.2
+
+        :param x: {list of float} contains the langragian multipliers etha and omega
+        :return: the value of the objective function
+        '''
+
         etha = x[0]
         omega = x[1]
 
-        # Transform arrays into col-vectors
+        # Transform arrays to col-vectors
         self.b = self.b.reshape(self.b.size, 1)
         self.r = self.r.reshape(self.r.size, 1)
 
         F = np.linalg.inv(etha * np.linalg.inv(self.Q) - 2 * self.R)
-        # print("det F:", np.linalg.det(F))
         f = etha *  np.linalg.inv(self.Q) @ self.b + self.r
 
-        # print("Log warning 1: ", np.linalg.det(self.Q))
         A = 2 * np.pi * (etha + omega) * F
         detA = np.linalg.det(A)
         if detA < 0:
             print("Log warning 2: ", detA)
-            # print(np.linalg.eigvals(A))
+
         # Our objective Function g, see Chapter 2.2
         g = etha * self.epsilon - self.beta * omega + .5 * (f.T @ F @ f \
                 - etha * self.b.T @  np.linalg.inv(self.Q) @ self.b \
@@ -47,51 +52,61 @@ class Optimization(object):
         #dgomega = H(F) - beta
         return g[0,0]
 
-    '''
-        F needs to be positive definite (all evals of F > 0)
-    '''
+
     def constraint(self, x):
+        '''
+        Constrain F to be positive definite (all eigenvalues of F > 0)
+
+        :param x: {list of float} contains the langragian multipliers etha and omega
+        :return: {float} greater than 0, if F is positive definite for the given x, negative otherwise
+        '''
         etha = x[0]
         F = np.linalg.inv(etha * np.linalg.inv(self.Q) - 2 * self.R)
         evals = np.linalg.eigvals(F) > 0
         return evals.all() - 1e-2
 
-    '''
-        Constraint übergeben?
-    '''
     def SLSQP(self, x0):
+        '''
+        Optimize the objective
+        Use: https://en.wikipedia.org/wiki/Sequential_quadratic_programming
+             method="SLSQP" https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
+
+        :param x0: {list of float} contains the langragian multipliers etha and omega
+        :return: {OptimizeResult} the solution of the optimization
+        '''
         bnds = ((1e-5, None), (1e-5, None))
         cons = {'type': 'ineq', 'fun': self.constraint}
         soloution = minimize(self.objective, x0, method = 'SLSQP', bounds = bnds, constraints = cons)
         if not soloution.success:
             print(soloution)
-            return SLSQP(x0)
+            return self.SLSQP(x0)
         return soloution
 
     def L_BFGS_B(self, x0):
+        '''
+        Optimize the objective
+        using the limited memory Broyden–Fletcher–Goldfarb–Shanno optimizer
+
+        :param x0: {list of float} contains the langragian multipliers etha and omega
+        :return: {OptimizeResult} the solution of the optimization
+        '''
         bnds = ((x0[0], None), (1e-5, None))
         cons = {'type': 'ineq', 'fun': self.constraint}
         soloution = minimize(self.objective, x0, method = 'L-BFGS-B', bounds = bnds, constraints = cons)
         return soloution
 
-    '''
-        Updates our mu and dev for the sampling method
-    '''
-    def update_pi(self, F, f, etha, omega):
-        return F @ f, F * (etha + omega)
 
-    '''
-        H[pi0] = -75
-        q = actual probability distribution
-        we use: https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Differential_entropy
-    '''
+
     def compute_beta(self, gamma, Q):
-        k = Q.shape[0]
-        # H_q = (k/2) + (k * np.log(2 * np.pi)) / 2 + np.log(np.linalg.det(Q)) / 2
-        # print("H_q: ", H_q)
+        '''
+        lower bound on the entropy of the normal distribution corresponding to Q.
+        we use: https://en.wikipedia.org/wiki/Multivariate_normal_distribution#Differential_entropy
+
+        :param gamma: {float} discount factor
+        :param Q: {numpy matrix]} covariance matrix
+        :return: {float} lower bound on the entropy
+        '''
         H_q = 0.5 * np.log(np.linalg.det(2 * np.pi * np.e * Q))
-        #print("H_q: ", H_q)
-        # TODO: H_pi0 übergeben
         H_pi0 = -75
         beta = gamma * (H_q - H_pi0) + H_pi0
 

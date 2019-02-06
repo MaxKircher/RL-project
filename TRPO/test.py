@@ -1,10 +1,9 @@
 import numpy as np
 import gym
 import quanser_robots
-from trpo import *
-from policy import *
-from sampling import *
-from util import cg
+from trpo import line_search
+from policy import NN
+from sampling import sample_sp
 import pickle
 from matplotlib import pyplot as plt
 from quanser_robots import GentlyTerminating
@@ -35,7 +34,6 @@ policy = NN(s_dim, a_dim)
 #data = pickle.load(input)
 #policy = data.get("policy")
 
-trpo = TRPO(policy)
 
 # Table 2 -> min 50.000
 num_steps = 20000
@@ -46,21 +44,7 @@ for i in range(iterations):
 
     rewards = np.append(rewards, r) # for plotting
 
-    g = trpo.compute_objective_gradients(states, actions, Q)
-
-    subsampled_states = states[0::10] #get every tenth state (see above App D)
-
-    JMs = trpo.compute_Jacobians(subsampled_states)
-    FIM = np.matrix(trpo.compute_FIM_mean())
-
-    s = cg(g, JMs, FIM, g)
-
-    beta_cg = trpo.beta(0.01, np.matrix(s), JMs, FIM)
-
-    theta_old = policy.get_parameters().detach()
-
-    policy = trpo.line_search(beta_cg, delta, s, theta_old, states, actions, Q)
-    trpo.policy = policy
+    policy = line_search(delta, states, actions, Q, policy)
     print("STD: ", policy.model.log_std.exp())
 
     # Save in file
