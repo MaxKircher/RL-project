@@ -1,21 +1,18 @@
 import numpy as np
 
-'''
-Samples values using the single path method (sp) see chapter 5.1
-
-Parameter:
- - policy: {NN} the policy that returns an action
- - T:      {int}  Number of samples
- - env:    {TimeLimit} environment
- - gamma:  {float} discount factor
-
-Returns:
- - {numpy ndarray} sampled states
- - {numpy ndarray} sampled actions by passing a state to our policy
- - {numpy ndarray} state-action value function (Monte Carlo estimate)
- - {float} summed reward over all samples
-'''
 def sample_sp(policy, T, env, gamma):
+    '''
+    Samples values using the single path method (sp) see chapter 5.1
+    :param policy: {NN} the policy that returns an action
+    :param T: {int}  Number of samples
+    :param env: {TimeLimit} environment
+    :param gamma: {float} discount factor
+    :return:
+        - {numpy ndarray} sampled states
+        - {numpy ndarray} sampled actions by passing a state to our policy
+        - {numpy ndarray} state-action value function (Monte Carlo estimate)
+        - {float} summed reward over all samples
+    '''
     s = tuple(env.reset())
 
     states = [s]

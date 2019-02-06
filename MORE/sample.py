@@ -13,6 +13,14 @@ class Sample(object):
         memory_size:        Number of memorized thetas/samples
     '''
     def __init__(self, env, policy, N_per_theta, number_of_thetas, memory_size):
+        '''
+        Initializes our sample generator
+        :param env: {TimeLimit} current envirionment
+        :param policy: {Policy} current policy
+        :param N_per_theta: {int} number of episodes per theta
+        :param number_of_thetas: {int} number of thetas to be sampled
+        :param memory_size: {int} number of thetas which we like to keep from previous episodes
+        '''
         self.env = env
         self.policy = policy
         self.theta_memory = np.zeros((0,policy.get_number_of_parameters()))
@@ -35,6 +43,15 @@ class Sample(object):
          - thetas:  Is a array, where the i-th entry is a random value returned from the multivariate Gaussian
     '''
     def sample(self, mu, dev):
+        '''
+        Samples rewards and thetas for specified number of thetas
+        :param mu: {numpy ndarray} mean
+        :param dev: {numpy ndarray} standard deviation
+        :return:
+         - {numpy ndarray} sampled rewards
+         - {numpy ndarray} sampled thetas
+         - {numpy ndarray} weights
+        '''
         thetas = np.random.multivariate_normal(mu, dev, self.number_of_thetas)
         rewards = [self.sample_single_theta(thetas[i]) for i in range(thetas.shape[0])]
         log_probs = multivariate_normal.logpdf(thetas, mu, dev)
@@ -49,7 +66,12 @@ class Sample(object):
         return self.reward_memory, self.theta_memory, weights
 
     def sample_single_theta(self, theta):
-
+        '''
+        Samples rewards for given set of theta
+        :param theta: {numpy ndarray} parameters of the current policy
+        :return:
+         - {float} average reward
+        '''
         reward = 0
         if isinstance(self.policy, DebugPolicy):
             reward = self.policy.set_theta(theta)

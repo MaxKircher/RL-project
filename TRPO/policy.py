@@ -3,13 +3,12 @@ import numpy as np
 from scipy.stats import multivariate_normal
 
 class NN(object):
-    '''
-        Creates a neural network
-        Params:
-         s_dim = dimension of the state space
-         a_dim = dimension of the action space
-    '''
     def __init__(self, s_dim, a_dim):
+        '''
+        Creates a neural network
+        :param s_dim: dimension of the state space
+        :param a_dim: dimension of the action space
+        '''
         self.s_dim = s_dim
         self.a_dim = a_dim
         inter_dim = 64
@@ -24,41 +23,34 @@ class NN(object):
         self.model[-1].bias.data.mul_(0.0)
         self.model.log_std = torch.nn.Parameter(2.0 * torch.ones(self.a_dim, requires_grad=True))
 
-    '''
-        Computes the covariance matrix for the current log_std
 
-        Return:
-         covariance_matrix = {numpy ndarray}
-    '''
     def get_covariance_matrix(self):
+        '''
+        Computes the covariance matrix for the current logarithm of the standard deviation
+        :return: {numpy ndarray} covariance matrix
+        '''
         dev = np.exp(self.model.log_std.detach().numpy())
         covariance_matrix = np.diag(dev)
         return covariance_matrix
 
-    '''
-        Chooses a random action from normal distribution, where:
-        - mean: computed by NN for given state
-        - variance: get_get_covariance_matrix
-        
-        Params:
-         - s: {numpy ndaray} state
-    '''
     def choose_action(self, s):
+        '''
+        Chooses a random action from this normal distribution, where:
+         - mean: The mean is computed by our NN for a given state
+         - variance: get_covariance_matrix
+        :param s: {numpy ndaray} state
+        :return: {numpy ndarray} action
+        '''
         mu = self.model(torch.tensor(s, dtype=torch.float)).detach().numpy()
         return np.random.multivariate_normal(mu, self.get_covariance_matrix(), 1)
 
-    '''
-        Compute probability to choose action a in state s.
-        Computation is done in pytorch, so we can perform backward.
-        
-        Params:
-         - s: {numpy ndarray} state
-         - a: {numpy ndarray} action
-         
-         Return:
-          - {torch Tensor} probability of state a
-    '''
     def pi_theta(self, s, a):
+        '''
+        Computes the probability of choosing action a in state s
+        :param s: {numpy ndarray} state
+        :param a: {numpy ndarray} action
+        :return: {torch Tensor} probability of state a
+        '''
         mu = self.model(torch.tensor(s, dtype = torch.float)).double()
         dev = torch.exp(self.model.log_std).double()
         covariance_matrix = torch.diag(dev)
@@ -66,12 +58,12 @@ class NN(object):
         normal_distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covariance_matrix)
         return torch.exp(normal_distribution.log_prob(torch.tensor(a).double()))
 
-    '''
-        Updates the parameter of the policy
-        Parameters:
-         - theta_new: {torch Parameters} new parameters (weights and biases) for the network
-    '''
     def update_policy_parameter(self, theta_new):
+        '''
+        Updates the parameter of the policy
+        :param theta_new: {torch Parameters} new parameters (weights and biases) for the network
+        :return: None
+        '''
         theta_new = theta_new.view(-1)
 
         self.model.log_std.data = theta_new[:self.a_dim]
@@ -98,13 +90,11 @@ class NN(object):
 
         assert j == theta_new.size(0)
 
-    '''
-        Returns parameters of the network
- 
-        Return:
-         - {torch Tensor} parameters of the network
-    '''
     def get_parameters(self):
+        '''
+        Returns parameters of the network
+        :return: {torch Tensor} parameters of the network
+        '''
         parameters = list(self.model.parameters())
         number_cols = sum(p.numel() for p in self.model.parameters())
         theta = torch.zeros(1, number_cols)
@@ -116,14 +106,12 @@ class NN(object):
 
         return theta
 
-    '''
-         Returns gradient of the network.
-         backward() has to be performed before
-
-         Return:
-          - {torch Tensor} gradients of the network
-     '''
     def get_gradients(self):
+        '''
+        Returns gradient of the network.
+        backward() has to be performed before calling this function
+        :return: {torch Tensor} gradients of the network
+        '''
         parameters = list(self.model.parameters())
         number_cols = sum(p.numel() for p in self.model.parameters())
         gradient = np.zeros((number_cols, 1))

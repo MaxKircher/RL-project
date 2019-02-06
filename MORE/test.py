@@ -22,7 +22,7 @@ bound = 1
 N_per_theta, number_of_thetas, memory_size = 1,50,1000 # For policies
 # N_per_theta, number_of_thetas, memory_size = 1, 1000, 1000 # For Debug
 
-iterator = More(policy, env, N_per_theta, number_of_thetas, memory_size)
+iterator = MORE(policy, env, N_per_theta, number_of_thetas, memory_size)
 thetas = iterator.iterate(bound)
 
 print("MORE converged to the above soloution.")

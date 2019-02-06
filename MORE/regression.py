@@ -3,19 +3,28 @@ from sklearn.linear_model import LinearRegression, Ridge
 import numpy as np
 
 def __phi__(thetas):
+    '''
+    Feature map for computing the quadratic surrogate model
+    :param thetas: {list of numpy ndarray} parameters of the policy
+    :return: {numpy ndarray} feature matrix
+    '''
     poly = PolynomialFeatures(2)
     return poly.fit_transform(thetas)
 
-def linear_regression(thetas, rewards, weights=None):
+def compute_quadratic_surrogate(thetas, rewards, weights):
+    '''
+    Computes the quadratic surrogate model
+    :param thetas: {numpy ndarray} A list of policy parameter
+    :param rewards: {numpy ndarray}  A list of rewards
+    :param weights: {numpy ndarray} A list of weights
+    :return:
+    '''
+    d = thetas.shape[1]
+
+    # Do linear regression
     features = __phi__(thetas)
     reg = Ridge(fit_intercept=False).fit(features, rewards, weights)
-    return reg.coef_
-
-
-def compute_quadratic_surrogate(thetas, rewards, weights):
-    d = thetas.shape[1]
-    beta_hat = linear_regression(thetas, rewards, weights)
-    # print("beta_hat: ", beta_hat)
+    beta_hat = reg.coef_
 
     #r0 = beta_hat[0]
     r = beta_hat[1 : d+1]
@@ -32,38 +41,3 @@ def compute_quadratic_surrogate(thetas, rewards, weights):
     R = R / 2
 
     return R, r
-
-
-# Only for testing:
-def compare(thetas, rewards, d):
-    features = __phi__(thetas)
-    #print("features: ", features)
-    reg = LinearRegression().fit(features, rewards)
-
-    thetas = np.array(thetas)
-
-    beta_hat = linear_regression(thetas, rewards)
-    # print("beta_hat: ", beta_hat)
-    r = beta_hat[1 : d+1]
-    r0 = beta_hat[0]
-
-    R_param = beta_hat[d+1:]
-    # Construct R matrix
-
-    R = np.eye(d) # siehe Kommentar für polynomial policy von Grad 2
-
-    j = 0
-    for i in range(d):
-        R[i, i:] = R_param[j:j+d-i]
-        #R[i:, i] = R_param[j:j+d-i]
-        j += d-i
-
-    #print("R: ", R.shape, " thetas: ", thetas.shape, " r: ", r.shape)
-    our_pred = thetas @ R @ thetas.T + thetas @ r + r0
-    #print("R: ", (thetas @ R @ thetas.T).shape, " thetas: ", (thetas @ r).shape)
-
-    correct_pred = reg.predict(features)
-
-    # print("ours: ", np.diag(our_pred))
-    # print("correct: ", correct_pred)
-    # print("diff: ", np.diag(our_pred) - correct_pred)
