@@ -1,10 +1,15 @@
 import numpy as np
 
 
-"""
-    Use, that only variances are given -> dimensions are independant
-"""
 def kl_normal_distribution(mu_new, mu_old, log_std_new, log_std_old):
+    '''
+    Computes the Kullback-Leiber divergence of two normal distributions
+    :param mu_new: {numpy ndarray} expectation value for the new normal distribution
+    :param mu_old: {numpy ndarray} expectation value for the old normal distribution
+    :param log_std_new: {float} logarithm of standard deviation for the new normal distribution
+    :param log_std_old: {float} logarithm of standard deviation for the old normal distribution
+    :return: Kullback-Leiber Divergence
+    '''
     var_new = np.power(np.exp(log_std_new), 2)
     var_old = np.power(np.exp(log_std_old), 2)
 
@@ -14,9 +19,23 @@ def kl_normal_distribution(mu_new, mu_old, log_std_new, log_std_old):
     # print("kl: ", kl)
     return kl
 
+def conjugate_gradient(g, Js, M, x, k=10):
 
-def cg(g, Js, M, x, k=10):
+    '''
+    Computes the soloution for Ax = g, where A is symmetric and positive definit
+    :param g: {numpy ndarray} gradient
+    :param Js: {list numpy matrix} a list of Jacobi Matrices
+    :param M: {numpy matrix} Fisher Information Matrix
+    :param x: {numpy ndarray} start value
+    :param k: {int} number of iterations
+    :return: {float} search direction x
+    '''
     def fisher_vector_product(x):
+        '''
+        Computes the Fisher vector product for all Jacobi matrices
+        :param x: {nump ndarray} current search direction
+        :return: Monte Carlo estimate for Fisher vector product
+        '''
         Ax = np.zeros(x.shape)
         for j in range(len(Js)):
             Ax += Js[j].T @ (M @ (Js[j] @ x))

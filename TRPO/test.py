@@ -4,10 +4,11 @@ import quanser_robots
 from trpo import *
 from policy import *
 from sampling import *
-from util import cg
 import pickle
 from matplotlib import pyplot as plt
 from quanser_robots import GentlyTerminating
+
+from TRPO.util import conjugate_gradient
 
 plt.show()
 axes = plt.gca()
@@ -53,7 +54,7 @@ for i in range(iterations):
     JMs = trpo.compute_Jacobians(subsampled_states)
     FIM = np.matrix(trpo.compute_FIM_mean())
 
-    s = cg(g, JMs, FIM, g)
+    s = conjugate_gradient(g, JMs, FIM, g)
 
     beta_cg = trpo.beta(0.01, np.matrix(s), JMs, FIM)
 
