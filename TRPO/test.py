@@ -36,7 +36,7 @@ policy = NN(s_dim, a_dim)
 
 
 # Table 2 -> min 50.000
-num_steps = 20000
+num_steps = 2000
 for i in range(iterations):
     print("Iteration ", i, ":")
 
@@ -48,12 +48,12 @@ for i in range(iterations):
     print("STD: ", policy.model.log_std.exp())
 
     # Save in file
-    dict = {"policy": policy}
-    with open("policies/low_var.pkl", "wb") as output:
-        pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
+    #dict = {"policy": policy}
+    #with open("policies/low_var.pkl", "wb") as output:
+    #    pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
     # Plotting
     plt.plot(range(i+1), rewards, c='b')
     plt.draw()
     plt.pause(1e-17)
-    plt.savefig("snapshots/low_var.png")
+    #plt.savefig("snapshots/low_var.png")

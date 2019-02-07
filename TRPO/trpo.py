@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import copy
-from util import kl_normal_distribution, cg
+from util import kl_normal_distribution, conjugate_gradient
 
 
 '''
@@ -38,7 +38,7 @@ def compute_Jacobians(policy, states):
         for k in range(policy.a_dim):
             action_expectations[i,k].backward(retain_graph=True)
 
-            Jacobi_matrix[k,:] = policy.get_gradients()
+            Jacobi_matrix[k,:] = policy.get_gradients().T
 
             Jacobi_matrix[k + policy.a_dim, k] = policy.model.log_std.exp()[k]
             Jacobi_matrices += [Jacobi_matrix]
@@ -83,8 +83,8 @@ def line_search(delta, states, actions, Q, old_policy):
     # Compute natural gradient:
     JMs = compute_Jacobians(old_policy, subsampled_states)
     FIM = compute_FIM_mean(old_policy)
-    g = compute_objective_gradients(states, actions, Q)
-    s = cg(g, JMs, FIM, g)
+    g = compute_objective_gradients(old_policy, states, actions, Q)
+    s = conjugate_gradient(g, JMs, FIM, g)
 
     beta = compute_beta(delta, np.matrix(s), JMs, FIM)
 

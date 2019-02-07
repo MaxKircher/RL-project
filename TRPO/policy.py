@@ -110,7 +110,7 @@ class NN(object):
         '''
         Returns gradient of the network.
         backward() has to be performed before calling this function
-        :return: {torch Tensor} gradients of the network
+        :return: {numpy ndarray} gradients of the network
         '''
         parameters = list(self.model.parameters())
         number_cols = sum(p.numel() for p in self.model.parameters())
@@ -118,7 +118,10 @@ class NN(object):
 
         j = 0
         for param in parameters:
-            gradient[j: j + param.nelement(),:] = param.grad.view(-1, 1)
+            if param.grad is None:
+                gradient[j: j + param.nelement(), :] = torch.zeros((param.nelement()),1)
+            else:
+                gradient[j: j + param.nelement(),:] = param.grad.view(-1, 1)
             j += param.nelement()
 
         return gradient
