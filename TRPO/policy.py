@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from scipy.stats import multivariate_normal
+import pickle
 
 class NN(object):
     def __init__(self, s_dim, a_dim):
@@ -125,3 +125,9 @@ class NN(object):
             j += param.nelement()
 
         return gradient
+
+    def save_model(self, path):
+        dict = {"policy": self}
+        with open("policies/%s.pkl" %path, "wb") as output:
+            pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
+

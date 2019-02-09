@@ -1,59 +1,64 @@
 import numpy as np
+import argparse
+import pickle
 import gym
 import quanser_robots
+from quanser_robots import GentlyTerminating
+
 from trpo import line_search
 from policy import NN
 from sampling import sample_sp
-import pickle
-from matplotlib import pyplot as plt
-from quanser_robots import GentlyTerminating
-
-plt.show()
-axes = plt.gca()
-
-iterations = 800
-
-axes.set_xlim(0, iterations)
-rewards = np.array([]) # for plotting
-
-env = gym.make('Qube-v0')
-#env = gym.make('Pendulum-v2')
-
-#env = GentlyTerminating(gym.make('BallBalancerRR-v0'))
-
-gamma = 0.99
-
-delta = 0.1 # KL threshold in linesearch
-
-s_dim = env.observation_space.shape[0]
-a_dim = env.action_space.shape[0]
-
-policy = NN(s_dim, a_dim)
-
-#input = open("policies/debugging3.pkl", "rb")
-#data = pickle.load(input)
-#policy = data.get("policy")
+from value_estimation import compute_discounted_rewards
+from plotting import LearningCurvePlotter
 
 
-# Table 2 -> min 50.000
-num_steps = 2000
-for i in range(iterations):
+parser = argparse.ArgumentParser()
+parser.add_argument("-i", "--iterations", type=int, default=800,
+                    help="number of TRPO iterations, that shall be performed")
+parser.add_argument("-s", "--save", type=str, default=None,
+                    help="the filename to save a figure of the learning curve and the learned policy. \
+                         If no name is given, no data will be stored.")
+parser.add_argument("-l", "--load", type=str, default=None,
+                    help="the filename to load a learned policy. \
+                         If no name is given, a new policy will be created.")
+parser.add_argument("--env", type=str, default="Qube-v0",
+                    help="The name of the environment, that shall be used \
+                         (Qube_v0, Pendulum-v0, CartpoleStabShort-v0, ...)")
+parser.add_argument("-g", "--gamma", type=float, default=0.99,
+                    help="discount factor")
+parser.add_argument("--delta", type=float, default=0.1,
+                    help="KL threshold in linesearch")
+parser.add_argument("-e", "--episodes", type=int, default=60,
+                    help="number of episodes, that shall be performed per TRPO step")
+args = parser.parse_args()
+if args.save is not None:
+    with open("settings/%s.pkl" %args.save, "wb") as output:
+        pickle.dump(args.__dict__, output, pickle.HIGHEST_PROTOCOL)
+
+plotter = LearningCurvePlotter(args.iterations, args.save)
+env = GentlyTerminating(gym.make(args.env))
+
+# Load policy
+if args.load is not None:
+    input = open("policies/%s.pkl" %args.load, "rb")
+    data = pickle.load(input)
+    policy = data.get("policy")
+else:
+    policy = NN(env.observation_space.shape[0], env.action_space.shape[0])
+
+
+for i in range(args.iterations):
     print("Iteration ", i, ":")
 
-    states, actions, Q, r = sample_sp(policy, num_steps, env, gamma)
+    states, actions, rewards = sample_sp(env, policy, args.episodes)
+    Q = np.concatenate([compute_discounted_rewards(r, args.gamma) for r in rewards])
 
-    rewards = np.append(rewards, r) # for plotting
-
-    policy = line_search(delta, states, actions, Q, policy)
+    policy = line_search(args.delta, np.concatenate(states), np.concatenate(actions), Q, policy)
     print("STD: ", policy.model.log_std.exp())
 
-    # Save in file
-    #dict = {"policy": policy}
-    #with open("policies/low_var.pkl", "wb") as output:
-    #    pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
+
+    # Save in file
+    policy.save_model(args.save)
     # Plotting
-    plt.plot(range(i+1), rewards, c='b')
-    plt.draw()
-    plt.pause(1e-17)
-    #plt.savefig("snapshots/low_var.png")
+    plotter.update(np.concatenate(rewards).mean())

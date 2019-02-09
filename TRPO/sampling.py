@@ -1,50 +1,54 @@
 import numpy as np
 
-def sample_sp(policy, T, env, gamma):
+def sample_episode(policy, env):
     '''
-    Samples values using the single path method (sp) see chapter 5.1
+    Samples a single episode
     :param policy: {NN} the policy that returns an action
-    :param T: {int}  Number of samples
     :param env: {TimeLimit} environment
-    :param gamma: {float} discount factor
     :return:
         - {numpy ndarray} sampled states
         - {numpy ndarray} sampled actions by passing a state to our policy
-        - {numpy ndarray} state-action value function (Monte Carlo estimate)
-        - {float} summed reward over all samples
+        - {numpy ndarray} sampled rewards
     '''
     s = tuple(env.reset())
 
     states = [s]
     actions = []
     rewards = []
-    dones   = []
-    for i in range(T):
+    done = False
+    while not done:
         a = policy.choose_action(s)[0]
         s, r, done, info = env.step(a)
+
+        #todo necessary?
         if type(s) is np.ndarray:
             s = tuple(s.reshape(-1))
 
-        if done:
-            s = tuple(env.reset())
-            dones += [i]
-
         states  += [s]
         actions += [a]
-        rewards += [100*r]
+        rewards += [r*100]
 
-    states = np.array(states[:-1])
-    actions = np.array(actions)
-    Q = np.zeros(T + 1)
+    return np.array(states[:-1]), np.array(actions), np.array(rewards)
 
-    dones += [T-1]
-    t0 = -1
-    # Go through all episodes:
-    for t_end in dones:
-        # Compute Q values for one episode
-        for i in range(t_end, t0, -1):
-            Q[i] = gamma * Q[i + 1] + rewards[i]
-        t0 = t_end
-    Q = Q[:-1]
 
-    return states, actions, Q, sum(rewards)
+def sample_sp(env, policy, max_episodes):
+    '''
+    Samples values using the single path method (sp) see chapter 5.1
+    :param T: {int}  Number of samples
+    :param env: {TimeLimit} environment
+    :param policy: {NN} the policy that returns an action
+    :param max_episodes:  {int}
+    :return:
+        - {list of numpy ndarray} sampled states
+        - {list of numpy ndarray} sampled actions by passing a state to our policy
+        - {list of numpy ndarray} sampled rewards
+    '''
+    states =  []
+    actions = []
+    rewards = []
+    for i in range(max_episodes):
+        s, a, r = sample_episode(policy, env)
+        states  += [s]
+        actions += [a]
+        rewards += [r]
+    return states, actions, rewards
