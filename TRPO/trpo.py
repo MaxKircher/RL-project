@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import copy
+
 from util import kl_normal_distribution, conjugate_gradient
 
 
@@ -12,38 +13,7 @@ from util import kl_normal_distribution, conjugate_gradient
     Returns:
      - Jacobi_matrix: Jacobi-Matrix die nicht geaveraged wird! Da wir nur an der "Richtung" interssiert sind
 '''
-def compute_Jacobians(policy, states):
-    '''
-    Computes one Jacobi-Matrix per state sample
 
-    :param policy: {NN} the used policy
-    :param states: {numpy ndarray} the sampled states
-    :return: {list of numpy matrix} a list of Jacobi matrixes
-    '''
-    states = torch.tensor(states, dtype = torch.float)
-    action_expectations = policy.model(states)
-
-    # Compute the coloumns of the Jacobi-Matrix
-    number_cols = sum(p.numel() for p in policy.model.parameters())
-
-    Jacobi_matrices = []
-
-    # We compute the Jacobi matrix for each state in states
-    for i in range(action_expectations.size(0)):
-        Jacobi_matrix = np.matrix(np.zeros((policy.a_dim * 2, number_cols)))
-
-        # reset gradients:
-        policy.model.zero_grad()
-
-        for k in range(policy.a_dim):
-            action_expectations[i,k].backward(retain_graph=True)
-
-            Jacobi_matrix[k,:] = policy.get_gradients().T
-
-            Jacobi_matrix[k + policy.a_dim, k] = policy.model.log_std.exp()[k]
-            Jacobi_matrices += [Jacobi_matrix]
-
-    return Jacobi_matrices
 
 def compute_FIM_mean(policy):
     '''
@@ -81,7 +51,7 @@ def line_search(delta, states, actions, Q, old_policy):
     theta_old = old_policy.get_parameters().detach()
 
     # Compute natural gradient:
-    JMs = compute_Jacobians(old_policy, subsampled_states)
+    JMs = old_policy.compute_Jacobians(subsampled_states)
     FIM = compute_FIM_mean(old_policy)
     g = compute_objective_gradients(old_policy, states, actions, Q)
     s = conjugate_gradient(g, JMs, FIM, g)
@@ -97,7 +67,7 @@ def line_search(delta, states, actions, Q, old_policy):
 
         # Update the parameters of the model
         new_policy = copy.deepcopy(old_policy)
-        new_policy.update_policy_parameter(theta_new)
+        new_policy.update_parameter(theta_new)
 
         mean_new = new_policy.model(torch.tensor(states, dtype = torch.float)).detach().numpy()
         log_std_new = new_policy.model.log_std.detach().numpy()
@@ -112,12 +82,11 @@ def line_search(delta, states, actions, Q, old_policy):
                 print("new objective: ", obj.detach().numpy(), " improved by ", improvement.detach().numpy())
                 return new_policy
 
-        # decrease beta:
+        # decrease beta: todo correct?
         beta = beta * np.exp(-0.5 * i)
 
     print("Something went wrong!")
     return None
-
 
 
 def objective_theta(pi_old, pi_new, states, actions, Q):
@@ -164,5 +133,6 @@ def compute_beta(delta, s, JMs, FIM):
     '''
     sAs = 0
     for JM in JMs:
+        #todo deived by len(JMs)?????
         sAs += (s.T @ (JM.T @ (FIM @ (JM @ s))))[0,0]
     return np.power((2 * delta) / sAs, 0.5)

@@ -38,7 +38,8 @@ def conjugate_gradient(g, Js, M, x, k=10):
         '''
         Ax = np.zeros(x.shape)
         for j in range(len(Js)):
-            Ax += Js[j].T @ (M @ (Js[j] @ x))
+            #Ax += Js[j].T @ (M @ (Js[j] @ x))
+            Ax += Js[j].T * (M * (Js[j] * x))
         return Ax / len(Js)
 
     Ax = fisher_vector_product(x)

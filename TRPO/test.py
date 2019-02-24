@@ -6,9 +6,9 @@ import quanser_robots
 from quanser_robots import GentlyTerminating
 
 from trpo import line_search
-from policy import NN
+from policy import Policy
 from sampling import sample_sp
-from value_estimation import compute_discounted_rewards
+from value_estimation import compute_discounted_rewards, GAE
 from plotting import LearningCurvePlotter
 
 
@@ -30,10 +30,14 @@ parser.add_argument("--delta", type=float, default=0.1,
                     help="KL threshold in linesearch")
 parser.add_argument("-e", "--episodes", type=int, default=60,
                     help="number of episodes, that shall be performed per TRPO step")
+parser.add_argument("--layers", type=list, default=[64, 64],
+                    help="dimensions of layers in policy network and eventually of the value network")
+parser.add_argument("--lambd", type=float, default=0.9,
+                    help="Parameter for general advantage estimation")
 args = parser.parse_args()
 if args.save is not None:
-    with open("settings/%s.pkl" %args.save, "wb") as output:
-        pickle.dump(args.__dict__, output, pickle.HIGHEST_PROTOCOL)
+    with open("settings/%s.txt" %args.save, "wb") as output:
+        output.write(str(args.__dict__))
 
 plotter = LearningCurvePlotter(args.iterations, args.save)
 env = GentlyTerminating(gym.make(args.env))
@@ -44,18 +48,25 @@ if args.load is not None:
     data = pickle.load(input)
     policy = data.get("policy")
 else:
-    policy = NN(env.observation_space.shape[0], env.action_space.shape[0])
+    policy = Policy(env.observation_space.shape[0], env.action_space.shape[0], args.layers)
 
-
+gae = GAE(args.gamma, args.lambd, env.observation_space.shape[0], args.layers)
 for i in range(args.iterations):
     print("Iteration ", i, ":")
 
     states, actions, rewards = sample_sp(env, policy, args.episodes)
-    Q = np.concatenate([compute_discounted_rewards(r, args.gamma) for r in rewards])
 
-    policy = line_search(args.delta, np.concatenate(states), np.concatenate(actions), Q, policy)
-    print("STD: ", policy.model.log_std.exp())
+    #original TRPO:
+    #Q = np.concatenate([compute_discounted_rewards(r, args.gamma) for r in rewards])
+    #policy = line_search(args.delta, np.concatenate([s[:-1] for s in states]), np.concatenate(actions), Q, policy)
+    #print("STD: ", policy.model.log_std.exp())
 
+    td_residuals = gae.compute_td_residuals(states, rewards)
+    A = np.concatenate([gae.compute_advantages(tds) for tds in td_residuals])
+    policy = line_search(args.delta, np.concatenate([s[:-1] for s in states]), np.concatenate(actions), A, policy)
+
+    V_sampled = np.concatenate([compute_discounted_rewards(r, args.gamma) for r in rewards])
+    gae.update_value(np.concatenate(states), V_sampled, args.delta)
 
 
     # Save in file

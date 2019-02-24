@@ -10,7 +10,7 @@ def sample_episode(policy, env):
         - {numpy ndarray} sampled actions by passing a state to our policy
         - {numpy ndarray} sampled rewards
     '''
-    s = tuple(env.reset())
+    s = env.reset()
 
     states = [s]
     actions = []
@@ -21,14 +21,14 @@ def sample_episode(policy, env):
         s, r, done, info = env.step(a)
 
         #todo necessary?
-        if type(s) is np.ndarray:
-            s = tuple(s.reshape(-1))
+        #if type(s) is np.ndarray:
+        #    s = tuple(s.reshape(-1))
 
         states  += [s]
         actions += [a]
         rewards += [r*100]
 
-    return np.array(states[:-1]), np.array(actions), np.array(rewards)
+    return np.array(states), np.array(actions), np.array(rewards)
 
 
 def sample_sp(env, policy, max_episodes):
