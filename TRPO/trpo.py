@@ -4,17 +4,6 @@ import copy
 
 from util import kl_normal_distribution, conjugate_gradient
 
-
-'''
-    Params:
-     - states: Is a list of states that contains several single states. A Single
-               state corresponds to x in the paper in chapter C.1
-
-    Returns:
-     - Jacobi_matrix: Jacobi-Matrix die nicht geaveraged wird! Da wir nur an der "Richtung" interssiert sind
-'''
-
-
 def compute_FIM_mean(policy):
     '''
     Computes the Fisher-Information Matrix (FIM)
@@ -29,13 +18,7 @@ def compute_FIM_mean(policy):
     fim = np.matrix(np.diag(np.append(inverse_vars, 0.5 * np.power(inverse_vars, 2))))
     return fim
 
-'''
-Parameter:
- - beta: Step size
- - delta: KL constraint
- - s: search direction, i.e. A⁻1 * g
- - theta_old: old model parameter
-'''
+
 def line_search(delta, states, actions, Q, old_policy):
     '''
     Perform a linesearch to ensure, that the KL bound is not violated and the objective is improved
@@ -46,7 +29,7 @@ def line_search(delta, states, actions, Q, old_policy):
     :param old_policy: {NN} the old policy
     :return: {NN} the updated policy
     '''
-    subsampled_states = states[0::10] # get every tenth state (see above App D)
+    subsampled_states = states[0::10] # get every tenth state (see above Appendix D)
 
     theta_old = old_policy.get_parameters().detach()
 
@@ -135,4 +118,5 @@ def compute_beta(delta, s, JMs, FIM):
     for JM in JMs:
         #todo deived by len(JMs)?????
         sAs += (s.T @ (JM.T @ (FIM @ (JM @ s))))[0,0]
+    sAs = sAs / len(JMs)
     return np.power((2 * delta) / sAs, 0.5)

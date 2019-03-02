@@ -33,7 +33,8 @@ def sample_episode(policy, env):
 
 def sample_sp(env, policy, max_episodes):
     '''
-    Samples values using the single path method (sp) see chapter 5.1
+    Samples values using the single path method (sp) see chapter 5.1.
+    Creates lists with one array per episode, that contains the single steps.
     :param T: {int}  Number of samples
     :param env: {TimeLimit} environment
     :param policy: {NN} the policy that returns an action

@@ -6,8 +6,9 @@ class NN(object):
     def __init__(self, in_dim, out_dim, interdims):
         '''
         Creates a neural network
-        :param in_dim: dimension of the state space
-        :param out_dim: dimension of the action space
+        :param in_dim: {int} dimension of the state space
+        :param out_dim: {int} dimension of the action space
+        :param interdims: {list of int} dimensions of intermediate layers
         '''
         self.in_dim = in_dim
         self.out_dim = out_dim
@@ -20,17 +21,20 @@ class NN(object):
         self.model.add_module("output", torch.nn.Linear(old_dim, out_dim))
 
     def update_parameter(self, theta_new):
+        '''
+        Update the parameters of the network.
+        :param theta_new: {torch Parameter} the new network parameters
+        '''
         number_of_layers = len(self.model)
         # get right position where we get the params from theta_new:
         j = 0
         for i in range(number_of_layers):
-
             if type(self.model[i]) == torch.nn.modules.linear.Linear:
                 size_weight = self.model[i].weight.size()
                 size_bias = self.model[i].bias.size()
-
                 no_weights = self.model[i].weight.nelement()
                 no_bias = self.model[i].bias.nelement()
+
                 # get the new weights
                 theta_new_weights = theta_new[j: j + no_weights]
                 j += no_weights
@@ -45,7 +49,7 @@ class NN(object):
     def get_parameters(self):
         '''
         Returns parameters of the network
-        :return: {torch Tensor} parameters of the network
+        :return: {torch Parameter} parameters of the network
         '''
         return torch.cat([param.view(1, -1) for param in self.model.parameters()], dim=1)
 
@@ -64,4 +68,3 @@ class NN(object):
                 return param.grad.view(-1, 1)
         gradient = torch.cat([get_grad(param) for param in self.model.parameters()], dim=0)
         return gradient.detach().numpy()
-

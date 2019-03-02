@@ -32,6 +32,8 @@ parser.add_argument("-e", "--episodes", type=int, default=60,
                     help="number of episodes, that shall be performed per TRPO step")
 parser.add_argument("--layers", type=list, default=[64, 64],
                     help="dimensions of layers in policy network and eventually of the value network")
+parser.add_argument("--gae", action='store_true',
+                    help="shall general advantage estimation be used?")
 parser.add_argument("--lambd", type=float, default=0.9,
                     help="Parameter for general advantage estimation")
 args = parser.parse_args()
@@ -50,24 +52,29 @@ if args.load is not None:
 else:
     policy = Policy(env.observation_space.shape[0], env.action_space.shape[0], args.layers)
 
-gae = GAE(args.gamma, args.lambd, env.observation_space.shape[0], args.layers)
+if args.gae:
+    gae = GAE(args.gamma, args.lambd, env.observation_space.shape[0], args.layers)
+
 for i in range(args.iterations):
     print("Iteration ", i, ":")
 
     states, actions, rewards = sample_sp(env, policy, args.episodes)
+    value_sample_estimate = np.concatenate([compute_discounted_rewards(r, args.gamma) for r in rewards])
 
-    #original TRPO:
-    #Q = np.concatenate([compute_discounted_rewards(r, args.gamma) for r in rewards])
-    #policy = line_search(args.delta, np.concatenate([s[:-1] for s in states]), np.concatenate(actions), Q, policy)
+    if args.gae:
+        td_residuals = gae.compute_td_residuals(states, rewards)
+        advantages = np.concatenate([gae.compute_advantages(tds) for tds in td_residuals])
+
+        gae.update_value(np.concatenate(states), value_sample_estimate, args.delta)
+
+    else:
+        #original TRPO:
+        advantages = value_sample_estimate
+
+
+    policy = line_search(args.delta, np.concatenate([s[:-1] for s in states]), np.concatenate(actions), advantages, policy)
+
     #print("STD: ", policy.model.log_std.exp())
-
-    td_residuals = gae.compute_td_residuals(states, rewards)
-    A = np.concatenate([gae.compute_advantages(tds) for tds in td_residuals])
-    policy = line_search(args.delta, np.concatenate([s[:-1] for s in states]), np.concatenate(actions), A, policy)
-
-    V_sampled = np.concatenate([compute_discounted_rewards(r, args.gamma) for r in rewards])
-    gae.update_value(np.concatenate(states), V_sampled, args.delta)
-
 
     # Save in file
     policy.save_model(args.save)

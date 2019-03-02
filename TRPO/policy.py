@@ -10,6 +10,7 @@ class Policy(NN):
         Creates a neural network
         :param in_dim: dimension of the state space
         :param out_dim: dimension of the action space
+        :param interdims: {list of int} dimensions of intermediate layers
         '''
         NN.__init__(self, in_dim, out_dim, interdims)
         self.model[-1].weight.data.mul_(0.1)
@@ -42,7 +43,7 @@ class Policy(NN):
         Computes the probability of choosing action a in state s
         :param s: {numpy ndarray} state
         :param a: {numpy ndarray} action
-        :return: {torch Tensor} probability of state a
+        :return: {torch Tensor} probability of action a
         '''
         mu = self.model(torch.tensor(s, dtype = torch.float)).double()
         dev = torch.exp(self.model.log_std).double()
@@ -73,7 +74,6 @@ class Policy(NN):
         '''
         Computes one Jacobi-Matrix per state sample
 
-        :param policy: {NN} the used policy
         :param states: {numpy ndarray} the sampled states
         :return: {list of numpy matrix} a list of Jacobi matrixes
         '''
