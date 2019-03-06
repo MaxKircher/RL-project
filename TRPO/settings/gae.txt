@@ -1,0 +1,1 @@
+{'iterations': 800, 'save': 'gae', 'load': None, 'env': 'CartpoleStabShort-v0', 'gamma': 0.99, 'delta': 0.1, 'episodes': 20, 'layers': [32], 'gae': True, 'lambd': 0.9}
