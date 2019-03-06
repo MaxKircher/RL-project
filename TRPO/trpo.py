@@ -85,9 +85,7 @@ def objective_theta(pi_old, pi_new, states, actions, Q):
     '''
 
     q = pi_old(states, actions).detach()
-    fast_sum = (pi_new(states, actions) * torch.tensor(Q, dtype=torch.double) / q).sum()
-
-    return fast_sum / actions.shape[0]
+    return (pi_new(states, actions) * torch.tensor(Q, dtype=torch.double) / q).mean()
 
 def compute_objective_gradients(policy, states, actions, Q):
     '''

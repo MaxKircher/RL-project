@@ -68,3 +68,4 @@ class NN(object):
                 return param.grad.view(-1, 1)
         gradient = torch.cat([get_grad(param) for param in self.model.parameters()], dim=0)
         return gradient.detach().numpy()
+

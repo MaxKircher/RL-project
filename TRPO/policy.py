@@ -5,7 +5,7 @@ import pickle
 from network import NN
 
 class Policy(NN):
-    def __init__(self, in_dim, out_dim, interdims=[64]):
+    def __init__(self, in_dim, out_dim, interdims):
         '''
         Creates a neural network
         :param in_dim: dimension of the state space
@@ -13,9 +13,9 @@ class Policy(NN):
         :param interdims: {list of int} dimensions of intermediate layers
         '''
         NN.__init__(self, in_dim, out_dim, interdims)
-        self.model[-1].weight.data.mul_(0.1)
-        self.model[-1].bias.data.mul_(0.0)
-        self.model.log_std = torch.nn.Parameter(2.0 * torch.ones(self.out_dim, requires_grad=True))
+        #self.model[-1].weight.data.mul_(0.1)
+        #self.model[-1].bias.data.mul_(0.0)
+        self.model.log_std = torch.nn.Parameter(4.5 * torch.ones(self.out_dim, requires_grad=True))
 
 
     def get_covariance_matrix(self):
@@ -61,12 +61,13 @@ class Policy(NN):
         theta_new = theta_new.view(-1)
 
         self.model.log_std.data = theta_new[:self.out_dim]
+        print("log std = ", theta_new[:self.out_dim])
         super().update_parameter(theta_new[self.out_dim:])
 
 
     def save_model(self, path):
         dict = {"policy": self}
-        with open("policies/%s.pkl" %path, "wb") as output:
+        with open("policies/%s.pkl" %path, "wb+") as output:
             pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
 

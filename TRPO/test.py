@@ -30,7 +30,7 @@ parser.add_argument("--delta", type=float, default=0.1,
                     help="KL threshold in linesearch")
 parser.add_argument("-e", "--episodes", type=int, default=60,
                     help="number of episodes, that shall be performed per TRPO step")
-parser.add_argument("--layers", type=list, default=[64, 64],
+parser.add_argument("--layers", type=int, default=[64, 64], nargs="+",
                     help="dimensions of layers in policy network and eventually of the value network")
 parser.add_argument("--gae", action='store_true',
                     help="shall general advantage estimation be used?")
@@ -38,8 +38,9 @@ parser.add_argument("--lambd", type=float, default=0.9,
                     help="Parameter for general advantage estimation")
 args = parser.parse_args()
 if args.save is not None:
-    with open("settings/%s.txt" %args.save, "wb") as output:
-        output.write(str(args.__dict__))
+    settings_file = open("settings/%s.txt" %args.save, "w+")
+    settings_file.write(str(args.__dict__))
+    settings_file.close()
 
 plotter = LearningCurvePlotter(args.iterations, args.save)
 env = GentlyTerminating(gym.make(args.env))
@@ -65,12 +66,12 @@ for i in range(args.iterations):
         td_residuals = gae.compute_td_residuals(states, rewards)
         advantages = np.concatenate([gae.compute_advantages(tds) for tds in td_residuals])
 
-        gae.update_value(np.concatenate(states), value_sample_estimate, args.delta)
+        #for _ in range(15):
+        gae.update_value(np.concatenate([s[:-1] for s in states]), value_sample_estimate, args.delta)
 
     else:
         #original TRPO:
         advantages = value_sample_estimate
-
 
     policy = line_search(args.delta, np.concatenate([s[:-1] for s in states]), np.concatenate(actions), advantages, policy)
 
@@ -78,5 +79,7 @@ for i in range(args.iterations):
 
     # Save in file
     policy.save_model(args.save)
+    if args.gae:
+        gae.value.save_model(args.save)
     # Plotting
     plotter.update(np.concatenate(rewards).mean())

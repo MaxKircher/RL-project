@@ -1,7 +1,8 @@
 import numpy as np
 import torch
+import pickle
 from network import NN
-from util import conjugate_gradient
+from util import conjugate_gradient, kl_normal_distribution
 
 def compute_discounted_rewards(rewards, gamma):
     '''
@@ -58,7 +59,7 @@ class GAE(object):
         A = np.zeros(deltas.shape)
         A[-1] = self.gamma * self.lambd * deltas[-1]
         for i in range(deltas.shape[0] - 2, -1, -1):
-            A[i] = self.gamma * self.lambd * (deltas[i] + A[i+1])
+            A[i] = deltas[i] + self.gamma * self.lambd * A[i+1]
         return A
 
 
@@ -69,23 +70,46 @@ class GAE(object):
         param discounted_rewards: {numpy ndarray} sampled discounted rewards
         param delta: {float} KL-bound for value update
         '''
+        self.value.model.zero_grad()
         target = torch.tensor(discounted_rewards, dtype=torch.float)
-        loss = (self.value(states) - target).pow(2).mean()
-        loss.backward()
+        old_vals = self.value(states).view(-1)
+        print("sample: ", target, "; net: ", old_vals)
+        old_loss = (old_vals - target).pow(2).mean()
+        print("Loss: ", old_loss)
+        old_loss.backward()
         g = self.value.get_gradients()
-        Js = self.value.compute_Jacobians(states)
-        s = conjugate_gradient(g, Js, 1, g)
-        params = self.value.get_parameters()
-
+        Js = self.value.compute_Jacobians(states[0::10])
+        s = -conjugate_gradient(g, Js, 1, g)
         sHs = 0
         for J in Js:
-            # todo divide by len(Js)?????
             sHs += (s.T @ (J.T @ (J @ s)))[0, 0]
         sHs = sHs / len(Js)
         alpha = np.power((2 * delta) / sHs, 0.5)
-        #todo linesearch
+
+        params = self.value.get_parameters()
+
         new_params = (params + alpha * torch.tensor(s.T)).view(-1)
         self.value.update_parameter(new_params)
+
+        '''old_loss = old_loss.detach().numpy()
+        for i in range(10):
+            new_vals = self.value(states).detach().numpy()
+            new_loss = np.power(new_vals - discounted_rewards, 2).mean()
+            #print("old loss = ", old_loss, "; new loss = ", new_loss)
+
+            if old_loss > new_loss:
+                #if kl_normal_distribution(old_vals, new_vals, old_loss, new_loss) < delta:
+                print(i)
+                return
+            alpha = alpha * np.exp(-0.5 * (i+1))
+
+        new_params -= 0.01 * torch.tensor(g.T).view(-1)
+        self.value.update_parameter(new_params)
+        new_loss = np.power(new_vals - discounted_rewards, 2).mean()
+
+        print(new_loss)'''
+
+
 
 class Value(NN):
     def compute_Jacobians(self, states):
@@ -126,3 +150,8 @@ class Value(NN):
         '''
         states = torch.tensor(*args, dtype=torch.float)
         return self.model(states, **kwargs)
+
+    def save_model(self, path):
+        dict = {"value": self}
+        with open("values/%s.pkl" %path, "wb+") as output:
+            pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)

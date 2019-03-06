@@ -26,7 +26,7 @@ def sample_episode(policy, env):
 
         states  += [s]
         actions += [a]
-        rewards += [r*100]
+        rewards += [r]
 
     return np.array(states), np.array(actions), np.array(rewards)
 
