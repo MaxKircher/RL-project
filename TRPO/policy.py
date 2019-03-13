@@ -3,13 +3,12 @@ import numpy as np
 from scipy.stats import multivariate_normal
 
 class NN(object):
-    '''
-        Creates a neural network
-        Params:
-         s_dim = dimension of the state space
-         a_dim = dimension of the action space
-    '''
     def __init__(self, s_dim, a_dim):
+        '''
+            Creates a neural network
+            :param s_dim: {int} dimension of the state space
+            :param a_dim: {int} dimension of the action space
+        '''
         self.s_dim = s_dim
         self.a_dim = a_dim
         inter_dim = 64
@@ -24,49 +23,57 @@ class NN(object):
         self.model[-1].bias.data.mul_(0.0)
         self.model.log_std = torch.nn.Parameter(-0.1 * torch.ones(self.a_dim, requires_grad=True))
 
-    '''
-        Computes the covariance matrix for the current log_std
-
-        Return:
-         covariance_matrix = {numpy ndarray}
-    '''
     def get_covariance_matrix_numpy(self):
+        '''
+            Computes the covariance matrix for the current log_std
+
+            :return: {numpy ndarray} covariance_matrix
+        '''
         dev = np.exp(self.model.log_std.detach().numpy())
         covariance_matrix = np.diag(dev)
         return covariance_matrix
 
-    # choose action
+
     def choose_a(self, s):
+        '''
+        Choose a action for given state
+        :param s: {numpy ndarray} state
+        :return: {numpy ndarray} action
+        '''
         mu = self.model(torch.tensor(s, dtype=torch.float)).detach().numpy()
         return np.random.multivariate_normal(mu, self.get_covariance_matrix_numpy(), 1)
 
-    # pi_theta old
+
     def q(self, s, a):
+        '''
+        Compute probability to choose action a in state s
+        :param s: {numpy ndarray} state
+        :param a: {numpy ndarray} action
+        :return: {float} probability
+        '''
         mu = self.model(torch.tensor(s, dtype = torch.float)).detach().numpy() # Vektor für den action space
         return multivariate_normal.pdf(a, mu, self.get_covariance_matrix_numpy())
 
-    '''
-        von pytorch ausgerechnetete Wahrscheinlichkeit die man ableiten kann
-        liefert das gleiche zurück wie q nur für torch interpretierbar, sodass diese Funktion optmiert werden kann
-    '''
     def pi_theta(self, s, a):
+        '''
+        Compute probability to choose action a in state s. Use pytorch to be able to compute gradient.
+        :param s: {numpy ndarray} state
+        :param a: {numpy ndarray} action
+        :return: {torch tensor} probability
+        '''
         mu = self.model(torch.tensor(s, dtype = torch.float)).double()
         dev = torch.exp(self.model.log_std).double()
         covariance_matrix = torch.diag(dev)
 
-        # aufstellen normal_distribution
         normal_distribution = torch.distributions.multivariate_normal.MultivariateNormal(mu, covariance_matrix)
         return torch.exp(normal_distribution.log_prob(torch.tensor(a).double()))
 
-    '''
-        Updates the parameter of the policy improve our policy
-        Parameter:
-         - theta_new: is ideally of the form nn.Parameters otherwise if it's a tensor
-                      do nn.Parameters(theta_new)
-    '''
     def update_policy_parameter(self, theta_new):
+        '''
+        Updates the parameter of the policy
+        :param theta_new: {torch tensor} the new policy parameters
+        '''
         theta_new = theta_new.view(-1)
-        #print(theta_new.size())
 
         # keine negativen Varianzen, da wir den logarithmus speichern
         self.model.log_std.data = theta_new[:self.a_dim]
@@ -95,6 +102,10 @@ class NN(object):
         assert j == theta_new.size(0)
 
     def get_parameter_as_tensor(self):
+        '''
+        Get the parameters of the ploicy
+        :return: {torch tensor} parameters
+        '''
         parameters = list(self.model.parameters())
         number_cols = sum(p.numel() for p in self.model.parameters())
         theta = torch.zeros(1, number_cols)
@@ -107,6 +118,11 @@ class NN(object):
         return theta
 
     def get_gradients(self):
+        '''
+        Returns the gradients with respect to all parameters.
+        Note, that backward has to be performed before.
+        :return: {numpy ndarray} gradients
+        '''
         parameters = list(self.model.parameters())
         number_cols = sum(p.numel() for p in self.model.parameters())
         gradient = np.zeros((number_cols, 1))

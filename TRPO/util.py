@@ -1,10 +1,16 @@
 import numpy as np
 
 
-"""
-    Use, that only variances are given -> dimensions are independant
-"""
 def kl_normal_distribution(mu_new, mu_old, log_std_new, log_std_old):
+    '''
+    Compute the kl divergence between two normal distributions.
+    There is one distribution per action. Their KL-divergence values are summed.
+    :param mu_new: {numpy ndarray} the new mean
+    :param mu_old: {numpy ndarray} the old mean
+    :param log_std_new: {numpy ndarray} the logarithm of the new standard deviation
+    :param log_std_old: {numpy ndarray} the logarithm of the old standard deviation
+    :return: {float} KL-divergence
+    '''
     var_new = np.power(np.exp(log_std_new), 2)
     var_old = np.power(np.exp(log_std_old), 2)
 
@@ -16,6 +22,15 @@ def kl_normal_distribution(mu_new, mu_old, log_std_new, log_std_old):
 
 
 def cg(g, Js, M, x, k=10):
+    '''
+    Apply conjugate gradient algorithm
+    :param g: {numpy ndarray} gradient
+    :param Js: {list of numpy ndarray} Jacobi matrices
+    :param M: {numpy ndarray} Fisher Information Matrix
+    :param x: {numpy ndarray} initial solution
+    :param k: {int} number of iterations
+    :return:
+    '''
     def fisher_vector_product(x):
         Ax = np.zeros(x.shape)
         for j in range(len(Js)):

@@ -1,20 +1,21 @@
 import numpy as np
 
-'''
-Samples values using the single path method (sp)
-
-Parameter:
- - policy:  the policy that returns an action
- - s0:      initial state that is the beginning of our sampling sequence
-            see 5.1. Single Path
-- T:        Number of samples
-
-Returns:
- - states:  sampled states beginning with initial state s0
- - actions: sampled actions by passing a state to our policy
- - Q:       state-action value function see page 2 above formula (1)
-'''
 def sample_sp(policy, s0, T, env, gamma):
+    '''
+    Samples values using the single path method (sp)
+                see 5.1. Single Path
+
+    :param policy: {NN} the policy that returns an action
+    :param s0: {numpy ndarray} initial state that is the beginning of our sampling sequence
+    :param T: {int} Number of samples
+    :param env {TimeLimit} the environment
+    :param gamma {float} discount factor
+
+    :return:
+     - states: {numpy ndarray} sampled states beginning with initial state s0
+     - actions: {numpy ndarray} sampled actions by passing a state to our policy
+     - Q: {numpy ndarray} state-action value function see page 2 above formula (1)
+    '''
     s = s0
     states = [s0]
     actions = []
