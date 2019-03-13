@@ -1,0 +1,1 @@
+{'iterations': 800, 'save': 'levitation_batch_10', 'load': None, 'env': 'Levitation-v0', 'gamma': 0.99, 'delta': 0.1, 'episodes': 10, 'layers': [16, 16], 'gae': False, 'lambd': 0.9}
