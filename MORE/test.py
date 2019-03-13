@@ -4,7 +4,7 @@ import quanser_robots
 from policy import *
 from MORE_iteration import *
 
-env = gym.make('BallBalancerSim-v0')
+env = gym.make('Qube-v0')
 state_dim = env.observation_space.shape[0] # = 5
 action_dim = env.action_space.shape[0] # = 1
 

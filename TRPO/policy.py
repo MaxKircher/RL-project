@@ -15,7 +15,7 @@ class Policy(NN):
         NN.__init__(self, in_dim, out_dim, interdims)
         #self.model[-1].weight.data.mul_(0.1)
         #self.model[-1].bias.data.mul_(0.0)
-        self.model.log_std = torch.nn.Parameter(4.5 * torch.ones(self.out_dim, requires_grad=True))
+        self.model.log_std = torch.nn.Parameter(2.4 * torch.ones(self.out_dim, requires_grad=True))
 
 
     def get_covariance_matrix(self):

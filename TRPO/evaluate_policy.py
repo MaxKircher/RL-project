@@ -14,11 +14,14 @@ policy = data.get("policy")
 #env = gym.make('Pendulum-v2')
 env = gym.make('CartpoleStabShort-v0')
 s = env.reset()
+done = False
+rewards = 0
 
-for i in range(10000):
+while not done:
     env.render()
     a = policy.model(torch.tensor(s, dtype=torch.float)).detach().numpy()
     s, r, done, info = env.step(a)
-    if done:
-        s = env.reset()
+    rewards += r
     time.sleep(0.1)
+
+print("reward of episode: ", rewards)

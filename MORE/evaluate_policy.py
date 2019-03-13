@@ -13,8 +13,10 @@ policy = data.get("policy")
 
 env = gym.make('BallBalancerSim-v0')
 s = env.reset()
+done = False
+rewards = 0
 
-for i in range(4000):
+while not done:
     env.render()
     # a = policy.get_action(s)
     # s, r, d, i = env.step(np.asarray(a))
@@ -22,6 +24,7 @@ for i in range(4000):
     print("a", a)
     print("s", s)
     s, r, done, info = env.step(a)
-    if done: # or i%1000 == 0:
-        s = env.reset()
     #time.sleep(.1)
+    rewards += r
+
+print("reward of episode: ", rewards)
