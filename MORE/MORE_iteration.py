@@ -57,8 +57,8 @@ class MORE(object):
             plt.plot(range(count), reward_list_mean, c='b')
             plt.show(block=False)
             plt.pause(1e-17)
-            plt.savefig("snapshots/qube_rbf.png")
-            file = open("snapshots/qube_rbf.npy", "wb")
+            plt.savefig("snapshots/BB_rbf30.png")
+            file = open("snapshots/BB_rbf30.npy", "wb")
             np.save(file, [reward_list_mean, reward_list_var])
             file.close()
 
@@ -70,7 +70,7 @@ class MORE(object):
             # Save policy in file
             self.policy.set_theta(b)
             dict = {"policy": self.policy}
-            with open("policies/qube_rbf.pkl", "wb") as output:
+            with open("policies/BB_rbf30.pkl", "wb") as output:
                 pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
 
         plot(rewards, thetas, d, b_history)
