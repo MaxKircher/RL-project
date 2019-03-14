@@ -82,4 +82,4 @@ for i in range(args.iterations):
     if args.gae:
         gae.value.save_model(args.save)
     # Plotting
-    plotter.update(np.concatenate(rewards).mean())
+    plotter.update(np.concatenate(rewards).mean(), np.concatenate(rewards).var())
