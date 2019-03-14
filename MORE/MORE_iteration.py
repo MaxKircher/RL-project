@@ -36,7 +36,8 @@ class MORE(object):
         Q = 5*np.eye(d)
 
         b_history = [b]
-        reward_list = np.array([])
+        reward_list_mean = np.array([])
+        reward_list_var = np.array([])
         fig = plt.figure()
 
         count = 0
@@ -48,22 +49,31 @@ class MORE(object):
 
             # Plot progress
             b_history += [b]
-            reward_list = np.append(reward_list, self.sample_generator.sample_single_theta(b))
+            sampled_rewards = np.array([self.sample_generator.sample_single_theta(b) for i in range(10)])
+            reward_list_mean = np.append(reward_list_mean, sampled_rewards.mean())
+            reward_list_var = np.append(reward_list_var, sampled_rewards.var())
             plt.figure(fig.number)
             # plt.semilogy()
-            plt.plot(range(count), reward_list, c='b')
+            plt.plot(range(count), reward_list_mean, c='b')
             plt.show(block=False)
             plt.pause(1e-17)
             plt.savefig("snapshots/qube_rbf.png")
+            file = open("snapshots/qube_rbf.npy", "wb")
+            np.save(file, [reward_list_mean, reward_list_var])
+            file.close()
 
-            if (np.mod(count, 30) == 0) or (np.absolute(np.diag(Q).sum()) <= delta):
+            if (np.mod(count, 50) == 0) or (np.absolute(np.diag(Q).sum()) <= delta):
                 plot(rewards, thetas, d, b_history)
+
+
 
             # Save policy in file
             self.policy.set_theta(b)
             dict = {"policy": self.policy}
             with open("policies/qube_rbf.pkl", "wb") as output:
                 pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
+
+        plot(rewards, thetas, d, b_history)
 
 
     def __more_step__(self, b, Q, etha, omega):
