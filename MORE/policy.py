@@ -128,7 +128,6 @@ class LinearRBF(Policy):
 
     def __init__(self, state_dim, action_dim, number_of_features):
         Policy.__init__(self, state_dim, action_dim)
-        # TODO look at this again:
         self.rbf_feature = RBFSampler(gamma=25., n_components=number_of_features)
         self.rbf_feature.fit(np.random.randn(action_dim, state_dim))
 
@@ -137,10 +136,12 @@ class LinearRBF(Policy):
 
     def get_action(self, state):
         features = self.rbf_feature.transform(state.reshape(1, -1))
-        return features @ self.theta[:-self.action_dim] + self.theta[-self.action_dim:]
+        action = features @ self.theta[:-self.action_dim].reshape(-1, self.action_dim)
+        action = action + self.theta[-self.action_dim:]
+        return action.reshape(-1)
 
     def get_number_of_parameters(self):
-        return self.rbf_feature.get_params().get("n_components") + self.action_dim
+        return self.rbf_feature.get_params().get("n_components") * self.action_dim + self.action_dim
 
 class LinearPolynomial(Policy):
     '''
