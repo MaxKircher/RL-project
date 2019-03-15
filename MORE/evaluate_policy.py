@@ -3,41 +3,32 @@ import pickle
 import gym
 import quanser_robots
 import torch
-import time
 
-###
-from quanser_robots import GentlyTerminating
-#env = GentlyTerminating(gym.make('CartpoleStabRR-v0'))
-###
-
-#input = open("policies/bb_rbf.pkl", "rb")
-input = open("policies/CartpoleStabShort_scratch_poldeg2.pkl", "rb")
-data = pickle.load(input)
-#policy = data.get("policy")
-policy = data.get("policy")
-
+# Choose the policy you want to evaluate
+policy_name = "CartpoleStabShort_scratch_50rbfs_rbf.pkl"
+# Choose the environment, on that you want to evaluate:
 env = gym.make('CartpoleStabShort-v0')
 
 
-count = 0
-rewards = 0
+input = open("policies/" + policy_name, "rb")
+data = pickle.load(input)
+policy = data.get("policy")
+
 lof_rewards = []
 
-for steps in range(50):
+for steps in range(100):
     s = env.reset()
-    while count < 1000:
-        # env.render()
+    rewards = 0
+    for count in range(1000):
+        #env.render()
         a = np.array(policy.get_action(s))
         s, r, done, info = env.step(a)
         rewards += r
-        count += 1
-        # time.sleep(0.1)
+
         if done == True:
             break
     lof_rewards += [rewards]
-    rewards = 0
-    count = 0
 
 print("MORE: " , lof_rewards)
-file = open("EvalSim/cartpole_poldeg2.npy", "wb")
+file = open("EvalSim/cartpole_50rbf.npy", "wb")
 np.save(file, lof_rewards)

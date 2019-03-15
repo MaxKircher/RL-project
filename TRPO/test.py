@@ -66,7 +66,6 @@ for i in range(args.iterations):
         td_residuals = gae.compute_td_residuals(states, rewards)
         advantages = np.concatenate([gae.compute_advantages(tds) for tds in td_residuals])
 
-        #for _ in range(15):
         gae.update_value(np.concatenate([s[:-1] for s in states]), value_sample_estimate, args.delta)
 
     else:

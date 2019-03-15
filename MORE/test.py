@@ -5,20 +5,21 @@ from policy import *
 from MORE_iteration import *
 
 env = gym.make('BallBalancerSim-v0')
-state_dim = env.observation_space.shape[0] # = 5
-action_dim = env.action_space.shape[0] # = 1
+state_dim = env.observation_space.shape[0]
+action_dim = env.action_space.shape[0]
 
-#degree = 2 #we assume that all degrees occur
+
 #policy = LinearPolynomial(state_dim, action_dim, 2)
-#policy = NeuronalNetworkPolicy(state_dim, action_dim)
-policy = LinearRBF(state_dim, action_dim, 30) # default = 100
+policy = LinearRBF(state_dim, action_dim, 100)
+
 #policy = Rastrigin(state_dim, action_dim)
 #policy = Rosenbrock(state_dim, action_dim)
 
-#print("(state_dim, action_dim) =  ", "(", state_dim, ",", action_dim, ")")
 print("Number of model parameters: ", policy.get_number_of_parameters())
 
+# The convergence criterion:
 bound = 1
+
 N_per_theta, number_of_thetas, memory_size = 1,50,1000 # For policies
 # N_per_theta, number_of_thetas, memory_size = 1, 1000, 1000 # For Debug
 

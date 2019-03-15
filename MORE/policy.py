@@ -43,6 +43,10 @@ class Policy(object):
         raise NotImplementedError("Sublcasses should implement this!")
 
 class DebugPolicy(Policy):
+    '''
+    The Debug policies are no actual policies in the reinforcement sense.
+    Classes, that implement this class can be directly maximized by MORE.
+    '''
     def __init__(self, state_dim, action_dim):
         Policy.__init__(self, state_dim, action_dim)
 
@@ -60,6 +64,7 @@ class Rosenbrock(DebugPolicy):
         return -rosen(thetas)
 
     def get_number_of_parameters(self):
+        # Set the dimension of the function here.
         return 2
 
 class Rastrigin(DebugPolicy):

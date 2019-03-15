@@ -6,11 +6,11 @@ Installation:
 
 You can install the required software to run the code of our project by the following steps:
  - Install conda for python 3.7 as described in http://docs.anaconda.com/anaconda/install/linux/
- - Create a conda environment by performing in this folder:
+ - Create a conda environment by executing in this folder:
      conda create --name env --file spec-file.txt
  - Activate the environment by:
      conda activate env
- - Install quanser_robots by performing:
+ - Install quanser_robots by executing:
      git clone https://git.ias.informatik.tu-darmstadt.de/quanser/clients.git
      cd clients
      pip install -e .
@@ -19,6 +19,19 @@ Now everything should be installed.
 
 Running our project:
 
+If you want to run our software, make sure, that you have activated the conda environment.
 
+The TRPO_GAE can be trained by executing in the corresponding folder for example:
+ python test.py --save my_new_policy --env CartpoleStabShort-v0
+TRPO_GAE can be evaluated by executing in the corresponding folder:
+ python evaluate_policy.py
+If you want to modify evaluation parameters as the number of episodes or the policy, that shall be evaluated,
+you have to modify them in the evaluate_policy script.
+
+TRPO and MORE can both be trained by executing in the corrresponding folder:
+ python test.py
+Their parameters have to be adapted in the code.
+They can also be evaluated by running in the corresponding folder:
+ python evaluate policy.py
 
 
