@@ -3,22 +3,32 @@ import pickle
 import gym
 import quanser_robots
 import torch
-import time
 
-input = open("policies/debugging3.pkl", "rb")
-#input = open("policies/my_policy_cartpole_cg.pkl", "rb")
+# Choose the policy you want to evaluate:
+policy_name = "my_policy_cartpole_new_quanser.pkl"
+# Choose the environment, on that you want to evaluate:
+env = gym.make('CartpoleStabShort-v0')
+
+
+input = open("policies/" + policy_name, "rb")
 data = pickle.load(input)
-#policy = data.get("policy")
 policy = data.get("policy")
 
-#env = gym.make('Pendulum-v2')
-env = gym.make('Qube-v0')
-s = env.reset()
+lof_rewards = []
 
-for i in range(10000):
-    env.render()
-    a = policy.model(torch.tensor(s, dtype=torch.float)).detach().numpy()
-    s, r, done, info = env.step(a)
-    if done:
-        s = env.reset()
-    time.sleep(0.1)
+for steps in range(100):
+    s = env.reset()
+    rewards = 0
+    for count in range(1000):
+        #env.render()
+        a = policy.model(torch.tensor(s, dtype=torch.float)).detach().numpy()
+        s, r, done, info = env.step(a)
+        rewards += r
+
+        if done == True:
+            break
+    lof_rewards += [rewards]
+
+print("TRPO: ", lof_rewards)
+file = open("EvalSim/TRPO_eval_sim_cartpole.npy", "wb")
+np.save(file, lof_rewards)

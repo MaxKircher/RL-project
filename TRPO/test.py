@@ -7,43 +7,39 @@ from sampling import *
 from util import cg
 import pickle
 from matplotlib import pyplot as plt
-from quanser_robots import GentlyTerminating
 
-#plt.figure()
-plt.show()
-axes = plt.gca()
-#plt.ion()
-
-iterations = 800
-
-axes.set_xlim(0, iterations)
-rewards = np.array([]) # for plotting
 
 env = gym.make('Qube-v0')
-#env = gym.make('Pendulum-v2')
 
-#env = GentlyTerminating(gym.make('BallBalancerRR-v0'))
+iterations = 800
+num_steps = 20000 # Table 2 -> min 50.000
 
-s0 = tuple(env.reset())
 gamma = 0.99
-
 delta = 0.1 # KL threshold in linesearch
 
 s_dim = env.observation_space.shape[0]
 a_dim = env.action_space.shape[0]
 
+# Learn from scratch:
 policy = NN(s_dim, a_dim)
 
+# Load existing policy to continue training:
 #input = open("policies/debugging3.pkl", "rb")
 #data = pickle.load(input)
 #policy = data.get("policy")
 
 trpo = TRPO(policy)
 
-# Table 2 -> min 50.000
-num_steps = 20000
+# for plotting:
+plt.show()
+axes = plt.gca()
+axes.set_xlim(0, iterations)
+rewards = np.array([])
+
 for i in range(iterations):
     print("Iteration ", i, ":")
+
+    s0 = tuple(env.reset())
 
     states, actions, Q, r = sample_sp(policy, s0, num_steps, env, gamma)
 
