@@ -5,7 +5,7 @@ import quanser_robots
 import torch
 
 # Choose the policy you want to evaluate:
-policy_name = "my_policy_cartpole_new_quanser.pkl"
+policy_name = "Cartpole.pkl"
 # Choose the environment, on that you want to evaluate:
 env = gym.make('CartpoleStabShort-v0')
 
