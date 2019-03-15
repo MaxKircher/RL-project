@@ -31,8 +31,10 @@ class MORE(object):
         '''
         d = self.policy.get_number_of_parameters()
 
+        # Initial mean:
         b = np.array(d*[0])
         #b = np.random.randn(d)
+        # Initial covariance
         Q = 5*np.eye(d)
 
         b_history = [b]

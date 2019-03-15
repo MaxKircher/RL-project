@@ -82,20 +82,6 @@ class Optimization(object):
             return self.SLSQP(x0)
         return soloution
 
-    def L_BFGS_B(self, x0):
-        '''
-        Optimize the objective
-        using the limited memory Broyden–Fletcher–Goldfarb–Shanno optimizer
-
-        :param x0: {list of float} contains the langragian multipliers etha and omega
-        :return: {OptimizeResult} the solution of the optimization
-        '''
-        bnds = ((x0[0], None), (1e-5, None))
-        cons = {'type': 'ineq', 'fun': self.constraint}
-        soloution = minimize(self.objective, x0, method = 'L-BFGS-B', bounds = bnds, constraints = cons)
-        return soloution
-
-
 
     def compute_beta(self, gamma, Q):
         '''

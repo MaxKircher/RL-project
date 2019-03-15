@@ -24,6 +24,6 @@ N_per_theta, number_of_thetas, memory_size = 1,50,1000 # For policies
 # N_per_theta, number_of_thetas, memory_size = 1, 1000, 1000 # For Debug
 
 iterator = MORE(policy, env, N_per_theta, number_of_thetas, memory_size)
-thetas = iterator.iterate(bound)
+thetas = iterator.iterate(bound) # Initial etha / omega can be set here
 
 print("MORE converged to the above soloution.")

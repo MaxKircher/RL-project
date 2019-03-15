@@ -22,16 +22,24 @@ Running our project:
 If you want to run our software, make sure, that you have activated the conda environment.
 
 The TRPO_GAE can be trained by executing in the corresponding folder for example:
- python test.py --save my_new_policy --env CartpoleStabShort-v0
+  python test.py --save my_new_policy --env CartpoleStabShort-v0
 TRPO_GAE can be evaluated by executing in the corresponding folder:
- python evaluate_policy.py
+  python evaluate_policy.py
 If you want to modify evaluation parameters as the number of episodes or the policy, that shall be evaluated,
 you have to modify them in the evaluate_policy script.
 
 TRPO and MORE can both be trained by executing in the corrresponding folder:
- python test.py
-Their parameters have to be adapted in the code.
-They can also be evaluated by running in the corresponding folder:
- python evaluate policy.py
+  python test.py
+Their parameters have to be adapted in the code, but many parameters can be set directly in the test.py script.
+Here is a list, where other parameters can be modified:
+MORE:
+ - Initial mean and covariance -> MORE_iteration.py iterate
+ - The bounds for etha and omega during the optimization -> optimization.py SLSQP
+ - The dimensionality of the Rosenbrock function -> policy Rosenbrock get_number_of_parameters
+TRPO:
+ - policy architecture, initial standard deviation -> policy __init__
+
+Both implementations can also be evaluated by running in the corresponding folder:
+  python evaluate policy.py
 
 
