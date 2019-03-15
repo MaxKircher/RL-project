@@ -7,11 +7,6 @@ from scipy.stats import multivariate_normal
 from scipy.misc import logsumexp
 
 class Sample(object):
-    '''
-        N_per_theta:        Query the env N times with this set of Thetas
-        number_of_thetas:   number of theta-sample sets
-        memory_size:        Number of memorized thetas/samples
-    '''
     def __init__(self, env, policy, N_per_theta, number_of_thetas, memory_size):
         '''
         Initializes our sample generator
@@ -31,17 +26,6 @@ class Sample(object):
         self.number_of_thetas = number_of_thetas
         self.memory_size = memory_size
 
-    '''
-        sample corresponds to the function pi in the paper. It samples values for theta
-        that should optimize our objective function R_theta
-
-        mu:                 expectation for theta sampling
-        dev:                covariance matrix for theta sampling
-
-        Returns:
-         - rewards: Is a array, where the i-th entry corresponds to the average reward of the i-th theta_i
-         - thetas:  Is a array, where the i-th entry is a random value returned from the multivariate Gaussian
-    '''
     def sample(self, mu, dev):
         '''
         Samples rewards and thetas for specified number of thetas
@@ -67,12 +51,14 @@ class Sample(object):
 
     def sample_single_theta(self, theta):
         '''
-        Samples rewards for given set of theta
+        Samples rewards for a given theta
         :param theta: {numpy ndarray} parameters of the current policy
         :return:
          - {float} average reward
         '''
         reward = 0
+        # DebugPolicy is not a actual policy in the reinforcement learning sense,
+        # it shall just be optimized:
         if isinstance(self.policy, DebugPolicy):
             reward = self.policy.set_theta(theta)
         else:

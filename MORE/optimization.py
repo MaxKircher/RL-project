@@ -10,7 +10,7 @@ class Optimization(object):
         :param R: {numpy ndarray} quadratic parameter of surrogate objective
         :param r: {numpy ndarray} linear parameter of surrogate objective
         :param epsilon: {float} upper bound for KL divergence
-        :param gamma: {float} discount
+        :param gamma: {float} discount factor
         '''
         self.Q = Q
         self.b = b
@@ -21,8 +21,8 @@ class Optimization(object):
 
     def objective(self, x):
         '''
-        Our function g, which we want to minimize
-        See Chapter 2.2
+        Our objective function, which we want to minimize
+        See MORE paper Chapter 2.2 function g
 
         :param x: {list of float} contains the langragian multipliers etha and omega
         :return: the value of the objective function
@@ -48,8 +48,6 @@ class Optimization(object):
                 - etha * self.b.T @  np.linalg.inv(self.Q) @ self.b \
                 - etha * np.log(np.linalg.det(2 * np.pi * self.Q)) \
                 + (etha + omega) * np.log(detA))
-        #dgeta = epsilon - KL(Ff, inv(F) || b,Q)
-        #dgomega = H(F) - beta
         return g[0,0]
 
 

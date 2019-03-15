@@ -57,6 +57,10 @@ class DebugPolicy(Policy):
         raise NotImplementedError("Sublcasses should implement this!")
 
 class Rosenbrock(DebugPolicy):
+    '''
+    The Rosenbrock function.
+    See DebugPolicy
+    '''
     def __init__(self, state_dim, action_dim):
         Policy.__init__(self, state_dim, action_dim)
 
@@ -68,7 +72,9 @@ class Rosenbrock(DebugPolicy):
         return 2
 
 class Rastrigin(DebugPolicy):
-    # https://en.wikipedia.org/wiki/Rastrigin_function
+    '''
+    See DebugPolicy
+    '''
     def __init__(self, state_dim, action_dim):
         Policy.__init__(self, state_dim, action_dim)
 

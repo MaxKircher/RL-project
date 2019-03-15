@@ -55,7 +55,6 @@ class MORE(object):
             reward_list_mean = np.append(reward_list_mean, sampled_rewards.mean())
             reward_list_var = np.append(reward_list_var, sampled_rewards.var())
             plt.figure(fig.number)
-            # plt.semilogy()
             plt.plot(range(count), reward_list_mean, c='b')
             plt.show(block=False)
             plt.pause(1e-17)
@@ -95,7 +94,6 @@ class MORE(object):
          - {float} lagragien multiplier of optimization problem after optimization
         '''
         rewards, thetas, weights = self.sample_generator.sample(b, Q)
-        # Weighted Least Squares, weight for a given theta_i is given by pi(theta_i)/pi_i(theta_i) normalized to sum up to 1
         R, r = compute_quadratic_surrogate(thetas, rewards, weights)
         opti = Optimization(Q, b, R, r, .01, 0.99)
         x0 = np.asarray([etha, omega])
