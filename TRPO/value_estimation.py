@@ -26,6 +26,13 @@ class GAE(object):
     '''
 
     def __init__(self, gamma, lambd, state_dim, inter_dims):
+        '''
+        Initialize the general advantage estimater
+        :param gamma: {float} discount factor
+        :param lambd: {float} additional discounting as described in the paper
+        :param state_dim: {int} number of state dimensions
+        :param inter_dims: {list of int} number of nodes in intermediate layers of the value network
+        '''
         self.gamma = gamma
         self.lambd = lambd
         self.value = Value(state_dim, 1, inter_dims)
@@ -91,27 +98,12 @@ class GAE(object):
         new_params = (params + alpha * torch.tensor(s.T)).view(-1)
         self.value.update_parameter(new_params)
 
-        '''old_loss = old_loss.detach().numpy()
-        for i in range(10):
-            new_vals = self.value(states).detach().numpy()
-            new_loss = np.power(new_vals - discounted_rewards, 2).mean()
-            #print("old loss = ", old_loss, "; new loss = ", new_loss)
-
-            if old_loss > new_loss:
-                #if kl_normal_distribution(old_vals, new_vals, old_loss, new_loss) < delta:
-                print(i)
-                return
-            alpha = alpha * np.exp(-0.5 * (i+1))
-
-        new_params -= 0.01 * torch.tensor(g.T).view(-1)
-        self.value.update_parameter(new_params)
-        new_loss = np.power(new_vals - discounted_rewards, 2).mean()
-
-        print(new_loss)'''
-
-
 
 class Value(NN):
+    '''
+    Neural Net to estimate state values
+    '''
+
     def compute_Jacobians(self, states):
         '''
         Computes one Jacobi-Matrix per state sample
@@ -122,12 +114,11 @@ class Value(NN):
         states = torch.tensor(states, dtype=torch.float)
         predictions = self.model(states)
 
-        # Compute the coloumns of the Jacobi-Matrix
+        # Compute the columns of the Jacobi-Matrix
         number_cols = sum(p.numel() for p in self.model.parameters())
 
         Jacobi_matrices = []
 
-        # We compute the Jacobi matrix for each state in states
         for i in range(predictions.size(0)):
             Jacobi_matrix = np.matrix(np.zeros((1, number_cols)))
 
@@ -152,6 +143,10 @@ class Value(NN):
         return self.model(states, **kwargs)
 
     def save_model(self, path):
+        '''
+        Save the current model
+        :param path: {String} the name of the file, where the model shall be saved
+        '''
         dict = {"value": self}
         with open("values/%s.pkl" %path, "wb+") as output:
             pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
