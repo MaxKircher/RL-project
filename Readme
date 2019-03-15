@@ -1,0 +1,24 @@
+This folder contains our three subfolders, one for our implementation of MORE and two with two different implementations of TRPO, that we wrote.
+
+
+
+Installation:
+
+You can install the required software to run the code of our project by the following steps:
+ - Install conda for python 3.7 as described in http://docs.anaconda.com/anaconda/install/linux/
+ - Create a conda environment by performing in this folder:
+     conda create --name env --file spec-file.txt
+ - Activate the environment by:
+     conda activate env
+ - Install quanser_robots by performing:
+     git clone https://git.ias.informatik.tu-darmstadt.de/quanser/clients.git
+     cd clients
+     pip install -e .
+Now everything should be installed.
+
+
+Running our project:
+
+
+
+
