@@ -40,6 +40,7 @@ def sample_sp(policy, s0, T, env, gamma):
     actions = np.array(actions)
     Q = np.zeros(T + 1)
 
+    # Compute discounted rewards:
     dones += [T-1]
     t0 = -1
     for tend in dones:
@@ -47,7 +48,6 @@ def sample_sp(policy, s0, T, env, gamma):
             Q[i] = gamma * Q[i + 1] + rewards[i]
         t0 = tend
     Q = Q[:-1]
-    #Q = (Q - Q.mean()) / Q.std()
 
     return states, actions, Q, sum(rewards)
 

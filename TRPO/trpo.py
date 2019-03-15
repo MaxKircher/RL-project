@@ -23,7 +23,7 @@ class TRPO(object):
         states = torch.tensor(states, dtype = torch.float)
         mu_actions = policy_net(states)
 
-        # Compute the coloumns of the Jacobi-Matrix
+        # Compute the columns of the Jacobi-Matrix
         number_cols = sum(p.numel() for p in policy_net.parameters())
         Jacobi_matrices = []
 
@@ -52,7 +52,7 @@ class TRPO(object):
     def compute_FIM_mean(self):
         '''
         Computes the Fisher-Information Matrix (FIM)
-        We choose the Gaussian-Distribution as our distribution of intrest. Therfore
+        We choose the Gaussian-Distribution as our distribution of interest. Therefore
         by Wiki https://de.wikipedia.org/wiki/Fisher-Information?oldformat=true we obtain
         a simple computable FIM
 
@@ -90,7 +90,6 @@ class TRPO(object):
 
             kl_change = kl_normal_distribution(mean_new, mean_old, log_std_new, log_std_old)
 
-            # Check if KL-Divergenz is <= delta
             if kl_change <= delta:
                 obj = self.objective_theta(policy_theta_new.pi_theta, states, actions, Q)
                 if obj >= old_obj:
@@ -100,14 +99,14 @@ class TRPO(object):
                     return policy_theta_new
             beta = beta * np.exp(-0.5 * i)
 
-        print("Something went wrong!")
+        print("Could not update policy without violating the constraints!")
         return None
 
 
     def objective_theta(self, pi_theta, states, actions, Q):
         '''
         Compute the objective, that shall be optimized
-        :param pi_theta: {NN} the new policy
+        :param pi_theta: {NN.pi_theta} the new policy
         :param states: {numpy ndarray} sampled states
         :param actions: {numpy ndarray} sampled actions
         :param Q: {numpy ndarray} sampled discounted rewards

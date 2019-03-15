@@ -36,7 +36,7 @@ class NN(object):
 
     def choose_a(self, s):
         '''
-        Choose a action for given state
+        Choose an action for the given state
         :param s: {numpy ndarray} state
         :return: {numpy ndarray} action
         '''
@@ -75,10 +75,8 @@ class NN(object):
         '''
         theta_new = theta_new.view(-1)
 
-        # keine negativen Varianzen, da wir den logarithmus speichern
         self.model.log_std.data = theta_new[:self.a_dim]
 
-        # split parameter for the desired model
         number_of_layers = len(self.model)
         # get right position where we get the params from theta_new:
         j = self.a_dim
@@ -103,7 +101,7 @@ class NN(object):
 
     def get_parameter_as_tensor(self):
         '''
-        Get the parameters of the ploicy
+        Get the parameters of the policy
         :return: {torch tensor} parameters
         '''
         parameters = list(self.model.parameters())
@@ -112,7 +110,7 @@ class NN(object):
 
         j = 0
         for param in parameters:
-            theta[:,j: j + param.nelement()] = param.view(1, -1)
+            theta[:, j: j + param.nelement()] = param.view(1, -1)
             j += param.nelement()
 
         return theta
