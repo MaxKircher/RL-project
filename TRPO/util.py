@@ -16,7 +16,6 @@ def kl_normal_distribution(mu_new, mu_old, log_std_new, log_std_old):
     kl = log_std_new - log_std_old + (var_old - np.power(mu_old - mu_new, 2)) / (2.0 * var_new) - 0.5
     # average over samples, sum over action dim
     kl = np.abs(kl.mean(0)).sum(0)
-    # print("kl: ", kl)
     return kl
 
 def conjugate_gradient(g, Js, M, x, k=10):

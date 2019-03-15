@@ -66,6 +66,10 @@ class Policy(NN):
 
 
     def save_model(self, path):
+        '''
+        Save the currennt policy
+        :param path: {string} filename, where  the policy shall be saved
+        '''
         dict = {"policy": self}
         with open("policies/%s.pkl" %path, "wb+") as output:
             pickle.dump(dict, output, pickle.HIGHEST_PROTOCOL)
@@ -76,17 +80,16 @@ class Policy(NN):
         Computes one Jacobi-Matrix per state sample
 
         :param states: {numpy ndarray} the sampled states
-        :return: {list of numpy matrix} a list of Jacobi matrixes
+        :return: {list of numpy matrix} a list of Jacobi matrices
         '''
         states = torch.tensor(states, dtype = torch.float)
         action_expectations = self.model(states)
 
-        # Compute the coloumns of the Jacobi-Matrix
+        # Compute the columns of the Jacobi-Matrix
         number_cols = sum(p.numel() for p in self.model.parameters())
 
         Jacobi_matrices = []
 
-        # We compute the Jacobi matrix for each state in states
         for i in range(action_expectations.size(0)):
             Jacobi_matrix = np.matrix(np.zeros((self.out_dim * 2, number_cols)))
 

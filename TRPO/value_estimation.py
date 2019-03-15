@@ -72,7 +72,7 @@ class GAE(object):
 
     def update_value(self, states, discounted_rewards, delta):
         '''
-        update the value function
+        Update the value function
         param states: {numpy ndarray} sampled states
         param discounted_rewards: {numpy ndarray} sampled discounted rewards
         param delta: {float} KL-bound for value update

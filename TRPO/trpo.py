@@ -11,7 +11,7 @@ def compute_FIM_mean(policy):
     by Wiki https://de.wikipedia.org/wiki/Fisher-Information?oldformat=true we obtain
     a simple computable FIM w.r.t mean and variance
 
-    :param policy: policy that gives the variance todo: maybe directly give variance
+    :param policy: policy that gives the variance
     :return: {numpy matrix} Fisher Information Matrix
     '''
     inverse_vars = policy.model.log_std.exp().pow(-2).detach().numpy()
@@ -65,7 +65,7 @@ def line_search(delta, states, actions, Q, old_policy):
                 print("new objective: ", obj.detach().numpy(), " improved by ", improvement.detach().numpy())
                 return new_policy
 
-        # decrease beta: todo correct?
+        # decrease beta:
         beta = beta * np.exp(-0.5 * i)
 
     print("Something went wrong!")
@@ -114,7 +114,6 @@ def compute_beta(delta, s, JMs, FIM):
     '''
     sAs = 0
     for JM in JMs:
-        #todo deived by len(JMs)?????
         sAs += (s.T @ (JM.T @ (FIM @ (JM @ s))))[0,0]
     sAs = sAs / len(JMs)
     return np.power((2 * delta) / sAs, 0.5)

@@ -20,10 +20,6 @@ def sample_episode(policy, env):
         a = policy.choose_action(s)[0]
         s, r, done, info = env.step(a)
 
-        #todo necessary?
-        #if type(s) is np.ndarray:
-        #    s = tuple(s.reshape(-1))
-
         states  += [s]
         actions += [a]
         rewards += [r]
